@@ -19,6 +19,7 @@ const AdminDashboard = () => {
     const [showProductModal, setShowProductModal] = useState(false);
     const [editingProductId, setEditingProductId] = useState(null);
     const [uploadingImage, setUploadingImage] = useState(false);
+    const [uploadingVideo, setUploadingVideo] = useState(false);
 
     const [productForm, setProductForm] = useState({
         name: "",
@@ -28,6 +29,8 @@ const AdminDashboard = () => {
         fullDescription: "",
         benefits: "",
         imageUrl: "",
+        imageUrls: [],
+        videoUrl: "",
         featured: false,
         active: true,
         variantName: "1 Liter",
@@ -79,33 +82,128 @@ const AdminDashboard = () => {
         navigate("/admin/login");
     };
 
-    // Product Image Upload Handler
-    const handleImageUpload = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    // Multi-Image Upload Handler (<= 1MB per image)
+    const handleMultiImageUpload = async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        const maxImageSize = 1 * 1024 * 1024; // 1 MB
+        const validFiles = [];
+        const oversizedFiles = [];
+
+        files.forEach((file) => {
+            if (file.size > maxImageSize) {
+                oversizedFiles.push(file.name);
+            } else {
+                validFiles.push(file);
+            }
+        });
+
+        if (oversizedFiles.length > 0) {
+            Swal.fire({
+                icon: "warning",
+                title: "File Limit Exceeded",
+                html: `The following image(s) exceed the <b>1 MB</b> limit and were skipped:<br/><small>${oversizedFiles.join(", ")}</small>`
+            });
+        }
+
+        if (validFiles.length === 0) return;
 
         const formData = new FormData();
-        formData.append("file", file);
+        validFiles.forEach((file) => formData.append("files", file));
 
         setUploadingImage(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/admin/products/upload-image`, {
+            const res = await fetch(`${API_BASE_URL}/admin/products/upload-images`, {
                 method: "POST",
                 body: formData
             });
 
             if (res.ok) {
                 const data = await res.json();
-                setProductForm((prev) => ({ ...prev, imageUrl: data.imageUrl }));
-                Swal.fire({ icon: "success", title: "Image Uploaded", timer: 1200, showConfirmButton: false });
+                const uploadedUrls = data.imageUrls || [];
+                setProductForm((prev) => {
+                    const newImages = [...(prev.imageUrls || []), ...uploadedUrls];
+                    const primary = prev.imageUrl || newImages[0] || "";
+                    return {
+                        ...prev,
+                        imageUrl: primary,
+                        imageUrls: newImages
+                    };
+                });
+                Swal.fire({ icon: "success", title: `${uploadedUrls.length} Image(s) Uploaded`, timer: 1200, showConfirmButton: false });
             } else {
-                Swal.fire({ icon: "error", title: "Upload Failed" });
+                const errData = await res.json().catch(() => ({}));
+                Swal.fire({ icon: "error", title: "Upload Failed", text: errData.error || "Failed to upload images" });
             }
         } catch (err) {
             Swal.fire({ icon: "error", title: "Upload Error" });
         } finally {
             setUploadingImage(false);
         }
+    };
+
+    // Video Upload Handler (<= 10MB per video)
+    const handleVideoUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const maxVideoSize = 10 * 1024 * 1024; // 10 MB
+        if (file.size > maxVideoSize) {
+            Swal.fire({
+                icon: "warning",
+                title: "Video Too Large",
+                text: `Video file '${file.name}' (${(file.size / (1024 * 1024)).toFixed(2)} MB) exceeds the 10 MB limit.`
+            });
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        setUploadingVideo(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/products/upload-video`, {
+                method: "POST",
+                body: formData
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setProductForm((prev) => ({ ...prev, videoUrl: data.videoUrl }));
+                Swal.fire({ icon: "success", title: "Video Uploaded", timer: 1200, showConfirmButton: false });
+            } else {
+                const errData = await res.json().catch(() => ({}));
+                Swal.fire({ icon: "error", title: "Video Upload Failed", text: errData.error || "Failed to upload video" });
+            }
+        } catch (err) {
+            Swal.fire({ icon: "error", title: "Video Upload Error" });
+        } finally {
+            setUploadingVideo(false);
+        }
+    };
+
+    const handleSetPrimaryImage = (url) => {
+        setProductForm((prev) => ({ ...prev, imageUrl: url }));
+    };
+
+    const handleRemoveImage = (index) => {
+        setProductForm((prev) => {
+            const updatedImages = prev.imageUrls.filter((_, i) => i !== index);
+            let updatedPrimary = prev.imageUrl;
+            if (!updatedImages.includes(updatedPrimary)) {
+                updatedPrimary = updatedImages[0] || "";
+            }
+            return {
+                ...prev,
+                imageUrl: updatedPrimary,
+                imageUrls: updatedImages
+            };
+        });
+    };
+
+    const handleRemoveVideo = () => {
+        setProductForm((prev) => ({ ...prev, videoUrl: "" }));
     };
 
     // Quick Image Change from Product Table Row
@@ -155,6 +253,7 @@ const AdminDashboard = () => {
     const handleSaveProduct = async (e) => {
         e.preventDefault();
 
+        const primaryImg = productForm.imageUrl || (productForm.imageUrls?.[0] || "");
         const payload = {
             name: productForm.name,
             slug: productForm.slug,
@@ -162,7 +261,9 @@ const AdminDashboard = () => {
             shortDescription: productForm.shortDescription,
             fullDescription: productForm.fullDescription,
             benefits: productForm.benefits,
-            imageUrl: productForm.imageUrl,
+            imageUrl: primaryImg,
+            imageUrls: productForm.imageUrls || [],
+            videoUrl: productForm.videoUrl || "",
             featured: productForm.featured,
             active: productForm.active,
             variants: [
@@ -217,6 +318,8 @@ const AdminDashboard = () => {
             fullDescription: prod.fullDescription || "",
             benefits: prod.benefits || "",
             imageUrl: prod.imageUrl || "",
+            imageUrls: prod.imageUrls || (prod.imageUrl ? [prod.imageUrl] : []),
+            videoUrl: prod.videoUrl || "",
             featured: prod.featured || false,
             active: prod.active || true,
             variantName: defaultVar.variantName || "1 Liter",
@@ -258,6 +361,8 @@ const AdminDashboard = () => {
             fullDescription: "",
             benefits: "",
             imageUrl: "",
+            imageUrls: [],
+            videoUrl: "",
             featured: false,
             active: true,
             variantName: "1 Liter",
@@ -680,11 +785,87 @@ const AdminDashboard = () => {
                                             <label className="form-label fw-bold">Discount Price (₹)</label>
                                             <input type="number" step="0.01" className="form-control" value={productForm.discountPrice} onChange={(e) => setProductForm({ ...productForm, discountPrice: e.target.value })} />
                                         </div>
+                                        {/* Multi-Image Upload (<= 1MB per image) */}
                                         <div className="col-12">
-                                            <label className="form-label fw-bold">Upload Product Image</label>
-                                            <input type="file" className="form-control" accept="image/*" onChange={handleImageUpload} />
-                                            {uploadingImage && <div className="small text-primary mt-1">Uploading image...</div>}
-                                            {productForm.imageUrl && <div className="small text-success mt-1">Image URL: {productForm.imageUrl}</div>}
+                                            <label className="form-label fw-bold">
+                                                Upload Product Images <small className="text-muted fw-normal">(Max 1 MB per image)</small>
+                                            </label>
+                                            <input
+                                                type="file"
+                                                className="form-control"
+                                                accept="image/*"
+                                                multiple
+                                                onChange={handleMultiImageUpload}
+                                            />
+                                            {uploadingImage && <div className="small text-primary mt-1">Uploading image(s)...</div>}
+
+                                            {/* Thumbnails preview */}
+                                            {productForm.imageUrls && productForm.imageUrls.length > 0 && (
+                                                <div className="d-flex flex-wrap gap-2 mt-2 align-items-center">
+                                                    {productForm.imageUrls.map((url, idx) => {
+                                                        const isPrimary = (productForm.imageUrl === url) || (!productForm.imageUrl && idx === 0);
+                                                        return (
+                                                            <div key={idx} className="position-relative border rounded p-1 text-center bg-light" style={{ width: "90px" }}>
+                                                                <img
+                                                                    src={getImageUrl(url)}
+                                                                    alt={`Preview ${idx + 1}`}
+                                                                    style={{ width: "100%", height: "65px", objectFit: "cover" }}
+                                                                    className="rounded"
+                                                                />
+                                                                {isPrimary ? (
+                                                                    <span className="badge bg-success position-absolute top-0 start-0 m-1">Main</span>
+                                                                ) : (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-xs btn-outline-primary position-absolute top-0 start-0 m-1 p-0 px-1"
+                                                                        style={{ fontSize: "10px" }}
+                                                                        onClick={() => handleSetPrimaryImage(url)}
+                                                                    >
+                                                                        Set Main
+                                                                    </button>
+                                                                )}
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 py-0 px-1 rounded-circle"
+                                                                    style={{ fontSize: "12px", lineHeight: "1" }}
+                                                                    onClick={() => handleRemoveImage(idx)}
+                                                                    title="Remove image"
+                                                                >
+                                                                    &times;
+                                                                </button>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Video Upload (<= 10MB per video) */}
+                                        <div className="col-12">
+                                            <label className="form-label fw-bold">
+                                                Upload Product Video <small className="text-muted fw-normal">(Optional, Max 10 MB)</small>
+                                            </label>
+                                            <input
+                                                type="file"
+                                                className="form-control"
+                                                accept="video/*"
+                                                onChange={handleVideoUpload}
+                                            />
+                                            {uploadingVideo && <div className="small text-primary mt-1">Uploading video...</div>}
+
+                                            {productForm.videoUrl && (
+                                                <div className="mt-2 d-flex align-items-center gap-2 p-2 border rounded bg-light">
+                                                    <span className="badge bg-info text-dark">Video Attached</span>
+                                                    <span className="small text-truncate" style={{ maxWidth: "300px" }}>{productForm.videoUrl}</span>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-outline-danger btn-sm py-0 px-2 ms-auto"
+                                                        onClick={handleRemoveVideo}
+                                                    >
+                                                        Remove Video
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="col-12">
                                             <label className="form-label fw-bold">Short Description</label>

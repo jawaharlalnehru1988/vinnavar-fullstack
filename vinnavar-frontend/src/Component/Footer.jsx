@@ -22,12 +22,12 @@ const Footer = () => {
             <div className="row footer-row">
               <div className="col-sm-6 col-lg-3 mb-30">
                 <div className="footer-widget">
-                  <div className="footer-logo">
+                  <div className="footer-logo mb-3">
                     <Link to="/">
                       <img
                         src={groceryshop}
-                        style={{ width: 300, padding: 20, marginLeft: "-30px" }}
-                        alt="logo"
+                        style={{ maxHeight: 60, width: "auto", objectFit: "contain" }}
+                        alt="Vinnavar Logo"
                       />
                     </Link>
                   </div>

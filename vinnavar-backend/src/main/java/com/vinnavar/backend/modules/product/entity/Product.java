@@ -34,6 +34,14 @@ public class Product {
 
     private String imageUrl;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "image_url")
+    @Builder.Default
+    private List<String> imageUrls = new ArrayList<>();
+
+    private String videoUrl;
+
     @Column(columnDefinition = "TEXT")
     private String benefits;
 

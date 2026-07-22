@@ -40,6 +40,8 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 // Store pages
 // Account pages
 
+import ProductDetails from "./pages/Shop/ProductDetails";
+
 const AppContent = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -53,6 +55,10 @@ const AppContent = () => {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/Grocery-react" element={<Home />} />
         <Route path="/Grocery-react/" element={<Home />} />
+        {/* Product Details page */}
+        <Route path="/product/:slug" element={<ProductDetails />} />
+        <Route path="/product/id/:id" element={<ProductDetails />} />
+        <Route path="/ProductDetails" element={<ProductDetails />} />
         {/* Shop pages */}
         <Route path="/Shop" element={<Shop />} />
         <Route path="/ShopGridCol3" element={<ShopGridCol3 />} />

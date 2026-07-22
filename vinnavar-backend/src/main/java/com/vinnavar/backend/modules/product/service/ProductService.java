@@ -58,13 +58,21 @@ public class ProductService {
                 ? dto.getSlug()
                 : dto.getName().toLowerCase().replaceAll("[^a-z0-9]", "-");
 
+        List<String> images = dto.getImageUrls() != null ? new ArrayList<>(dto.getImageUrls()) : new ArrayList<>();
+        String mainImageUrl = dto.getImageUrl();
+        if ((mainImageUrl == null || mainImageUrl.isBlank()) && !images.isEmpty()) {
+            mainImageUrl = images.get(0);
+        }
+
         Product product = Product.builder()
                 .name(dto.getName())
                 .slug(slug)
                 .shortDescription(dto.getShortDescription())
                 .fullDescription(dto.getFullDescription())
                 .benefits(dto.getBenefits())
-                .imageUrl(dto.getImageUrl())
+                .imageUrl(mainImageUrl)
+                .imageUrls(images)
+                .videoUrl(dto.getVideoUrl())
                 .category(category)
                 .featured(dto.isFeatured())
                 .active(dto.isActive())
@@ -105,8 +113,17 @@ public class ProductService {
         product.setShortDescription(dto.getShortDescription());
         product.setFullDescription(dto.getFullDescription());
         product.setBenefits(dto.getBenefits());
-        if (dto.getImageUrl() != null && !dto.getImageUrl().isBlank()) {
-            product.setImageUrl(dto.getImageUrl());
+        if (dto.getImageUrls() != null) {
+            product.getImageUrls().clear();
+            product.getImageUrls().addAll(dto.getImageUrls());
+        }
+        product.setVideoUrl(dto.getVideoUrl());
+        String mainImageUrl = dto.getImageUrl();
+        if ((mainImageUrl == null || mainImageUrl.isBlank()) && product.getImageUrls() != null && !product.getImageUrls().isEmpty()) {
+            mainImageUrl = product.getImageUrls().get(0);
+        }
+        if (mainImageUrl != null && !mainImageUrl.isBlank()) {
+            product.setImageUrl(mainImageUrl);
         }
         product.setFeatured(dto.isFeatured());
         product.setActive(dto.isActive());
@@ -193,10 +210,10 @@ public class ProductService {
 
         Category oils = categoryRepository.findBySlug("cold-pressed-oils").orElse(allCategories.get(0));
         Category rice = categoryRepository.findBySlug("organic-rice-grains").orElse(allCategories.get(1));
-        Category spices = categoryRepository.findBySlug("natural-spices-masala").orElse(allCategories.get(2));
-        Category sweeteners = categoryRepository.findBySlug("natural-sweeteners").orElse(allCategories.get(3));
 
-        if (productRepository.count() > 0) {
+        upsertRiceProducts(rice);
+
+        if (productRepository.count() > 2) {
             return;
         }
 
@@ -253,59 +270,126 @@ public class ProductService {
 
         sesameOil.getVariants().add(sOil1L);
 
-        // Sample Product 3: Seeraga Samba Rice
-        Product seeragaSamba = Product.builder()
-                .name("Traditional Seeraga Samba Rice")
-                .slug("traditional-seeraga-samba-rice")
-                .shortDescription("Aromatic raw traditional rice ideal for Biryani & Pulao.")
-                .fullDescription("Naturally grown traditional small-grain rice variety known for delicious taste and distinct aroma.")
-                .benefits("Easily digestible, rich in iron, low glycemic index.")
-                .imageUrl("/media/products/product-img-3.jpg")
-                .category(rice)
-                .featured(true)
-                .build();
+        productRepository.saveAll(List.of(groundnutOil, sesameOil));
+    }
 
-        ProductVariant rice1kg = ProductVariant.builder()
-                .product(seeragaSamba)
-                .variantName("1 kg")
-                .price(new BigDecimal("160.00"))
-                .discountPrice(new BigDecimal("145.00"))
-                .isDefault(true)
-                .build();
+    @Transactional
+    public void upsertRiceProducts(Category riceCategory) {
+        // 1. Karuppu Kavuni Rice
+        Product kavuni = productRepository.findBySlug("karuppu-kavuni-rice")
+                .orElseGet(() -> Product.builder().slug("karuppu-kavuni-rice").build());
 
-        ProductVariant rice5kg = ProductVariant.builder()
-                .product(seeragaSamba)
-                .variantName("5 kg")
-                .price(new BigDecimal("780.00"))
-                .discountPrice(new BigDecimal("720.00"))
+        kavuni.setName("Karuppu Kavuni Rice");
+        kavuni.setShortDescription("100% Pure Natural & Raw Gluten Free Karuppu Kavuni Black Rice (Emperor Rice). (Inclusive of shipping charge + all taxes)");
+        kavuni.setFullDescription("Extracted from premium quality organic Karuppu Kavuni black rice. Rich in antioxidants, iron, protein, and dietary fiber. Known as the royal rice of Chola Kings.");
+        kavuni.setBenefits("Rich in Antioxidants, High in Fiber, Gluten-Free, Supports Weight Management, Good source of Protein & Iron.");
+        kavuni.setImageUrl("/media/vinnavarwebsitecreation/1.webp");
+        kavuni.setImageUrls(List.of(
+                "/media/vinnavarwebsitecreation/1.webp",
+                "/media/vinnavarwebsitecreation/2.webp",
+                "/media/vinnavarwebsitecreation/3.webp",
+                "/media/vinnavarwebsitecreation/4.webp",
+                "/media/vinnavarwebsitecreation/5.webp",
+                "/media/vinnavarwebsitecreation/6.webp",
+                "/media/vinnavarwebsitecreation/7.webp",
+                "/media/vinnavarwebsitecreation/8.webp",
+                "/media/vinnavarwebsitecreation/9.webp",
+                "/media/vinnavarwebsitecreation/10.webp"
+        ));
+        kavuni.setCategory(riceCategory);
+        kavuni.setFeatured(true);
+        kavuni.setActive(true);
+
+        if (kavuni.getVariants() == null) {
+            kavuni.setVariants(new ArrayList<>());
+        } else {
+            kavuni.getVariants().clear();
+        }
+
+        kavuni.getVariants().add(ProductVariant.builder()
+                .product(kavuni)
+                .variantName("500G")
+                .price(new BigDecimal("149.00"))
+                .discountPrice(new BigDecimal("149.00"))
+                .stockQuantity(100)
                 .isDefault(false)
-                .build();
-
-        seeragaSamba.getVariants().add(rice1kg);
-        seeragaSamba.getVariants().add(rice5kg);
-
-        // Sample Product 4: Palm Jaggery
-        Product palmJaggery = Product.builder()
-                .name("Pure Karupatti (Palm Jaggery)")
-                .slug("pure-karupatti-palm-jaggery")
-                .shortDescription("100% natural unrefined palm sweet block.")
-                .fullDescription("Traditional palm jaggery crafted naturally without any synthetic chemicals or bleaching agents.")
-                .benefits("Rich in iron and minerals, natural blood purifier.")
-                .imageUrl("/media/products/product-img-4.jpg")
-                .category(sweeteners)
-                .featured(false)
-                .build();
-
-        ProductVariant jaggery500g = ProductVariant.builder()
-                .product(palmJaggery)
-                .variantName("500 g")
-                .price(new BigDecimal("210.00"))
-                .discountPrice(new BigDecimal("195.00"))
+                .build());
+        kavuni.getVariants().add(ProductVariant.builder()
+                .product(kavuni)
+                .variantName("5KG")
+                .price(new BigDecimal("949.00"))
+                .discountPrice(new BigDecimal("949.00"))
+                .stockQuantity(100)
                 .isDefault(true)
-                .build();
+                .build());
+        kavuni.getVariants().add(ProductVariant.builder()
+                .product(kavuni)
+                .variantName("25KG")
+                .price(new BigDecimal("3999.00"))
+                .discountPrice(new BigDecimal("3999.00"))
+                .stockQuantity(100)
+                .isDefault(false)
+                .build());
 
-        palmJaggery.getVariants().add(jaggery500g);
+        productRepository.save(kavuni);
 
-        productRepository.saveAll(List.of(groundnutOil, sesameOil, seeragaSamba, palmJaggery));
+        // 2. Kolam Rice
+        Product kolam = productRepository.findBySlug("kolam-rice")
+                .orElseGet(() -> Product.builder().slug("kolam-rice").build());
+
+        kolam.setName("Kolam Rice");
+        kolam.setShortDescription("100% Pure Natural & Raw Gluten Free HMT Kolam Raw Rice. (Inclusive of shipping charge + all taxes)");
+        kolam.setFullDescription("Premium HMT Kolam Raw Rice known for easy digestibility, soft texture, and delicate natural aroma.");
+        kolam.setBenefits("Easily digestible, rich in carbohydrates, gluten-free, 100% natural and unpolished.");
+        kolam.setImageUrl("/media/vinnavarwebsitecreation/1_1.webp");
+        kolam.setImageUrls(List.of(
+                "/media/vinnavarwebsitecreation/1_1.webp",
+                "/media/vinnavarwebsitecreation/2_1.webp",
+                "/media/vinnavarwebsitecreation/3_1.webp",
+                "/media/vinnavarwebsitecreation/4_1.webp",
+                "/media/vinnavarwebsitecreation/5_1.webp",
+                "/media/vinnavarwebsitecreation/6_1.webp",
+                "/media/vinnavarwebsitecreation/7_1.webp",
+                "/media/vinnavarwebsitecreation/8_1.webp",
+                "/media/vinnavarwebsitecreation/9_1.webp",
+                "/media/vinnavarwebsitecreation/10_1.webp",
+                "/media/vinnavarwebsitecreation/11.webp"
+        ));
+        kolam.setCategory(riceCategory);
+        kolam.setFeatured(true);
+        kolam.setActive(true);
+
+        if (kolam.getVariants() == null) {
+            kolam.setVariants(new ArrayList<>());
+        } else {
+            kolam.getVariants().clear();
+        }
+
+        kolam.getVariants().add(ProductVariant.builder()
+                .product(kolam)
+                .variantName("500G")
+                .price(new BigDecimal("149.00"))
+                .discountPrice(new BigDecimal("149.00"))
+                .stockQuantity(100)
+                .isDefault(false)
+                .build());
+        kolam.getVariants().add(ProductVariant.builder()
+                .product(kolam)
+                .variantName("5KG")
+                .price(new BigDecimal("749.00"))
+                .discountPrice(new BigDecimal("749.00"))
+                .stockQuantity(100)
+                .isDefault(true)
+                .build());
+        kolam.getVariants().add(ProductVariant.builder()
+                .product(kolam)
+                .variantName("25KG")
+                .price(new BigDecimal("2999.00"))
+                .discountPrice(new BigDecimal("2999.00"))
+                .stockQuantity(100)
+                .isDefault(false)
+                .build());
+
+        productRepository.save(kolam);
     }
 }

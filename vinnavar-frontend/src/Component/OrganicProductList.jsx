@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
-import { fetchProducts } from "../services/api";
-
-const BACKEND_URL = "http://localhost:8087";
+import { API_BASE_URL, fetchProducts, getImageUrl } from "../services/api";
 
 const OrganicProductList = ({ categoryId }) => {
     const [products, setProducts] = useState([]);
@@ -54,7 +53,7 @@ const OrganicProductList = ({ categoryId }) => {
         }
 
         try {
-            const response = await fetch(`${BACKEND_URL}/api/v1/cart/items`, {
+            const response = await fetch(`${API_BASE_URL}/cart/items`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -103,9 +102,7 @@ const OrganicProductList = ({ categoryId }) => {
                 <div className="row g-4 row-cols-lg-4 row-cols-md-2 row-cols-1">
                     {products.map((product) => {
                         const currentVariant = selectedVariants[product.id] || product.variants?.[0];
-                        const imgUrl = product.imageUrl?.startsWith("http")
-                            ? product.imageUrl
-                            : `${BACKEND_URL}${product.imageUrl || "/media/placeholder.png"}`;
+                        const imgUrl = getImageUrl(product.imageUrl);
 
                         return (
                             <div key={product.id} className="col">
@@ -117,20 +114,24 @@ const OrganicProductList = ({ categoryId }) => {
                                                     <span className="badge bg-success">Organic Best Seller</span>
                                                 </div>
                                             )}
-                                            <div style={{ height: "180px", overflow: "hidden" }} className="d-flex align-items-center justify-content-center">
+                                            <Link to={`/product/${product.slug}`} style={{ height: "180px", overflow: "hidden" }} className="d-flex align-items-center justify-content-center text-decoration-none">
                                                 <img
                                                     src={imgUrl}
                                                     alt={product.name}
-                                                    className="img-fluid rounded"
+                                                    className="img-fluid rounded hover-zoom"
                                                     style={{ maxHeight: "100%", objectFit: "contain" }}
                                                 />
-                                            </div>
+                                            </Link>
                                         </div>
 
                                         <div className="text-small mb-1 text-muted fw-bold">
                                             {product.category?.name}
                                         </div>
-                                        <h5 className="fs-6 mb-2">{product.name}</h5>
+                                        <h5 className="fs-6 mb-2">
+                                            <Link to={`/product/${product.slug}`} className="text-decoration-none text-dark hover-primary">
+                                                {product.name}
+                                            </Link>
+                                        </h5>
                                         <p className="text-muted small mb-2">{product.shortDescription}</p>
 
                                         {/* Variant selection */}

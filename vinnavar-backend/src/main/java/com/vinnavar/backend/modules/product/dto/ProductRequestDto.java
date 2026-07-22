@@ -17,6 +17,8 @@ public class ProductRequestDto {
     private String fullDescription;
     private String benefits;
     private String imageUrl;
+    private List<String> imageUrls;
+    private String videoUrl;
     private Long categoryId;
     private boolean featured;
     private boolean active = true;

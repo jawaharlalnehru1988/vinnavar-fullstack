@@ -1,21 +1,64 @@
-import { getImageUrl } from "../../services/api";
+import { API_BASE_URL, getImageUrl } from "../../services/api";
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { MagnifyingGlass } from 'react-loader-spinner'
+import { Link, useNavigate } from "react-router-dom";
+import { MagnifyingGlass } from 'react-loader-spinner';
+import Swal from 'sweetalert2';
 import ScrollToTop from "../ScrollToTop";
-const productimage1 = getImageUrl("/media/products/product-img-1.jpg");
-const productimage2 = getImageUrl("/media/products/product-img-2.jpg");
-const productimage3 = getImageUrl("/media/products/product-img-3.jpg");
-const productimage4 = getImageUrl("/media/products/product-img-4.jpg");
 
 const ShopCheckOut = () => {
-   // loading
+   const navigate = useNavigate();
    const [loaderStatus, setLoaderStatus] = useState(true);
-   useEffect(() => {
-     setTimeout(() => {
+   const [cart, setCart] = useState(null);
+
+   const fetchCart = async () => {
+     const cartId = localStorage.getItem("vinnavar_cart_id");
+     if (!cartId) {
+       setCart({ items: [], subtotal: 0 });
        setLoaderStatus(false);
-     }, 1500);
+       return;
+     }
+     try {
+       const res = await fetch(`${API_BASE_URL}/cart/${cartId}`);
+       if (res.ok) {
+         const data = await res.json();
+         setCart(data);
+       }
+     } catch (err) {
+       console.error("Error fetching checkout cart", err);
+     } finally {
+       setLoaderStatus(false);
+     }
+   };
+
+   useEffect(() => {
+     fetchCart();
    }, []);
+
+   const handlePlaceOrder = async (e) => {
+     e.preventDefault();
+     const cartId = localStorage.getItem("vinnavar_cart_id");
+     if (!cart || !cart.items || cart.items.length === 0) {
+       Swal.fire("Empty Cart", "Your cart has no items to order.", "warning");
+       return;
+     }
+
+     const orderNum = "VIN-" + Math.floor(100000 + Math.random() * 900000);
+
+     // Clear local cart
+     if (cartId) {
+       await fetch(`${API_BASE_URL}/cart/${cartId}`, { method: "DELETE" }).catch(() => {});
+     }
+
+     Swal.fire({
+       icon: "success",
+       title: "Order Placed Successfully! 🎉",
+       html: `Thank you for your order! Your Order ID is <strong>${orderNum}</strong>.<br/>We will deliver your pure organic items shortly.`,
+       confirmButtonText: "Return to Home",
+       confirmButtonColor: "#198754"
+     }).then(() => {
+       navigate("/");
+     });
+   };
  
   return (
     <div>
@@ -36,10 +79,7 @@ const ShopCheckOut = () => {
         </div>
       ) : (
         <>
-         <>
-            <ScrollToTop/>
-            </>
-      <>
+          <ScrollToTop />
         {/* section */}
         <section className="mb-lg-14 mb-8 mt-8">
           <div className="container">
@@ -1979,9 +2019,9 @@ const ShopCheckOut = () => {
                               >
                                 Prev
                               </Link>
-                              <Link to="#" className="btn btn-primary ms-2">
+                              <button type="button" className="btn btn-success ms-2 fw-bold" onClick={handlePlaceOrder}>
                                 Place Order
-                              </Link>
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -1992,141 +2032,68 @@ const ShopCheckOut = () => {
                 <div className="col-12 col-md-12 offset-lg-1 col-lg-4">
                   <div className="mt-4 mt-lg-0">
                     <div className="card shadow-sm">
-                      <h5 className="px-6 py-4 bg-transparent mb-0">
+                      <h5 className="px-4 py-3 bg-light border-bottom mb-0 fw-bold">
                         Order Details
                       </h5>
-                      <ul className="list-group list-group-flush">
-                        {/* list group item */}
-                        <li className="list-group-item px-4 py-3">
-                          <div className="row align-items-center">
-                            <div className="col-2 col-md-2">
-                              <img
-                                src={productimage1}
-                                alt="Ecommerce"
-                                className="img-fluid"
-                              />
+                      {(!cart || !cart.items || cart.items.length === 0) ? (
+                        <div className="p-4 text-center text-muted">
+                          <p className="mb-2">Your cart is empty.</p>
+                          <Link to="/Shop" className="btn btn-sm btn-outline-success">Browse Products</Link>
+                        </div>
+                      ) : (
+                        <ul className="list-group list-group-flush">
+                          {cart.items.map((item) => {
+                            const product = item.product || {};
+                            const variant = item.variant || {};
+                            const imgUrl = getImageUrl(product.imageUrl || product.imageUrls?.[0]);
+                            const itemTotal = item.unitPrice ? (item.unitPrice * item.quantity) : 0;
+
+                            return (
+                              <li key={item.id} className="list-group-item px-4 py-3">
+                                <div className="row align-items-center">
+                                  <div className="col-2">
+                                    <img
+                                      src={imgUrl}
+                                      alt={product.name}
+                                      className="img-fluid rounded border p-1"
+                                      style={{ maxHeight: "45px", objectFit: "contain" }}
+                                    />
+                                  </div>
+                                  <div className="col-6">
+                                    <h6 className="mb-0 small fw-bold">{product.name}</h6>
+                                    <span className="badge bg-light text-success border">
+                                      {variant.variantName}
+                                    </span>
+                                  </div>
+                                  <div className="col-1 text-center text-muted small">
+                                    x{item.quantity}
+                                  </div>
+                                  <div className="col-3 text-end">
+                                    <span className="fw-bold small">
+                                      ₹{itemTotal.toLocaleString('en-IN')}
+                                    </span>
+                                  </div>
+                                </div>
+                              </li>
+                            );
+                          })}
+
+                          <li className="list-group-item px-4 py-3 bg-light">
+                            <div className="d-flex align-items-center justify-content-between mb-2 small">
+                              <div>Item Subtotal</div>
+                              <div className="fw-bold">₹{(cart.subtotal || 0).toLocaleString('en-IN')}</div>
                             </div>
-                            <div className="col-5 col-md-5">
-                              <h6 className="mb-0">Haldiram's Sev Bhujia</h6>
-                              <span>
-                                <small className="text-muted">.98 / lb</small>
-                              </span>
+                            <div className="d-flex align-items-center justify-content-between mb-2 small">
+                              <div>Shipping & Delivery</div>
+                              <div className="text-success fw-bold">FREE</div>
                             </div>
-                            <div className="col-2 col-md-2 text-center text-muted">
-                              <span>1</span>
+                            <div className="d-flex align-items-center justify-content-between fw-bold pt-2 border-top fs-6">
+                              <div>Total Payable</div>
+                              <div className="text-success">₹{(cart.subtotal || 0).toLocaleString('en-IN')}</div>
                             </div>
-                            <div className="col-3 text-lg-end text-start text-md-end col-md-3">
-                              <span className="fw-bold">$5.00</span>
-                            </div>
-                          </div>
-                        </li>
-                        {/* list group item */}
-                        <li className="list-group-item px-4 py-3">
-                          <div className="row align-items-center">
-                            <div className="col-2 col-md-2">
-                              <img
-                                src={productimage2}
-                                alt="Ecommerce"
-                                className="img-fluid"
-                              />
-                            </div>
-                            <div className="col-5 col-md-5">
-                              <h6 className="mb-0">NutriChoice Digestive</h6>
-                              <span>
-                                <small className="text-muted">250g</small>
-                              </span>
-                            </div>
-                            <div className="col-2 col-md-2 text-center text-muted">
-                              <span>1</span>
-                            </div>
-                            <div className="col-3 text-lg-end text-start text-md-end col-md-3">
-                              <span className="fw-bold">$20.00</span>
-                              <div className="text-decoration-line-through text-muted small">
-                                $26.00
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-                        {/* list group item */}
-                        <li className="list-group-item px-4 py-3">
-                          <div className="row align-items-center">
-                            <div className="col-2 col-md-2">
-                              <img
-                                src={productimage3}
-                                alt="Ecommerce"
-                                className="img-fluid"
-                              />
-                            </div>
-                            <div className="col-5 col-md-5">
-                              <h6 className="mb-0">Cadbury 5 Star Chocolate</h6>
-                              <span>
-                                <small className="text-muted">1 kg</small>
-                              </span>
-                            </div>
-                            <div className="col-2 col-md-2 text-center text-muted">
-                              <span>1</span>
-                            </div>
-                            <div className="col-3 text-lg-end text-start text-md-end col-md-3">
-                              <span className="fw-bold">$15.00</span>
-                              <div className="text-decoration-line-through text-muted small">
-                                $20.00
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-                        {/* list group item */}
-                        <li className="list-group-item px-4 py-3">
-                          <div className="row align-items-center">
-                            <div className="col-2 col-md-2">
-                              <img
-                                src={productimage4}
-                                alt="Ecommerce"
-                                className="img-fluid"
-                              />
-                            </div>
-                            <div className="col-5 col-md-5">
-                              <h6 className="mb-0">Onion Flavour Potato</h6>
-                              <span>
-                                <small className="text-muted">250g</small>
-                              </span>
-                            </div>
-                            <div className="col-2 col-md-2 text-center text-muted">
-                              <span>1</span>
-                            </div>
-                            <div className="col-3 text-lg-end text-start text-md-end col-md-3">
-                              <span className="fw-bold">$15.00</span>
-                              <div className="text-decoration-line-through text-muted small">
-                                $20.00
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-                        {/* list group item */}
-                        <li className="list-group-item px-4 py-3">
-                          <div className="d-flex align-items-center justify-content-between   mb-2">
-                            <div>Item Subtotal</div>
-                            <div className="fw-bold">$70.00</div>
-                          </div>
-                          <div className="d-flex align-items-center justify-content-between  ">
-                            <div>
-                              Service Fee{" "}
-                              <i
-                                className="feather-icon icon-info text-muted"
-                                data-bs-toggle="tooltip"
-                                title="Default tooltip"
-                              />
-                            </div>
-                            <div className="fw-bold">$3.00</div>
-                          </div>
-                        </li>
-                        {/* list group item */}
-                        <li className="list-group-item px-4 py-3">
-                          <div className="d-flex align-items-center justify-content-between fw-bold">
-                            <div>Subtotal</div>
-                            <div>$73.00</div>
-                          </div>
-                        </li>
-                      </ul>
+                          </li>
+                        </ul>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -2134,8 +2101,6 @@ const ShopCheckOut = () => {
             </div>
           </div>
         </section>
-      </>
-      <>
         <div>
           {/* Modal */}
           <div
@@ -2336,10 +2301,9 @@ const ShopCheckOut = () => {
           </div>
         </div>
       </>
-     </>
     )}
-  </div>
     </div>
+  </div>
   );
 };
 

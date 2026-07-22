@@ -38,6 +38,9 @@ public class ProductController {
     @GetMapping("/products/{slug}")
     public ResponseEntity<Product> getProductBySlug(@PathVariable String slug) {
         Product product = productService.getProductBySlug(slug);
+        if (product == null && slug.matches("\\d+")) {
+            product = productService.getProductById(Long.parseLong(slug));
+        }
         if (product == null) {
             return ResponseEntity.notFound().build();
         }

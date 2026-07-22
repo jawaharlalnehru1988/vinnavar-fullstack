@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import { getImageUrl } from "../../services/api";
+import { API_BASE_URL, getImageUrl } from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-
-const BACKEND_URL = "http://localhost:8087";
 
 const AdminLogin = () => {
     const [username, setUsername] = useState("");
@@ -16,7 +14,7 @@ const AdminLogin = () => {
         setLoading(true);
 
         try {
-            const res = await fetch(`${BACKEND_URL}/api/v1/auth/login`, {
+            const res = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password })
