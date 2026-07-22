@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { getImageUrl } from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
@@ -69,8 +70,8 @@ const AdminLogin = () => {
             <div className="card shadow-lg border-0 rounded-4" style={{ width: "100%", maxWidth: "420px" }}>
                 <div className="card-body p-4 p-md-5">
                     <div className="text-center mb-4">
-                        <div className="fs-1 mb-1">🌿</div>
-                        <h3 className="fw-bold text-success mb-1">Vinnavar Organics</h3>
+                        <img src={getImageUrl("/media/site/vinnavar_logo.png")} alt="Vinnavar Logo" style={{ height: "70px", objectFit: "contain" }} className="mb-2" />
+                        <h4 className="fw-bold text-success mb-1">Vinnavar Organics</h4>
                         <p className="text-muted small">Admin Control Panel Login</p>
                     </div>
 

@@ -1,4 +1,5 @@
 import React from "react";
+import { getImageUrl } from "../../services/api";
 
 const AdminSidebar = ({ activeTab, setActiveTab, onLogout }) => {
     const navItems = [
@@ -12,7 +13,12 @@ const AdminSidebar = ({ activeTab, setActiveTab, onLogout }) => {
     return (
         <div className="d-flex flex-column bg-dark text-white p-3 min-vh-100 shadow" style={{ width: "280px", minWidth: "280px" }}>
             <div className="d-flex align-items-center mb-4 px-2 pb-3 border-bottom border-secondary">
-                <span className="fs-2 me-2">🌿</span>
+                <img
+                    src={getImageUrl("/media/site/vinnavar_logo.png")}
+                    alt="Vinnavar Logo"
+                    style={{ width: "45px", height: "45px", objectFit: "contain", borderRadius: "50%", backgroundColor: "#fff", padding: "2px" }}
+                    className="me-2 shadow-sm"
+                />
                 <div>
                     <h5 className="m-0 fw-bold text-success">Vinnavar Admin</h5>
                     <small className="text-muted">E-Commerce Management</small>

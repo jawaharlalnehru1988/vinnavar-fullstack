@@ -54,7 +54,7 @@ public class SiteSettingService {
 
         List<SiteSetting> defaults = List.of(
                 SiteSetting.builder().settingKey("store_name").settingValue("Vinnavar Organics").settingGroup("GENERAL").description("Brand Name").build(),
-                SiteSetting.builder().settingKey("store_logo").settingValue("/media/site/Grocerylogo.png").settingGroup("LOGO").description("Header Logo Image").build(),
+                SiteSetting.builder().settingKey("store_logo").settingValue("/media/site/vinnavar_logo.png").settingGroup("LOGO").description("Header Logo Image").build(),
                 SiteSetting.builder().settingKey("header_announcement").settingValue("Super Value Deals - 100% Pure Organic Staples").settingGroup("LABELS").description("Top Header Banner Text").build(),
                 SiteSetting.builder().settingKey("home_hero_1").settingValue("/media/site/slide-1.jpg").settingGroup("HERO_SLIDER").description("Home Slide 1 Image").build(),
                 SiteSetting.builder().settingKey("home_hero_2").settingValue("/media/site/slider-2.jpg").settingGroup("HERO_SLIDER").description("Home Slide 2 Image").build(),
