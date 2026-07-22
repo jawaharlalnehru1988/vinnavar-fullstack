@@ -165,40 +165,40 @@ public class ProductService {
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void seedInitialOrganicCatalog() {
-        if (categoryRepository.count() > 0) {
-            return;
+        // Core Categories
+        List<Category> allCategories = List.of(
+                Category.builder().name("Cold Pressed Oils").slug("cold-pressed-oils").description("100% Traditional Wood Pressed Oils (Marachekku Oil)").imageUrl("/media/site/category-atta-rice-dal.jpg").build(),
+                Category.builder().name("Organic Rice & Grains").slug("organic-rice-grains").description("Traditional unpolished native rice varieties").imageUrl("/media/site/category-atta-rice-dal.jpg").build(),
+                Category.builder().name("Natural Spices & Masala").slug("natural-spices-masala").description("Pure stone-ground spices and traditional blends").imageUrl("/media/site/category-instant-food.jpg").build(),
+                Category.builder().name("Natural Sweeteners").slug("natural-sweeteners").description("Unrefined Palm Jaggery, Country Sugar & Raw Honey").imageUrl("/media/site/category-snack-munchies.jpg").build(),
+                Category.builder().name("Dairy, Bread & Eggs").slug("dairy-bread-eggs").description("Fresh dairy, artisanal bread & eggs").imageUrl("/media/site/category-dairy-bread-eggs.jpg").build(),
+                Category.builder().name("Fruits & Vegetables").slug("fruits-vegetables").description("Farm fresh organic fruits and vegetables").imageUrl("/media/site/fruits-vegetables.png").build(),
+                Category.builder().name("Snack & Munchies").slug("snack-munchies").description("Healthy organic snacks and munchies").imageUrl("/media/site/category-snack-munchies.jpg").build(),
+                Category.builder().name("Bakery & Biscuits").slug("bakery-biscuits").description("Fresh baked goods and biscuits").imageUrl("/media/site/category-bakery-biscuits.jpg").build(),
+                Category.builder().name("Instant Food").slug("instant-food").description("Quick organic ready-to-cook meals").imageUrl("/media/site/category-instant-food.jpg").build(),
+                Category.builder().name("Tea, Coffee & Drinks").slug("tea-coffee-drinks").description("Organic herbal tea, coffee & healthy drinks").imageUrl("/media/site/category-tea-coffee-drinks.jpg").build(),
+                Category.builder().name("Cold Drinks & Juices").slug("cold-drinks-juices").description("Fresh cold pressed juices & beverages").imageUrl("/media/site/cold-drinks-juices.png").build(),
+                Category.builder().name("Chicken, Meat & Fish").slug("chicken-meat-fish").description("Fresh organic poultry, meat & seafood").imageUrl("/media/site/category-chicken-meat-fish.jpg").build(),
+                Category.builder().name("Baby Care").slug("baby-care").description("Gentle organic baby products").imageUrl("/media/site/category-baby-care.jpg").build(),
+                Category.builder().name("Cleaning Essentials").slug("cleaning-essentials").description("Eco-friendly home cleaning products").imageUrl("/media/site/category-cleaning-essentials.jpg").build(),
+                Category.builder().name("Pet Care").slug("pet-care").description("Healthy organic pet food & care").imageUrl("/media/site/category-pet-care.jpg").build(),
+                Category.builder().name("Atta, Rice & Dal").slug("atta-rice-dal").description("Essential organic staples & pulses").imageUrl("/media/site/category-atta-rice-dal.jpg").build()
+        );
+
+        for (Category cat : allCategories) {
+            if (categoryRepository.findBySlug(cat.getSlug()).isEmpty()) {
+                categoryRepository.save(cat);
+            }
         }
 
-        // Categories
-        Category oils = Category.builder()
-                .name("Cold Pressed Oils")
-                .slug("cold-pressed-oils")
-                .description("100% Traditional Wood Pressed Oils (Marachekku Oil)")
-                .imageUrl("/media/categories/oils.jpg")
-                .build();
+        Category oils = categoryRepository.findBySlug("cold-pressed-oils").orElse(allCategories.get(0));
+        Category rice = categoryRepository.findBySlug("organic-rice-grains").orElse(allCategories.get(1));
+        Category spices = categoryRepository.findBySlug("natural-spices-masala").orElse(allCategories.get(2));
+        Category sweeteners = categoryRepository.findBySlug("natural-sweeteners").orElse(allCategories.get(3));
 
-        Category rice = Category.builder()
-                .name("Organic Rice & Grains")
-                .slug("organic-rice-grains")
-                .description("Traditional unpolished native rice varieties")
-                .imageUrl("/media/categories/rice.jpg")
-                .build();
-
-        Category spices = Category.builder()
-                .name("Natural Spices & Masala")
-                .slug("natural-spices-masala")
-                .description("Pure stone-ground spices and traditional blends")
-                .imageUrl("/media/categories/spices.jpg")
-                .build();
-
-        Category sweeteners = Category.builder()
-                .name("Natural Sweeteners")
-                .slug("natural-sweeteners")
-                .description("Unrefined Palm Jaggery, Country Sugar & Raw Honey")
-                .imageUrl("/media/categories/sweeteners.jpg")
-                .build();
-
-        categoryRepository.saveAll(List.of(oils, rice, spices, sweeteners));
+        if (productRepository.count() > 0) {
+            return;
+        }
 
         // Sample Product 1: Groundnut Oil
         Product groundnutOil = Product.builder()
