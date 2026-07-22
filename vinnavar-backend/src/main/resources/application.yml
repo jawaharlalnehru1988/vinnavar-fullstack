@@ -1,0 +1,30 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: vinnavar-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/vinnavardb}
+    username: ${DB_USER:demoappuser}
+    password: ${DB_PASSWORD:demoapp123}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+app:
+  media:
+    dir: ${MEDIA_DIR:/var/www/vinnavar-fullstack/vinnavar-backend/media}
+    url-prefix: /media/
+
+logging:
+  level:
+    root: INFO
+    com.vinnavar.backend: DEBUG

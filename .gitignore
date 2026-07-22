@@ -1,0 +1,17 @@
+# Dependencies & build outputs
+**/node_modules/
+**/target/
+**/build/
+
+# Logs & temp files
+*.log
+**/app.log
+**/*.tmp
+
+# IDEs & System
+.DS_Store
+.idea/
+.vscode/
+
+# Media uploads (optional ignore if dynamic uploads shouldn't be tracked)
+# vinnavar-backend/media/
