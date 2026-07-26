@@ -19,7 +19,7 @@ const attaricedal = getImageUrl("/media/site/atta-rice-dal.png");
 const petcare = getImageUrl("/media/site/pet-care.png");
 const cleaningessentials = getImageUrl("/media/site/cleaning-essentials.png");
 const babycare = getImageUrl("/media/site/baby-care.png");
-const chickenmeatfish = getImageUrl("/media/site/chicken-meat-fish.png");
+const chickenmeatfish = getImageUrl("/media/site/snack-munchies.png");
 const colddrinksjuices = getImageUrl("/media/site/cold-drinks-juices.png");
 const teacoffeedrinks = getImageUrl("/media/site/tea-coffee-drinks.png");
 const instantfood = getImageUrl("/media/site/instant-food.png");
@@ -44,7 +44,7 @@ const refresh = getImageUrl("/media/site/refresh-cw.svg");
 const product1 = getImageUrl("/media/site/category-baby-care.jpg");
 const product2 = getImageUrl("/media/site/category-atta-rice-dal.jpg");
 const product3 = getImageUrl("/media/site/category-bakery-biscuits.jpg");
-const product4 = getImageUrl("/media/site/category-chicken-meat-fish.jpg");
+const product4 = getImageUrl("/media/site/category-snack-munchies.jpg");
 const product5 = getImageUrl("/media/site/category-cleaning-essentials.jpg");
 const product6 = getImageUrl("/media/site/category-dairy-bread-eggs.jpg");
 const product7 = getImageUrl("/media/site/category-instant-food.jpg");
@@ -243,14 +243,6 @@ const Home = () => {
         ) : (
           <>
             <>
-              <div className="scroll-to-top">
-                <button
-                  onClick={scrollToTop}
-                  className={`scroll-to-top-button ${isVisible ? "show" : ""}`}
-                >
-                  ↑
-                </button>
-              </div>
               <section className="hero-section">
                 <div className="container mt-8">
                   <div
@@ -268,19 +260,18 @@ const Home = () => {
                             backgroundPosition: "center",
                           }}
                         >
-                          <div className="ps-lg-12 py-lg-16 col-xxl-5 col-md-7 py-14 px-8 text-xs-center">
-                            <span className="badge text-bg-warning">
-                              Opening Sale Discount 50%
+                          <div className="ps-lg-12 py-lg-16 col-xxl-6 col-md-8 py-14 px-8 text-xs-center">
+                            <span className="badge bg-success px-3 py-2 rounded-pill fs-6">
+                              100% Pure Traditional Organic Rice
                             </span>
-                            <h2 className="text-dark display-5 fw-bold mt-4">
-                              SuperMarket Daily <br /> Fresh Grocery
+                            <h2 className="text-dark display-5 fw-bold mt-3" style={{ lineHeight: "1.2" }}>
+                              Traditional Tamil Nadu <br /> Organic Rice & Grains
                             </h2>
-                            <p className="lead">
-                              Introduced a new model for online grocery shopping
-                              and convenient home delivery.
+                            <p className="lead text-secondary mt-3">
+                              Ancient unpolished heirloom rice varieties — Mappillai Samba, Karuppu Kavuni, Seeraga Samba &amp; Poongar Rice.
                             </p>
-                            <Link to="#!" className="btn btn-dark mt-3">
-                              Shop Now{" "}
+                            <Link to="/Shop" className="btn btn-success mt-3 rounded-pill px-4 py-2.5 fw-semibold shadow-sm">
+                              Explore Organic Rice Range{" "}
                               <i className="feather-icon icon-arrow-right ms-1" />
                             </Link>
                           </div>
@@ -295,20 +286,18 @@ const Home = () => {
                             backgroundPosition: "center",
                           }}
                         >
-                          <div className="ps-lg-12 py-lg-16 col-xxl-5 col-md-7 py-14 px-8 text-xs-center">
-                            <span className="badge text-bg-warning">
-                              Free Shipping - orders over $100
+                          <div className="ps-lg-12 py-lg-16 col-xxl-6 col-md-8 py-14 px-8 text-xs-center">
+                            <span className="badge bg-warning text-dark px-3 py-2 rounded-pill fs-6">
+                              Wood Pressed Marachekku Oils
                             </span>
-                            <h2 className="text-dark display-5 fw-bold mt-4">
-                              Free Shipping on <br /> orders over{" "}
-                              <span className="text-primary">$100</span>
+                            <h2 className="text-dark display-5 fw-bold mt-3" style={{ lineHeight: "1.2" }}>
+                              Pure Unrefined <br /> Cold Pressed Oils
                             </h2>
-                            <p className="lead">
-                              Free Shipping to First-Time Customers Only, After
-                              promotions and discounts are applied.
+                            <p className="lead text-secondary mt-3">
+                              Extracted using traditional wooden mills without heat or chemical solvents. Retains natural flavor and wellness.
                             </p>
-                            <Link to="#!" className="btn btn-dark mt-3">
-                              Shop Now{" "}
+                            <Link to="/Shop" className="btn btn-success mt-3 rounded-pill px-4 py-2.5 fw-semibold shadow-sm">
+                              Shop Organic Oils{" "}
                               <i className="feather-icon icon-arrow-right ms-1" />
                             </Link>
                           </div>
@@ -607,125 +596,7 @@ const Home = () => {
               <OrganicCategorySlider selectedCategoryId={selectedCategoryId} onSelectCategory={setSelectedCategoryId} />
               <OrganicProductList categoryId={selectedCategoryId} />
             </>
-            <>
-              {/* cta section */}
-              <section>
-                <div
-                  className="container"
-                  style={{
-                    background: `url(${map})no-repeat`,
-                    backgroundSize: "cover",
-                  }}
-                >
-                  {/* <hr className="my-lg-14 my-8"> */}
-                  {/* row */}
-                  <div className="row align-items-center text-center justify-content-center">
-                    <div className=" col-lg-6 col-md-6 fade-in-left">
-                      <Slide direction="left">
-                        <div className="mb-6">
-                          <div className="mb-7">
-                            {/* heading */}
-                            <h1>Get the FreshCart app</h1>
-                            <h5 className="mb-0">
-                              We will send you a link, open it on your phone to
-                              download the app.
-                            </h5>
-                          </div>
-                          <div className="mb-5">
-                            {/* form check */}
-                            <div className="form-check form-check-inline">
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                name="flexRadioDefault"
-                                id="flexRadioDefault1"
-                              />
-                              <label
-                                className="form-check-label"
-                                htmlFor="flexRadioDefault1"
-                              >
-                                Email
-                              </label>
-                            </div>
-                            {/* form check */}
-                            <div className="form-check form-check-inline">
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                name="flexRadioDefault"
-                                id="flexRadioDefault2"
-                                defaultChecked
-                              />
-                              <label
-                                className="form-check-label"
-                                htmlFor="flexRadioDefault2"
-                              >
-                                Phone
-                              </label>
-                            </div>
-                            {/* form */}
-                            {/* <form className="row g-3 mt-2">
 
-          
-          <div className="col-6 ">
-            
-            <input type="text" className="form-control" placeholder="Phone">
-          </div>
-           
-          <div className="col-6">
-            <button type="submit" className="btn btn-primary mb-3">Share app link</button>
-          </div>
-        </form> */}
-                          </div>
-                          <div>
-                            {/* app */}
-                            {/* <small>Download app from</small> */}
-                            <ul className="list-inline mb-0 mt-2 ">
-                              {/* list item */}
-                              <li className="list-inline-item">
-                                {/* img */}
-                                <Link to="#!">
-                                  {" "}
-                                  <img
-                                    src={appstore}
-                                    alt="appstore"
-                                    style={{ width: 140 }}
-                                  />
-                                </Link>
-                              </li>
-                              <li className="list-inline-item">
-                                {/* img */}
-                                <Link to="#!">
-                                  {" "}
-                                  <img
-                                    src={googleplay}
-                                    alt="googleplay"
-                                    style={{ width: 140 }}
-                                  />
-                                </Link>
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </Slide>
-                    </div>
-                    <div className=" offset-lg-2 col-lg-4 col-md-6 fade-zoom">
-                      <Slide direction="right">
-                        <div className="text-lg-start">
-                          {/* img */}
-                          <img
-                            src={iphone}
-                            alt="iphone"
-                            className=" img-fluid"
-                          />
-                        </div>
-                      </Slide>
-                    </div>
-                  </div>
-                  {/* <hr className="my-lg-14 my-8"> */}
-                </div>
-              </section>
-            </>
             <>
               <section>
                 <div className="container">
@@ -1496,7 +1367,7 @@ const Home = () => {
                         alt="product"
                       />
                        <h6 class="card-title">
-                       <div>Chicken, Meat &amp; Fish</div>
+                       <div>Cold Pressed Oils</div>
                       </h6>
                     </div>
                   </div>

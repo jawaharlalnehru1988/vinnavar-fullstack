@@ -195,7 +195,6 @@ public class ProductService {
                 Category.builder().name("Instant Food").slug("instant-food").description("Quick organic ready-to-cook meals").imageUrl("/media/site/category-instant-food.jpg").build(),
                 Category.builder().name("Tea, Coffee & Drinks").slug("tea-coffee-drinks").description("Organic herbal tea, coffee & healthy drinks").imageUrl("/media/site/category-tea-coffee-drinks.jpg").build(),
                 Category.builder().name("Cold Drinks & Juices").slug("cold-drinks-juices").description("Fresh cold pressed juices & beverages").imageUrl("/media/site/cold-drinks-juices.png").build(),
-                Category.builder().name("Chicken, Meat & Fish").slug("chicken-meat-fish").description("Fresh organic poultry, meat & seafood").imageUrl("/media/site/category-chicken-meat-fish.jpg").build(),
                 Category.builder().name("Baby Care").slug("baby-care").description("Gentle organic baby products").imageUrl("/media/site/category-baby-care.jpg").build(),
                 Category.builder().name("Cleaning Essentials").slug("cleaning-essentials").description("Eco-friendly home cleaning products").imageUrl("/media/site/category-cleaning-essentials.jpg").build(),
                 Category.builder().name("Pet Care").slug("pet-care").description("Healthy organic pet food & care").imageUrl("/media/site/category-pet-care.jpg").build(),

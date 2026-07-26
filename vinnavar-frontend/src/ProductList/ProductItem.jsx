@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 const product1 = getImageUrl("/media/site/category-baby-care.jpg");
 const product2 = getImageUrl("/media/site/category-atta-rice-dal.jpg");
 const product3 = getImageUrl("/media/site/category-bakery-biscuits.jpg");
-const product4 = getImageUrl("/media/site/category-chicken-meat-fish.jpg");
+const product4 = getImageUrl("/media/site/category-snack-munchies.jpg");
 const product5 = getImageUrl("/media/site/category-cleaning-essentials.jpg");
 const product6 = getImageUrl("/media/site/category-dairy-bread-eggs.jpg");
 const product7 = getImageUrl("/media/site/category-instant-food.jpg");
