@@ -125,3 +125,56 @@ export const uploadImageFile = async (file) => {
     return data.imageUrl;
 };
 
+// Wishlist API Services
+export const getWishlistId = () => {
+    let wishlistId = localStorage.getItem("vinnavar_wishlist_id");
+    if (!wishlistId) {
+        wishlistId = "wishlist_" + Math.random().toString(36).substring(2, 11);
+        localStorage.setItem("vinnavar_wishlist_id", wishlistId);
+    }
+    return wishlistId;
+};
+
+export const fetchWishlist = async (wishlistId = getWishlistId()) => {
+    const res = await fetch(`${API_BASE_URL}/wishlist/${wishlistId}`);
+    if (!res.ok) return { wishlistId, items: [], totalItemCount: 0 };
+    return res.json();
+};
+
+export const addToWishlist = async (productId, variantId = null) => {
+    const wishlistId = getWishlistId();
+    const res = await fetch(`${API_BASE_URL}/wishlist/items`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wishlistId, productId, variantId })
+    });
+    if (!res.ok) throw new Error("Failed to add item to wishlist");
+    return res.json();
+};
+
+export const toggleWishlist = async (productId, variantId = null) => {
+    const wishlistId = getWishlistId();
+    const res = await fetch(`${API_BASE_URL}/wishlist/toggle`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wishlistId, productId, variantId })
+    });
+    if (!res.ok) throw new Error("Failed to toggle wishlist item");
+    return res.json();
+};
+
+export const removeFromWishlist = async (itemId) => {
+    const res = await fetch(`${API_BASE_URL}/wishlist/items/${itemId}`, {
+        method: "DELETE"
+    });
+    return res.ok;
+};
+
+export const clearWishlist = async (wishlistId = getWishlistId()) => {
+    const res = await fetch(`${API_BASE_URL}/wishlist/${wishlistId}`, {
+        method: "DELETE"
+    });
+    return res.ok;
+};
+
+

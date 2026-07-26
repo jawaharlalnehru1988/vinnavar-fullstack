@@ -13,6 +13,7 @@ const productimage5 = getImageUrl("/media/products/product-img-5.jpg");
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [cart, setCart] = useState(null);
+  const [wishlistCount, setWishlistCount] = useState(0);
 
   const fetchCart = async () => {
     const cartId = localStorage.getItem("vinnavar_cart_id");
@@ -31,9 +32,30 @@ const Header = () => {
     }
   };
 
+  const fetchWishlistCount = async () => {
+    const wishlistId = localStorage.getItem("vinnavar_wishlist_id");
+    if (!wishlistId) {
+      setWishlistCount(0);
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE_URL}/wishlist/${wishlistId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setWishlistCount(data.totalItemCount || (data.items ? data.items.length : 0));
+      }
+    } catch (err) {
+      console.error("Error fetching wishlist in header", err);
+    }
+  };
+
   useEffect(() => {
     fetchCart();
-    const interval = setInterval(fetchCart, 3000);
+    fetchWishlistCount();
+    const interval = setInterval(() => {
+      fetchCart();
+      fetchWishlistCount();
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -62,7 +84,7 @@ const Header = () => {
                     >
                       <span style={{ fontSize: '16px', lineHeight: '1' }}>❤️</span>
                       <span className="small">Wishlist</span>
-                      <span className="badge bg-danger rounded-pill ms-1" style={{ fontSize: '10px' }}>5</span>
+                      <span className="badge bg-danger rounded-pill ms-1" style={{ fontSize: '10px' }}>{wishlistCount}</span>
                     </Link>
 
                     {/* Account / Login Button */}
@@ -132,7 +154,7 @@ const Header = () => {
                 >
                   <span style={{ fontSize: '16px', lineHeight: '1' }}>❤️</span>
                   <span className="small">Wishlist</span>
-                  <span className="badge bg-danger rounded-pill ms-1" style={{ fontSize: '10px' }}>5</span>
+                  <span className="badge bg-danger rounded-pill ms-1" style={{ fontSize: '10px' }}>{wishlistCount}</span>
                 </Link>
 
                 {/* Account / Login Button */}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
-import { API_BASE_URL, fetchProducts, getImageUrl } from "../services/api";
+import { API_BASE_URL, fetchProducts, getImageUrl, toggleWishlist } from "../services/api";
 
 const OrganicProductList = ({ categoryId }) => {
     const [products, setProducts] = useState([]);
@@ -82,6 +82,22 @@ const OrganicProductList = ({ categoryId }) => {
         }
     };
 
+    const handleToggleWishlist = async (product) => {
+        const variant = selectedVariants[product.id] || product.variants?.[0];
+        try {
+            await toggleWishlist(product.id, variant?.id);
+            Swal.fire({
+                icon: "success",
+                title: "Wishlist Updated",
+                text: `${product.name} updated in your wishlist!`,
+                timer: 1200,
+                showConfirmButton: false
+            });
+        } catch (err) {
+            Swal.fire("Wishlist Error", "Could not update wishlist.", "error");
+        }
+    };
+
     if (loading) {
         return <div className="text-center my-5">Loading Organic Products...</div>;
     }
@@ -114,6 +130,14 @@ const OrganicProductList = ({ categoryId }) => {
                                                     <span className="badge bg-success">Organic Best Seller</span>
                                                 </div>
                                             )}
+                                            <button
+                                                className="btn btn-sm btn-light rounded-circle shadow-sm position-absolute top-0 end-0 me-1 mt-1 p-2 border"
+                                                title="Add to Wishlist"
+                                                onClick={() => handleToggleWishlist(product)}
+                                                style={{ width: "34px", height: "34px", display: "flex", alignItems: "center", justifyContent: "center" }}
+                                            >
+                                                <i className="far fa-heart text-danger"></i>
+                                            </button>
                                             <Link to={`/product/${product.slug}`} style={{ height: "180px", overflow: "hidden" }} className="d-flex align-items-center justify-content-center text-decoration-none">
                                                 <img
                                                     src={imgUrl}
