@@ -2,7 +2,22 @@ import { API_BASE_URL, getImageUrl } from "../../services/api";
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
-const AdminSiteAssets = () => {
+const formatGroupLabel = (group) => {
+    if (!group) return "General";
+    if (group === "ALL") return "All Site Assets";
+    if (group === "GENERAL") return "General Assets";
+    if (group === "HERO_SLIDER") return "Hero Sliders";
+    if (group === "PROMO_BANNER") return "Promo Banners";
+    if (group === "LABELS") return "Labels & Banners";
+    if (group === "LOGO") return "Store Logos";
+    if (group === "FOOTER") return "Footer & Contact";
+    return group
+        .split("_")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(" ");
+};
+
+const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
     const [settings, setSettings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [uploadingKey, setUploadingKey] = useState(null);
@@ -10,7 +25,12 @@ const AdminSiteAssets = () => {
 
     // New Asset Modal
     const [showNewAssetModal, setShowNewAssetModal] = useState(false);
-    const [newAssetForm, setNewAssetForm] = useState({ key: "", value: "", group: "GENERAL", description: "" });
+    const [newAssetForm, setNewAssetForm] = useState({
+        key: "",
+        value: "",
+        group: selectedAssetGroup !== "ALL" ? selectedAssetGroup : "GENERAL",
+        description: ""
+    });
 
     const loadSettings = async () => {
         setLoading(true);
@@ -28,6 +48,11 @@ const AdminSiteAssets = () => {
                     };
                 });
                 setEditedData(initialMap);
+
+                if (onSettingsLoaded) {
+                    const uniqueGroups = Array.from(new Set(data.map((s) => s.settingGroup).filter(Boolean)));
+                    onSettingsLoaded(uniqueGroups);
+                }
             }
         } catch (err) {
             console.error("Failed to load site settings", err);
@@ -39,6 +64,12 @@ const AdminSiteAssets = () => {
     useEffect(() => {
         loadSettings();
     }, []);
+
+    useEffect(() => {
+        if (selectedAssetGroup !== "ALL") {
+            setNewAssetForm((prev) => ({ ...prev, group: selectedAssetGroup }));
+        }
+    }, [selectedAssetGroup]);
 
     const handleInputChange = (key, field, val) => {
         setEditedData((prev) => ({
@@ -119,7 +150,7 @@ const AdminSiteAssets = () => {
             if (res.ok) {
                 Swal.fire({ icon: "success", title: "New Asset Registered", timer: 1500, showConfirmButton: false });
                 setShowNewAssetModal(false);
-                setNewAssetForm({ key: "", value: "", group: "GENERAL", description: "" });
+                setNewAssetForm({ key: "", value: "", group: selectedAssetGroup !== "ALL" ? selectedAssetGroup : "GENERAL", description: "" });
                 loadSettings();
             }
         } catch (err) {
@@ -129,16 +160,28 @@ const AdminSiteAssets = () => {
 
     if (loading) return <div className="text-center my-5 fs-4">Loading Site Assets Manager...</div>;
 
+    const filteredSettings = selectedAssetGroup && selectedAssetGroup !== "ALL"
+        ? settings.filter((s) => (s.settingGroup || "GENERAL").toUpperCase() === selectedAssetGroup.toUpperCase())
+        : settings;
+
     return (
         <div>
-            <div className="d-flex justify-content-between align-items-center mb-4">
+            {/* Main Header & Actions */}
+            <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                 <div>
-                    <h3 className="fw-bold m-0 text-success">🖼️ Site Assets & Images Metadata CRUD</h3>
-                    <p className="text-muted small m-0">Edit store logos, hero sliders, promo banners, descriptions, and labels dynamically from the backend.</p>
+                    <div className="d-flex align-items-center gap-2">
+                        <h3 className="fw-bold m-0 text-success">🖼️ Site Assets & Images</h3>
+                        <span className="badge bg-warning text-dark font-monospace fs-6 px-3 py-1 rounded-pill">
+                            Category: {formatGroupLabel(selectedAssetGroup)} ({filteredSettings.length})
+                        </span>
+                    </div>
+                    <p className="text-muted small m-0 mt-1">
+                        Category navigation is selected via sidebar nested sub-tabs. Edit asset details, banners, logos, and images.
+                    </p>
                 </div>
                 <div className="d-flex gap-2">
                     <button className="btn btn-success fw-bold" onClick={() => setShowNewAssetModal(true)}>
-                        + Register New Asset
+                        + Register Asset under {formatGroupLabel(selectedAssetGroup)}
                     </button>
                     <button className="btn btn-outline-success fw-bold" onClick={loadSettings}>
                         🔄 Refresh
@@ -146,92 +189,93 @@ const AdminSiteAssets = () => {
                 </div>
             </div>
 
-            <div className="row g-4">
-                {settings.map((s) => {
-                    const current = editedData[s.settingKey] || { value: s.settingValue, description: s.description, group: s.settingGroup };
-                    const isImage = current.value?.startsWith("/media/") || current.value?.endsWith(".png") || current.value?.endsWith(".jpg") || current.value?.endsWith(".svg");
-                    const imgUrl = isImage ? getImageUrl(current.value) : null;
+            {filteredSettings.length === 0 ? (
+                <div className="card shadow-sm border-0 text-center p-5 my-4">
+                    <h5 className="text-muted fw-normal mb-3">No assets registered under category <b>{formatGroupLabel(selectedAssetGroup)}</b></h5>
+                    <div>
+                        <button className="btn btn-success" onClick={() => setShowNewAssetModal(true)}>
+                            + Add First Asset to {formatGroupLabel(selectedAssetGroup)}
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <div className="row g-4">
+                    {filteredSettings.map((s) => {
+                        const current = editedData[s.settingKey] || { value: s.settingValue, description: s.description, group: s.settingGroup };
+                        const isImage = current.value?.startsWith("/media/") || current.value?.endsWith(".png") || current.value?.endsWith(".jpg") || current.value?.endsWith(".svg") || current.value?.endsWith(".webp");
+                        const imgUrl = isImage ? getImageUrl(current.value) : null;
 
-                    return (
-                        <div key={s.id} className="col-md-6">
-                            <div className="card shadow-sm border-0 h-100">
-                                <div className="card-body d-flex flex-column justify-content-between">
-                                    <div>
-                                        <div className="d-flex justify-content-between align-items-center mb-2">
-                                            <span className="badge bg-success">{current.group || "GENERAL"}</span>
-                                            <span className="text-muted small font-monospace">{s.settingKey}</span>
-                                        </div>
-
-                                        {/* Metadata Editor Fields */}
-                                        <div className="mb-2">
-                                            <label className="form-label small fw-bold text-muted mb-0">Asset Title / Description:</label>
-                                            <input
-                                                type="text"
-                                                className="form-control form-control-sm fw-bold"
-                                                value={current.description || ""}
-                                                onChange={(e) => handleInputChange(s.settingKey, "description", e.target.value)}
-                                            />
-                                        </div>
-
-                                        <div className="mb-2">
-                                            <label className="form-label small fw-bold text-muted mb-0">Asset Category Group:</label>
-                                            <input
-                                                type="text"
-                                                className="form-control form-control-sm"
-                                                value={current.group || ""}
-                                                onChange={(e) => handleInputChange(s.settingKey, "group", e.target.value)}
-                                            />
-                                        </div>
-
-                                        {isImage && imgUrl && (
-                                            <div className="my-3 text-center bg-light p-2 rounded border" style={{ maxHeight: "140px", overflow: "hidden" }}>
-                                                <img
-                                                    src={imgUrl}
-                                                    alt={current.description}
-                                                    style={{ maxHeight: "120px", maxWidth: "100%", objectFit: "contain" }}
-                                                    className="rounded"
-                                                />
+                        return (
+                            <div key={s.id} className="col-md-6">
+                                <div className="card shadow-sm border-0 h-100">
+                                    <div className="card-body d-flex flex-column justify-content-between">
+                                        <div>
+                                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                                <span className="badge bg-success px-3 py-2 fs-6">{current.group || "GENERAL"}</span>
+                                                <span className="text-muted small font-monospace bg-light px-2 py-1 rounded border">{s.settingKey}</span>
                                             </div>
-                                        )}
-                                    </div>
 
-                                    <div className="mt-3">
-                                        {isImage && (
-                                            <div className="mb-2">
-                                                <label className="form-label small fw-bold text-muted mb-0">Upload Replacement Image File:</label>
+                                            {/* Metadata Title / Description */}
+                                            <div className="mb-3">
+                                                <label className="form-label small fw-bold text-muted mb-1">Asset Title / Description:</label>
                                                 <input
-                                                    type="file"
-                                                    className="form-control form-control-sm"
-                                                    accept="image/*"
-                                                    onChange={(e) => handleAssetFileUpload(s.settingKey, e.target.files[0])}
+                                                    type="text"
+                                                    className="form-control form-control-sm fw-bold"
+                                                    value={current.description || ""}
+                                                    onChange={(e) => handleInputChange(s.settingKey, "description", e.target.value)}
                                                 />
-                                                {uploadingKey === s.settingKey && <div className="small text-primary mt-1">Uploading file...</div>}
                                             </div>
-                                        )}
 
-                                        <div className="mb-3">
-                                            <label className="form-label small fw-bold text-muted mb-0">Asset Value / URL:</label>
-                                            <input
-                                                type="text"
-                                                className="form-control form-control-sm font-monospace"
-                                                value={current.value || ""}
-                                                onChange={(e) => handleInputChange(s.settingKey, "value", e.target.value)}
-                                            />
+                                            {isImage && imgUrl && (
+                                                <div className="my-3 text-center bg-light p-3 rounded border" style={{ maxHeight: "150px", overflow: "hidden" }}>
+                                                    <img
+                                                        src={imgUrl}
+                                                        alt={current.description}
+                                                        style={{ maxHeight: "125px", maxWidth: "100%", objectFit: "contain" }}
+                                                        className="rounded"
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
 
-                                        <button
-                                            className="btn btn-success btn-sm w-100 fw-bold"
-                                            onClick={() => handleSaveFullMetadata(s.settingKey)}
-                                        >
-                                            💾 Save Metadata & Image Changes
-                                        </button>
+                                        <div className="mt-3">
+                                            {isImage && (
+                                                <div className="mb-3">
+                                                    <label className="form-label small fw-bold text-muted mb-1">Upload Replacement Image File:</label>
+                                                    <input
+                                                        type="file"
+                                                        className="form-control form-control-sm"
+                                                        accept="image/*"
+                                                        onChange={(e) => handleAssetFileUpload(s.settingKey, e.target.files[0])}
+                                                    />
+                                                    {uploadingKey === s.settingKey && <div className="small text-primary mt-1">Uploading file...</div>}
+                                                </div>
+                                            )}
+
+                                            <div className="mb-3">
+                                                <label className="form-label small fw-bold text-muted mb-1">Asset Value / URL:</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-control form-control-sm font-monospace"
+                                                    value={current.value || ""}
+                                                    onChange={(e) => handleInputChange(s.settingKey, "value", e.target.value)}
+                                                />
+                                            </div>
+
+                                            <button
+                                                className="btn btn-success btn-sm w-100 fw-bold py-2"
+                                                onClick={() => handleSaveFullMetadata(s.settingKey)}
+                                            >
+                                                💾 Save Metadata & Image Changes
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })}
-            </div>
+                        );
+                    })}
+                </div>
+            )}
 
             {/* MODAL: REGISTER NEW ASSET */}
             {showNewAssetModal && (
@@ -266,13 +310,13 @@ const AdminSiteAssets = () => {
                                         />
                                     </div>
                                     <div className="mb-3">
-                                        <label className="form-label fw-bold">Asset Group</label>
+                                        <label className="form-label fw-bold">Asset Group / Category</label>
                                         <input
                                             type="text"
                                             className="form-control"
                                             placeholder="e.g. LOGO, HERO_SLIDER, PROMO_BANNER, LABELS"
                                             value={newAssetForm.group}
-                                            onChange={(e) => setNewAssetForm({ ...newAssetForm, group: e.target.value })}
+                                            onChange={(e) => setNewAssetForm({ ...newAssetForm, group: e.target.value.toUpperCase() })}
                                         />
                                     </div>
                                     <div className="mb-3">

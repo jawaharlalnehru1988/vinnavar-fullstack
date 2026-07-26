@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 import Header from './Component/Header';
@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import AboutUs from "./pages/About/AboutUs";
 import Blog from "./pages/About/Blog";
 import BlogCategory from "./pages/About/BlogCategory";
+import BlogSingle from "./pages/About/BlogSingle";
 import Contact from "./pages/About/Contact";
 import Shop from "./pages/Shop/Shop";
 import ShopGridCol3 from "./pages/Shop/ShopGridCol3";
@@ -42,12 +43,21 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 
 import ProductDetails from "./pages/Shop/ProductDetails";
 
+const ScrollToTopOnNavigation = () => {
+  const { pathname, search } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname, search]);
+  return null;
+};
+
 const AppContent = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
 
   return (
     <div>
+      <ScrollToTopOnNavigation />
       {!isAdminRoute && <Header />}
       <Routes>
         <Route path="/" element={<Home />} />
@@ -80,6 +90,8 @@ const AppContent = () => {
         <Route path="/MyAccountSignUp" element={<MyAccountSignUp />} />
         {/* About pages */}
         <Route path="/Blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<BlogSingle />} />
+        <Route path="/BlogSingle" element={<BlogSingle />} />
         <Route path="/BlogCategory" element={<BlogCategory />} />
         <Route path="/Contact" element={<Contact />} />
         <Route path="/AboutUs" element={<AboutUs />} />

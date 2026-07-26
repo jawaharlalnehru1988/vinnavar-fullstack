@@ -49,3 +49,79 @@ export const fetchSettings = async () => {
     if (!res.ok) return {};
     return res.json();
 };
+
+// Blog API Services
+export const fetchBlogs = async () => {
+    const res = await fetch(`${API_BASE_URL}/blogs`);
+    if (!res.ok) return [];
+    return res.json();
+};
+
+export const fetchFeaturedBlog = async () => {
+    const res = await fetch(`${API_BASE_URL}/blogs/featured`);
+    if (!res.ok) return null;
+    return res.json();
+};
+
+export const fetchBlogCategories = async () => {
+    const res = await fetch(`${API_BASE_URL}/blogs/categories`);
+    if (!res.ok) return [];
+    return res.json();
+};
+
+export const fetchBlogsByCategory = async (category) => {
+    const res = await fetch(`${API_BASE_URL}/blogs/category/${encodeURIComponent(category)}`);
+    if (!res.ok) return [];
+    return res.json();
+};
+
+export const fetchBlogBySlug = async (slug) => {
+    const res = await fetch(`${API_BASE_URL}/blogs/${slug}`);
+    if (!res.ok) return null;
+    return res.json();
+};
+
+// Admin Blog Management API Services
+export const fetchAdminBlogs = async () => {
+    const res = await fetch(`${API_BASE_URL}/admin/blogs`);
+    if (!res.ok) return [];
+    return res.json();
+};
+
+export const createBlog = async (blogData) => {
+    const res = await fetch(`${API_BASE_URL}/admin/blogs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(blogData)
+    });
+    return res.json();
+};
+
+export const updateBlog = async (id, blogData) => {
+    const res = await fetch(`${API_BASE_URL}/admin/blogs/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(blogData)
+    });
+    return res.json();
+};
+
+export const deleteBlog = async (id) => {
+    const res = await fetch(`${API_BASE_URL}/admin/blogs/${id}`, {
+        method: "DELETE"
+    });
+    return res.ok;
+};
+
+export const uploadImageFile = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(`${API_BASE_URL}/admin/settings/upload-asset`, {
+        method: "POST",
+        body: formData
+    });
+    if (!res.ok) throw new Error("Failed to upload image");
+    const data = await res.json();
+    return data.imageUrl;
+};
+

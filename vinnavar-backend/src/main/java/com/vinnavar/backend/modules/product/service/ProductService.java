@@ -284,7 +284,7 @@ public class ProductService {
         kavuni.setFullDescription("Extracted from premium quality organic Karuppu Kavuni black rice. Rich in antioxidants, iron, protein, and dietary fiber. Known as the royal rice of Chola Kings.");
         kavuni.setBenefits("Rich in Antioxidants, High in Fiber, Gluten-Free, Supports Weight Management, Good source of Protein & Iron.");
         kavuni.setImageUrl("/media/vinnavarwebsitecreation/1.webp");
-        kavuni.setImageUrls(List.of(
+        kavuni.setImageUrls(new ArrayList<>(List.of(
                 "/media/vinnavarwebsitecreation/1.webp",
                 "/media/vinnavarwebsitecreation/2.webp",
                 "/media/vinnavarwebsitecreation/3.webp",
@@ -295,7 +295,7 @@ public class ProductService {
                 "/media/vinnavarwebsitecreation/8.webp",
                 "/media/vinnavarwebsitecreation/9.webp",
                 "/media/vinnavarwebsitecreation/10.webp"
-        ));
+        )));
         kavuni.setCategory(riceCategory);
         kavuni.setFeatured(true);
         kavuni.setActive(true);
@@ -342,7 +342,7 @@ public class ProductService {
         kolam.setFullDescription("Premium HMT Kolam Raw Rice known for easy digestibility, soft texture, and delicate natural aroma.");
         kolam.setBenefits("Easily digestible, rich in carbohydrates, gluten-free, 100% natural and unpolished.");
         kolam.setImageUrl("/media/vinnavarwebsitecreation/1_1.webp");
-        kolam.setImageUrls(List.of(
+        kolam.setImageUrls(new ArrayList<>(List.of(
                 "/media/vinnavarwebsitecreation/1_1.webp",
                 "/media/vinnavarwebsitecreation/2_1.webp",
                 "/media/vinnavarwebsitecreation/3_1.webp",
@@ -354,7 +354,7 @@ public class ProductService {
                 "/media/vinnavarwebsitecreation/9_1.webp",
                 "/media/vinnavarwebsitecreation/10_1.webp",
                 "/media/vinnavarwebsitecreation/11.webp"
-        ));
+        )));
         kolam.setCategory(riceCategory);
         kolam.setFeatured(true);
         kolam.setActive(true);

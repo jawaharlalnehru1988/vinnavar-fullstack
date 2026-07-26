@@ -1,13 +1,42 @@
 import { API_BASE_URL, getImageUrl } from "../../services/api";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import AdminSidebar from "./AdminSidebar";
 import AdminSiteAssets from "./AdminSiteAssets";
+import AdminBlog from "./AdminBlog";
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState("overview");
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Persist activeTab across refresh via URL query parameter & localStorage
+    const getInitialTab = () => {
+        const tabFromUrl = searchParams.get("tab");
+        if (tabFromUrl) return tabFromUrl;
+        const storedTab = localStorage.getItem("admin_active_tab");
+        if (storedTab) return storedTab;
+        return "overview";
+    };
+
+    const [activeTab, setActiveTabState] = useState(getInitialTab);
+    const [selectedAssetGroup, setSelectedAssetGroup] = useState("ALL");
+    const [assetGroups, setAssetGroups] = useState(["GENERAL", "HERO_SLIDER", "PROMO_BANNER", "LABELS", "LOGO", "FOOTER"]);
+
+    const setActiveTab = (tab) => {
+        setActiveTabState(tab);
+        localStorage.setItem("admin_active_tab", tab);
+        setSearchParams({ tab }, { replace: true });
+    };
+
+    // Keep state in sync if browser back/forward or URL changes
+    useEffect(() => {
+        const tabFromUrl = searchParams.get("tab");
+        if (tabFromUrl && tabFromUrl !== activeTab) {
+            setActiveTabState(tabFromUrl);
+            localStorage.setItem("admin_active_tab", tabFromUrl);
+        }
+    }, [searchParams]);
 
     // Data States
     const [products, setProducts] = useState([]);
@@ -510,7 +539,14 @@ const AdminDashboard = () => {
     return (
         <div className="d-flex min-vh-100 bg-light">
             {/* Left Sidebar */}
-            <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
+            <AdminSidebar
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                selectedAssetGroup={selectedAssetGroup}
+                setSelectedAssetGroup={setSelectedAssetGroup}
+                assetGroups={assetGroups}
+                onLogout={handleLogout}
+            />
 
             {/* Main Content Area */}
             <div className="flex-grow-1 p-4" style={{ overflowY: "auto" }}>
@@ -551,11 +587,15 @@ const AdminDashboard = () => {
                             <div className="d-flex gap-3">
                                 <button className="btn btn-success" onClick={() => setActiveTab("products")}>Manage Products</button>
                                 <button className="btn btn-outline-success" onClick={() => setActiveTab("assets")}>Manage Site Assets & Logos</button>
+                                <button className="btn btn-outline-success" onClick={() => setActiveTab("blogs")}>Manage Blog Articles</button>
                                 <button className="btn btn-outline-primary" onClick={() => setActiveTab("orders")}>Process Customer Orders</button>
                             </div>
                         </div>
                     </div>
                 )}
+
+                {/* BLOGS SECTION */}
+                {activeTab === "blogs" && <AdminBlog />}
 
                 {/* PRODUCTS SECTION */}
                 {activeTab === "products" && (
@@ -682,7 +722,16 @@ const AdminDashboard = () => {
                 )}
 
                 {/* SITE ASSETS MANAGER SECTION */}
-                {activeTab === "assets" && <AdminSiteAssets />}
+                {activeTab === "assets" && (
+                    <AdminSiteAssets
+                        selectedAssetGroup={selectedAssetGroup}
+                        onSettingsLoaded={(uniqueGroups) => {
+                            if (uniqueGroups && uniqueGroups.length > 0) {
+                                setAssetGroups((prev) => Array.from(new Set([...prev, ...uniqueGroups])));
+                            }
+                        }}
+                    />
+                )}
 
                 {/* ORDERS SECTION */}
                 {activeTab === "orders" && (

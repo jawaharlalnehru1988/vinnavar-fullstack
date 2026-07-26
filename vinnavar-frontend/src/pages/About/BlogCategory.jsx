@@ -1,528 +1,150 @@
-import { getImageUrl } from "../../services/api";
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { MagnifyingGlass } from "react-loader-spinner";
 import { Zoom } from "react-awesome-reveal";
 import ScrollToTop from "../ScrollToTop";
-const blog1 = getImageUrl("/media/site/blog-img-1.jpg");
-const blog2 = getImageUrl("/media/site/blog-img-2.jpg");
-const blog3 = getImageUrl("/media/site/blog-img-3.jpg");
-const blog4 = getImageUrl("/media/site/blog-img-4.jpg");
-const blog5 = getImageUrl("/media/site/blog-img-5.jpg");
-const blog6 = getImageUrl("/media/site/blog-img-6.jpg");
-const blog7 = getImageUrl("/media/site/blog-img-7.jpg");
-const blog8 = getImageUrl("/media/site/blog-img-8.jpg");
-const blog9 = getImageUrl("/media/site/blog-img-9.jpg");
+import { fetchBlogsByCategory, fetchBlogs, fetchBlogCategories, getImageUrl } from "../../services/api";
 
 const BlogCategory = () => {
-  // loading
   const [loaderStatus, setLoaderStatus] = useState(true);
+  const [blogs, setBlogs] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const location = useLocation();
+
+  const queryParams = new URLSearchParams(location.search);
+  const selectedCategory = queryParams.get("category") || "Recipes";
+
   useEffect(() => {
-    setTimeout(() => {
-      setLoaderStatus(false);
-    }, 1500);
-  }, []);
+    const loadCategoryBlogs = async () => {
+      try {
+        setLoaderStatus(true);
+        const [catBlogs, catList] = await Promise.all([
+          selectedCategory === "All" ? fetchBlogs() : fetchBlogsByCategory(selectedCategory),
+          fetchBlogCategories()
+        ]);
+        setBlogs(catBlogs || []);
+        setCategories(catList || []);
+      } catch (err) {
+        console.error("Error fetching category blogs:", err);
+      } finally {
+        setLoaderStatus(false);
+      }
+    };
+
+    loadCategoryBlogs();
+  }, [selectedCategory]);
 
   return (
     <div>
-      <div>
-        {loaderStatus ? (
-          <div className="loader-container">
-            {/* <PulseLoader loading={loaderStatus} size={50} color="#0aad0a" /> */}
-            <MagnifyingGlass
-              visible={true}
-              height="100"
-              width="100"
-              ariaLabel="magnifying-glass-loading"
-              wrapperStyle={{}}
-              wrapperclassName="magnifying-glass-wrapper"
-              glassColor="#c0efff"
-              color="#0aad0a"
-            />
-          </div>
-        ) : (
-          <>
-           <>
-            <ScrollToTop/>
-            </>
-            <>
-              <div>
-                {/* section */}
-                <section className="mt-8">
-                  {/* container */}
-                  <div className="container">
-                    {/* row */}
-                    <div className="row">
-                      <div className="col-12 mb-4">
-                        {/* heading */}
-                        <h1 className="fw-bold">Recipes</h1>
-                      </div>
+      {loaderStatus ? (
+        <div className="loader-container">
+          <MagnifyingGlass
+            visible={true}
+            height="100"
+            width="100"
+            ariaLabel="magnifying-glass-loading"
+            glassColor="#c0efff"
+            color="#0aad0a"
+          />
+        </div>
+      ) : (
+        <>
+          <ScrollToTop />
+          <div>
+            {/* Header section */}
+            <section className="mt-8">
+              <div className="container">
+                <div className="row align-items-center">
+                  <div className="col-md-6 col-12 mb-4">
+                    <h1 className="fw-bold">{selectedCategory}</h1>
+                    <p className="text-muted">
+                      Discover our curated organic articles and recipes for {selectedCategory}.
+                    </p>
+                  </div>
+
+                  {/* Category Nav Links */}
+                  <div className="col-md-6 col-12 text-md-end mb-4">
+                    <div className="d-flex flex-wrap justify-content-md-end gap-2">
+                      <Link
+                        to="/BlogCategory?category=All"
+                        className={`btn btn-sm rounded-pill ${
+                          selectedCategory === "All" ? "btn-success" : "btn-outline-success"
+                        }`}
+                      >
+                        All
+                      </Link>
+                      {categories.map((cat, idx) => (
+                        <Link
+                          key={idx}
+                          to={`/BlogCategory?category=${encodeURIComponent(cat)}`}
+                          className={`btn btn-sm rounded-pill ${
+                            selectedCategory.toLowerCase() === cat.toLowerCase()
+                              ? "btn-success"
+                              : "btn-outline-success"
+                          }`}
+                        >
+                          {cat}
+                        </Link>
+                      ))}
                     </div>
                   </div>
-                </section>
-                {/* section */}
-                <section className="mb-lg-14 mb-8">
-                  {/* container */}
-                  <div className="container">
-                    {/* row */}
-                    <div className="row">
-                      {/* col */}
-                      <div className="col-12 col-md-6 col-lg-4 mb-8">
-                      <Zoom>
-                        <div className="mb-4">
-                          <Link to="#!">
-                            {/* img */}
-                            <div className="img-zoom">
-                              <img
-                                src={blog1}
-                                alt="blog"
-                                className="img-fluid rounded-3 w-100"
-                              />
-                            </div>
-                          </Link>
-                        </div>
-                        </Zoom>
-                        <div className="mb-3">
-                          <Link to="#!">Recipes</Link>
-                        </div>
-                        {/* text */}
-                        <div>
-                          <h2 className="h5">
-                            <Link to="#!" className="text-inherit">
-                              Harissa Chickpeas with Whipped Feta
-                            </Link>
-                          </h2>
-                          <p>
-                            In et eros dapibus, facilisis ipsum sit amet, tempor
-                            dolor. Donec sed nisi gravida, molestie dolor
-                            molestie, congue sapien.
-                          </p>
-                          <div className="d-flex justify-content-between text-muted mt-4">
-                            <span>
-                              <small>22 April 2023</small>
-                            </span>
-                            <span>
-                              <small>
-                                Read time:{" "}
-                                <span className="text-dark fw-bold">12min</span>
-                              </small>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      {/* col */}
-                      <div className="col-12 col-md-6 col-lg-4 mb-8">
-                      <Zoom>
-                        <div className="mb-4">
-                          <Link to="#!">
-                            <div className="img-zoom">
-                              {/* img */}
-                              <img
-                                src={blog2}
-                                alt="blog"
-                                className="img-fluid rounded-3 w-100"
-                              />
-                            </div>
-                          </Link>
-                        </div>
-                        </Zoom>
-                        <div className="mb-3">
-                          <Link to="#!">Recipes</Link>
-                        </div>
-                        <div>
-                          {/* text */}
-                          <h2 className="h5">
-                            <Link to="#!" className="text-inherit">
-                              Almond Butter Chocolate Chip Zucchini Bars
-                            </Link>
-                          </h2>
-                          <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elitaenean sit amet tincidunt ellentesque aliquet
-                            ligula in ultrices congue.
-                          </p>
-                          <div className="d-flex justify-content-between text-muted mt-4">
-                            <span>
-                              <small>20 April 2023</small>
-                            </span>
-                            <span>
-                              <small>
-                                Read time:{" "}
-                                <span className="text-dark fw-bold">8min</span>
-                              </small>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      {/* col */}
-                      <div className="col-12 col-md-6 col-lg-4 mb-8">
-                      <Zoom>
-                        <div className="mb-4">
-                          <Link to="#!">
-                            {/* img */}
-                            <div className="img-zoom">
-                              <img
-                                src={blog3}
-                                alt="blog"
-                                className="img-fluid rounded-3 w-100"
-                              />
-                            </div>
-                          </Link>
-                        </div>
-                        </Zoom>
-                        <div className="mb-3">
-                          <Link to="#!">Company</Link>
-                        </div>
-                        {/* text */}
-                        <div>
-                          <h2 className="h5">
-                            <Link to="#!" className="text-inherit">
-                              Spicy Shrimp Tacos Garlic Cilantro Lime Slaw
-                            </Link>
-                          </h2>
-                          <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elitaenean sit amet tincidunt ellentesque aliquet
-                            ligula in ultrices congue.
-                          </p>
-                          <div className="d-flex justify-content-between text-muted mt-4">
-                            <span>
-                              <small>18 April 2023</small>
-                            </span>
-                            <span>
-                              <small>
-                                Read time:{" "}
-                                <span className="text-dark fw-bold">5min</span>
-                              </small>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      {/* col */}
-                      <div className="col-12 col-md-6 col-lg-4 mb-8">
-                      <Zoom>
-                        <div className="mb-4">
-                          <Link to="#!">
-                            {/* img */}
-                            <div className="img-zoom">
-                              <img
-                                src={blog4}
-                                alt="blog"
-                                className="img-fluid rounded-3 w-100"
-                              />
-                            </div>
-                          </Link>
-                        </div>
-                        </Zoom>
-                        <div className="mb-3">
-                          <Link to="#!">Recipes</Link>
-                        </div>
-                        <div>
-                          {/* text */}
-                          <h2 className="h5">
-                            <Link to="#!" className="text-inherit">
-                              Red Chile Chicken Tacos with Creamy Corn
-                            </Link>
-                          </h2>
-                          <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elitaenean sit amet tincidunt ellentesque aliquet
-                            ligula in ultrices congue.
-                          </p>
-                          <div className="d-flex justify-content-between text-muted mt-4">
-                            <span>
-                              <small>16 April 2023</small>
-                            </span>
-                            <span>
-                              <small>
-                                Read time:{" "}
-                                <span className="text-dark fw-bold">9min</span>
-                              </small>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      {/* col */}
-                      <div className="col-12 col-md-6 col-lg-4 mb-8">
-                      <Zoom>
-                        <div className="mb-4">
-                          <Link to="#!">
-                            {/* img */}
-                            <div className="img-zoom">
-                              <img
-                                src={blog5}
-                                alt="blog"
-                                className="img-fluid rounded-3 w-100"
-                              />
-                            </div>
-                          </Link>
-                        </div>
-                        </Zoom>
-                        <div className="mb-3">
-                          <Link to="#!">Retailer</Link>
-                        </div>
-                        {/* text */}
-                        <div>
-                          <h2 className="h5">
-                            <Link to="#!" className="text-inherit">
-                              Basic + Awesome Broccoli Cheese Soup
-                            </Link>
-                          </h2>
-                          <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elitaenean sit amet tincidunt ellentesque aliquet
-                            ligula in ultrices congue.
-                          </p>
-                          <div className="d-flex justify-content-between text-muted mt-4">
-                            <span>
-                              <small>12 April 2023</small>
-                            </span>
-                            <span>
-                              <small>
-                                Read time:{" "}
-                                <span className="text-dark fw-bold">12min</span>
-                              </small>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col-12 col-md-6 col-lg-4 mb-8">
-                      <Zoom>
-                        <div className="mb-4">
-                          <Link to="#!">
-                            {/* img */}
-                            <div className="img-zoom">
-                              <img
-                                src={blog6}
-                                alt="blog"
-                                className="img-fluid rounded-3 w-100"
-                              />
-                            </div>
-                          </Link>
-                        </div>
-                        </Zoom>
-                        <div className="mb-3">
-                          <Link to="#!">Recipes</Link>
-                        </div>
-                        <div>
-                          {/* text */}
-                          <h2 className="h5">
-                            <Link to="#!" className="text-inherit">
-                              No-Boil Baked Penne with Meatballs{" "}
-                            </Link>
-                          </h2>
-                          <p>
-                            Nulla consectetur sapien a libero imperdiet posuere.
-                            Donec sollicitudin, turpis sit amet sollicitudin
-                            tristique, metus eros euismod tortor
-                          </p>
-                          <div className="d-flex justify-content-between text-muted mt-4">
-                            <span>
-                              <small>14 April 2023</small>
-                            </span>
-                            <span>
-                              <small>
-                                Read time:{" "}
-                                <span className="text-dark fw-bold">6min</span>
-                              </small>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col-12 col-md-6 col-lg-4 mb-8">
-                      <Zoom>
-                        <div className="mb-4">
-                          <Link to="#!">
-                            {/* img */}
-                            <div className="img-zoom">
-                              <img
-                                src={blog7}
-                                alt="blog"
-                                className="img-fluid rounded-3 w-100"
-                              />
-                            </div>
-                          </Link>
-                        </div>
-                        </Zoom>
-                        <div className="mb-3">
-                          <Link to="#!">Recipes</Link>
-                        </div>
-                        <div>
-                          {/* text */}
-                          <h2 className="h5">
-                            <Link to="#!" className="text-inherit">
-                              Red Chile Chicken Tacos with Creamy Corn
-                            </Link>
-                          </h2>
-                          <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elitaenean sit amet tincidunt ellentesque aliquet
-                            ligula in ultrices congue.
-                          </p>
-                          <div className="d-flex justify-content-between text-muted mt-4">
-                            <span>
-                              <small>16 April 2023</small>
-                            </span>
-                            <span>
-                              <small>
-                                Read time:{" "}
-                                <span className="text-dark fw-bold">9min</span>
-                              </small>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col-12 col-md-6 col-lg-4 mb-8">
-                      <Zoom>
-                        <div className="mb-4">
-                          <Link to="#!">
-                            {/* img */}
-                            <div className="img-zoom">
-                              <img
-                                src={blog8}
-                                alt="blog"
-                                className="img-fluid rounded-3 w-100"
-                              />
-                            </div>
-                          </Link>
-                        </div>
-                        </Zoom>
-                        <div className="mb-3">
-                          <Link to="#!">Retailer</Link>
-                        </div>
-                        <div>
-                          {/* text */}
-                          <h2 className="h5">
-                            <Link to="#!" className="text-inherit">
-                              Basic + Awesome Broccoli Cheese Soup
-                            </Link>
-                          </h2>
-                          <p>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elitaenean sit amet tincidunt ellentesque aliquet
-                            ligula in ultrices congue.
-                          </p>
-                          <div className="d-flex justify-content-between text-muted mt-4">
-                            <span>
-                              <small>12 April 2023</small>
-                            </span>
-                            <span>
-                              <small>
-                                Read time:{" "}
-                                <span className="text-dark fw-bold">12min</span>
-                              </small>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col-12 col-md-6 col-lg-4 mb-8">
-                      <Zoom>
-                        <div className="mb-4">
-                          <Link to="#!">
-                            {/* img */}
-                            <div className="img-zoom">
-                              <img
-                                src={blog9}
-                                alt="blog"
-                                className="img-fluid rounded-3 w-100"
-                              />
-                            </div>
-                          </Link>
-                        </div>
-                        </Zoom>
-                        <div className="mb-3">
-                          <Link to="#!">Recipes</Link>
-                        </div>
-                        <div>
-                          {/* text */}
-                          <h2 className="h5">
-                            <Link to="#!" className="text-inherit">
-                              No-Boil Baked Penne with Meatballs{" "}
-                            </Link>
-                          </h2>
-                          <p>
-                            Nulla consectetur sapien a libero imperdiet posuere.
-                            Donec sollicitudin, turpis sit amet sollicitudin
-                            tristique, metus eros euismod tortor
-                          </p>
-                          <div className="d-flex justify-content-between text-muted mt-4">
-                            <span>
-                              <small>14 April 2023</small>
-                            </span>
-                            <span>
-                              <small>
-                                Read time:{" "}
-                                <span className="text-dark fw-bold">6min</span>
-                              </small>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col-12">
-                        {/* nav */}
-                        <nav>
-                          <ul className="pagination ">
-                            <li className="page-item disabled">
-                              <Link
-                                className="page-link  mx-1 rounded-3 "
-                                to="#"
-                                aria-label="Previous"
-                              >
-                                <i className="fa fa-chevron-left" />
-                              </Link>
-                            </li>
-                            <li className="page-item ">
-                              <Link
-                                className="page-link  mx-1 rounded-3 active"
-                                to="#"
-                              >
-                                1
-                              </Link>
-                            </li>
-                            <li className="page-item">
-                              <Link
-                                className="page-link mx-1 rounded-3 text-body"
-                                to="#"
-                              >
-                                2
-                              </Link>
-                            </li>
-                            <li className="page-item">
-                              <Link
-                                className="page-link mx-1 rounded-3 text-body"
-                                to="#"
-                              >
-                                ...
-                              </Link>
-                            </li>
-                            <li className="page-item">
-                              <Link
-                                className="page-link mx-1 rounded-3 text-body"
-                                to="#"
-                              >
-                                12
-                              </Link>
-                            </li>
-                            <li className="page-item">
-                              <Link
-                                className="page-link mx-1 rounded-3 text-body"
-                                to="#"
-                                aria-label="Next"
-                              >
-                                <i className="fa fa-chevron-right" />
-                              </Link>
-                            </li>
-                          </ul>
-                        </nav>
-                      </div>
-                    </div>
-                  </div>
-                </section>
+                </div>
               </div>
-            </>
-          </>
-        )}
-      </div>
+            </section>
+
+            {/* Articles Grid */}
+            <section className="mb-lg-14 mb-8">
+              <div className="container">
+                <div className="row">
+                  {blogs.length === 0 ? (
+                    <div className="col-12 text-center py-5">
+                      <p className="text-muted">No articles found in this category.</p>
+                      <Link to="/Blog" className="btn btn-outline-success rounded-pill mt-2">
+                        Back to All Blogs
+                      </Link>
+                    </div>
+                  ) : (
+                    blogs.map((blog) => (
+                      <div key={blog.id} className="col-12 col-md-6 col-lg-4 mb-8">
+                        <Zoom>
+                          <div className="mb-4">
+                            <Link to={`/blog/${blog.slug}`}>
+                              <div className="img-zoom">
+                                <img
+                                  src={getImageUrl(blog.imageUrl)}
+                                  alt={blog.title}
+                                  className="img-fluid rounded-3 w-100"
+                                  style={{ height: "240px", objectFit: "cover" }}
+                                />
+                              </div>
+                            </Link>
+                          </div>
+                        </Zoom>
+                        <div className="mb-2">
+                          <span className="text-success fw-bold small text-uppercase">{blog.category}</span>
+                        </div>
+                        <div>
+                          <h2 className="h5 mb-2">
+                            <Link to={`/blog/${blog.slug}`} className="text-inherit text-decoration-none">
+                              {blog.title}
+                            </Link>
+                          </h2>
+                          <p className="text-muted small">
+                            {blog.shortDescription || (blog.content?.substring(0, 100) + "...")}
+                          </p>
+                          <Link to={`/blog/${blog.slug}`} className="btn btn-sm btn-outline-success rounded-pill fw-semibold mt-2">
+                            Read Full Article →
+                          </Link>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </section>
+          </div>
+        </>
+      )}
     </div>
   );
 };
