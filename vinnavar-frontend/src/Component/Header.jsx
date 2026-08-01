@@ -65,6 +65,12 @@ const Header = () => {
 
   return (
     <div>
+      <div className="w-100 py-1" style={{ background: "#2b9348", fontSize: "13px", fontWeight: "600", letterSpacing: "0.5px", overflow: "hidden" }}>
+        {/* eslint-disable-next-line jsx-a11y/no-distracting-elements */}
+        <marquee behavior="scroll" direction="left" scrollamount="6" style={{ verticalAlign: "middle", margin: 0, color: "#fff" }}>
+          🌱 Our product is 100 percent natural and available at your doorstep within prescribed time. 🚚
+        </marquee>
+      </div>
       <>
         <div className="border-bottom">
           <div className="bg-light py-2">
@@ -301,33 +307,7 @@ const Header = () => {
             </div>
           </li>
 
-          <li className="nav-item dmenu dropdown">
-            <Link
-              className="nav-link dropdown-toggle"
-              to="#"
-              id="navbarDropdown"
-              role="button"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-            >
-              Stores
-            </Link>
-            <div
-              className="dropdown-menu sm-menu"
-              aria-labelledby="navbarDropdown"
-            >
-              <Link className="dropdown-item" to="/StoreList">
-                Store List
-              </Link>
-              {/* <Link className="dropdown-item" to="pages/store-grid.html">
-                    Store Grid
-                  </Link> */}
-              <Link className="dropdown-item" to="/SingleShop">
-                Single Store
-              </Link>
-            </div>
-          </li>
+
           {/* <li className="nav-item dmenu dropdown">
                 <Link
                   className="nav-link dropdown-toggle"

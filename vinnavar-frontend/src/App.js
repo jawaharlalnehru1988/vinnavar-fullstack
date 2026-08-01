@@ -15,8 +15,6 @@ import ShopListCol from "./pages/Shop/ShopListCol";
 import ShopCart from "./pages/Shop/ShopCart";
 import ShopCheckOut from "./pages/Shop/ShopCheckOut";
 import ShopWishList from "./pages/Shop/ShopWishList";
-import StoreList from "./pages/store/StoreList";
-import SingleShop from "./pages/store/SingleShop";
 import MyAccountOrder from "./pages/Accounts/MyAccountOrder";
 import MyAccountSetting from "./pages/Accounts/MyAcconutSetting";
 import MyAcconutNotification from "./pages/Accounts/MyAcconutNotification";
@@ -78,9 +76,6 @@ const AppContent = () => {
         <Route path="/ShopWishList" element={<ShopWishList />} />
         <Route path="/ShopCheckOut" element={<ShopCheckOut />} />
         <Route path="/ShopCart" element={<ShopCart />} />
-        {/* Store pages */}
-        <Route path="/StoreList" element={<StoreList />} />
-        <Route path="/SingleShop" element={<SingleShop />} />
         {/* Accounts pages */}
         <Route path="/MyAccountOrder" element={<MyAccountOrder />} />
         <Route path="/MyAccountSetting" element={<MyAccountSetting />} />

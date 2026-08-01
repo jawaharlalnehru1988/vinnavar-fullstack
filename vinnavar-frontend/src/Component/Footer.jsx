@@ -4,9 +4,6 @@ import { Link } from "react-router-dom";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 const groceryshop = getImageUrl("/media/site/Grocerylogo.png");
-const amazonpay = getImageUrl("/media/site/amazonpay.svg");
-const gpay = getImageUrl("/media/site/gpay.svg");
-const paytm = getImageUrl("/media/site/paytm.svg");
 
 const Footer = () => {
   let date = new Date();
@@ -14,122 +11,95 @@ const Footer = () => {
 
   return (
     <div>
-      <footer className="footer mt-8">
+      <footer className="footer mt-4" style={{ padding: "2rem 0" }}>
         <div className="overlay" />
         <div className="container">
-          <div className="row footer-row justify-content-between align-items-start">
-            {/* Column 1: Brand Logo + Registered Corporate Office Card */}
-            <div className="col-12 col-md-7 col-lg-7 mb-30">
-              <div className="footer-widget mb-4">
-                <div className="company-details-card bg-white p-3.5 p-md-4 rounded-4 border shadow-sm mb-4">
-                  {/* Horizontal Header with Logo and Brand Title */}
-                  <div className="d-flex flex-column flex-sm-row align-items-sm-center gap-3 mb-3 pb-3 border-bottom">
+          <div className="row justify-content-center">
+            <div className="col-12">
+              <div className="company-details-card bg-white p-4 p-md-5 rounded-4 border shadow-sm">
+                
+                {/* 3-column details row */}
+                <div className="row g-4 align-items-start text-start">
+                  
+                  {/* Column 1: Brand details */}
+                  <div className="col-12 col-md-4">
                     <Link to="/">
                       <img
                         src={groceryshop}
                         style={{ maxHeight: 60, width: "auto", objectFit: "contain" }}
                         alt="Vinnavar Logo"
+                        className="mb-3"
                       />
                     </Link>
-                    <div>
-                      <h5 className="fw-bold text-dark mb-1" style={{ fontSize: "1.2rem" }}>
-                        Vinnavar Brand
-                      </h5>
-                      <p className="text-muted small fw-semibold mb-0">
-                        Contact: <span className="text-dark">Mr. Lokesh Rajan Shah</span>
-                      </p>
+                    <h4 className="fw-bold text-dark mb-1" style={{ fontSize: "1.3rem", letterSpacing: "-0.5px" }}>
+                      LP Traders
+                    </h4>
+                    <p className="text-muted small fw-semibold mb-0">
+                      Authorized Partner: <span className="text-dark">Mr. Lokesh Rajan Shah</span>
+                    </p>
+                  </div>
+
+                  {/* Column 2: Contact & Support */}
+                  <div className="col-12 col-md-4 px-md-4">
+                    <h6 className="text-uppercase text-success fw-bold small mb-3" style={{ letterSpacing: "1px", fontSize: "0.8rem" }}>
+                      Corporate Contact
+                    </h6>
+                    
+                    {/* Address */}
+                    <div className="mb-3 text-secondary small">
+                      <div className="d-flex align-items-center mb-1.5">
+                        <i className="fa fa-map-marker-alt text-success me-2 fs-6 flex-shrink-0" />
+                        <span className="fw-bold text-dark">Office Address</span>
+                      </div>
+                      <div className="ps-4 text-muted" style={{ lineHeight: "1.6" }}>
+                        #16, MS Nagar Phase 2, Kurumanthangal Road, Kunnathur, Arani, Tamil Nadu - 632314
+                      </div>
+                    </div>
+
+                    {/* Email */}
+                    <div className="mb-3 text-secondary small">
+                      <div className="d-flex align-items-center mb-1.5">
+                        <i className="fa fa-envelope text-success me-2 fs-6 flex-shrink-0" />
+                        <span className="fw-bold text-dark">Email Support</span>
+                      </div>
+                      <div className="ps-4">
+                        <a href="mailto:vinnavarbrand@gmail.com" className="text-success text-decoration-none fw-semibold">
+                          vinnavarbrand@gmail.com
+                        </a>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Clean Formatted Address with Map Marker Icon */}
-                  <div className="d-flex align-items-start mb-2.5 text-secondary small" style={{ lineHeight: "1.55" }}>
-                    <i className="fa fa-map-marker-alt text-success me-2.5 mt-1 fs-6 flex-shrink-0" />
-                    <span>#16, MS Nagar Phase 2, Kurumanthangal Road, Kunnathur, Arani, Tamil Nadu - 632314</span>
+                  {/* Column 3: Registrations */}
+                  <div className="col-12 col-md-4 ps-md-4">
+                    <h6 className="text-uppercase text-success fw-bold small mb-3" style={{ letterSpacing: "1px", fontSize: "0.8rem" }}>
+                      Registrations & Licenses
+                    </h6>
+                    <div className="d-flex flex-column gap-3 text-secondary small">
+                      <div>
+                        <span className="fw-bold text-dark d-block mb-1">GSTIN ID</span>
+                        <span className="font-monospace text-dark bg-light border rounded px-2.5 py-1.5 d-inline-block">
+                          33AFOPL7097M1ZN
+                        </span>
+                      </div>
+                      <div>
+                        <span className="fw-bold text-dark d-block mb-1">FSSAI ID</span>
+                        <span className="font-monospace text-dark bg-light border rounded px-2.5 py-1.5 d-inline-block">
+                          22425479000675
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Clean Formatted Email Icon & Link */}
-                  <div className="d-flex align-items-center mb-3 text-secondary small">
-                    <i className="fa fa-envelope text-success me-2.5 fs-6 flex-shrink-0" />
-                    <a href="mailto:vinnavarbrand@gmail.com" className="text-dark text-decoration-none fw-semibold">
-                      vinnavarbrand@gmail.com
-                    </a>
-                  </div>
+                </div>
 
-                  {/* Registration Badges */}
-                  <div className="d-flex flex-wrap gap-2 pt-2.5 border-top mt-2">
-                    <span className="badge bg-light text-dark border px-2.5 py-1.5 font-monospace">
-                      <span className="text-success fw-bold">GSTIN:</span> 33AFOPL7097M1ZN
-                    </span>
-                    <span className="badge bg-light text-dark border px-2.5 py-1.5 font-monospace">
-                      <span className="text-success fw-bold">FSSAI:</span> 22425479000675
-                    </span>
+                {/* Unified Footer Copyright line inside the same container */}
+                <div className="border-top mt-4 pt-4 text-center">
+                  <div className="text-muted small">
+                    © {year} All Rights Reserved By <span className="fw-bold text-success">LP Traders</span>
                   </div>
                 </div>
-              </div>
-              
-              {/* Payment Partners: Only Amazon Pay, Google Pay, Paytm */}
-              <div className="dimc-protect">
-                <div>
-                  <h6 className="fw-bold mb-2 text-dark">Payment Partners</h6>
-                  <ul className="list-inline d-flex align-items-center mb-0 gap-3">
-                    <li className="list-inline-item m-0">
-                      <Link to="#!">
-                        <img src={amazonpay} alt="Amazon Pay" style={{ height: "26px", objectFit: "contain" }} />
-                      </Link>
-                    </li>
-                    <li className="list-inline-item m-0">
-                      <Link to="#!">
-                        <img src={gpay} alt="Google Pay" style={{ height: "26px", objectFit: "contain" }} />
-                      </Link>
-                    </li>
-                    <li className="list-inline-item m-0">
-                      <Link to="#!">
-                        <img src={paytm} alt="Paytm" style={{ height: "26px", objectFit: "contain" }} />
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
 
-            {/* Column 2: Get to Know Us */}
-            <div className="col-12 col-md-5 col-lg-4 mb-30">
-              <div className="footer-widget mb-0">
-                <h4>Get to know us</h4>
-                <div className="line-footer" />
-                <ul className="footer-link mb-0">
-                  <li>
-                    <Link to="/AboutUs">
-                      <span><i className="fa fa-angle-right" /></span> Company
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/AboutUs">
-                      <span><i className="fa fa-angle-right" /></span> About
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/Blog">
-                      <span><i className="fa fa-angle-right" /></span> Blog
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/helpcenter">
-                      <span><i className="fa fa-angle-right" /></span> Help Center
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Bottom Bar */}
-        <div className="footer-bar mt-4">
-          <div className="container text-center">
-            <div className="footer-copy">
-              <div className="copyright text-muted small">
-                © {year} All Rights Reserved By <span className="fw-bold text-success">Vinnavar Brand</span>
               </div>
             </div>
           </div>

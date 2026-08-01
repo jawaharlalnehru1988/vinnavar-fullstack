@@ -3,6 +3,10 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { API_BASE_URL, getImageUrl } from "../../services/api";
 
+const amazonpay = getImageUrl("/media/site/amazonpay.svg");
+const gpay = getImageUrl("/media/site/gpay.svg");
+const paytm = getImageUrl("/media/site/paytm.svg");
+
 const ProductDetails = () => {
     const { slug } = useParams();
     const navigate = useNavigate();
@@ -266,6 +270,16 @@ const ProductDetails = () => {
                                 >
                                     ⚡ BUY NOW
                                 </button>
+                            </div>
+                        </div>
+
+                        {/* Payment Partners */}
+                        <div className="mt-4 p-3 bg-light rounded-3 text-center border">
+                            <div className="small text-muted fw-bold mb-2">Accepting Payments via Partner Networks</div>
+                            <div className="d-flex align-items-center justify-content-center gap-3">
+                                <img src={amazonpay} alt="Amazon Pay" style={{ height: "26px", objectFit: "contain" }} />
+                                <img src={gpay} alt="Google Pay" style={{ height: "26px", objectFit: "contain" }} />
+                                <img src={paytm} alt="Paytm" style={{ height: "26px", objectFit: "contain" }} />
                             </div>
                         </div>
                     </div>
