@@ -301,34 +301,33 @@ public class ProductService {
 
         if (kavuni.getVariants() == null) {
             kavuni.setVariants(new ArrayList<>());
-        } else {
-            kavuni.getVariants().clear();
         }
-
-        kavuni.getVariants().add(ProductVariant.builder()
-                .product(kavuni)
-                .variantName("500G")
-                .price(new BigDecimal("149.00"))
-                .discountPrice(new BigDecimal("149.00"))
-                .stockQuantity(100)
-                .isDefault(false)
-                .build());
-        kavuni.getVariants().add(ProductVariant.builder()
-                .product(kavuni)
-                .variantName("5KG")
-                .price(new BigDecimal("949.00"))
-                .discountPrice(new BigDecimal("949.00"))
-                .stockQuantity(100)
-                .isDefault(true)
-                .build());
-        kavuni.getVariants().add(ProductVariant.builder()
-                .product(kavuni)
-                .variantName("25KG")
-                .price(new BigDecimal("3999.00"))
-                .discountPrice(new BigDecimal("3999.00"))
-                .stockQuantity(100)
-                .isDefault(false)
-                .build());
+        if (kavuni.getVariants().isEmpty()) {
+            kavuni.getVariants().add(ProductVariant.builder()
+                    .product(kavuni)
+                    .variantName("500G")
+                    .price(new BigDecimal("149.00"))
+                    .discountPrice(new BigDecimal("149.00"))
+                    .stockQuantity(100)
+                    .isDefault(false)
+                    .build());
+            kavuni.getVariants().add(ProductVariant.builder()
+                    .product(kavuni)
+                    .variantName("5KG")
+                    .price(new BigDecimal("949.00"))
+                    .discountPrice(new BigDecimal("949.00"))
+                    .stockQuantity(100)
+                    .isDefault(true)
+                    .build());
+            kavuni.getVariants().add(ProductVariant.builder()
+                    .product(kavuni)
+                    .variantName("25KG")
+                    .price(new BigDecimal("3999.00"))
+                    .discountPrice(new BigDecimal("3999.00"))
+                    .stockQuantity(100)
+                    .isDefault(false)
+                    .build());
+        }
 
         productRepository.save(kavuni);
 
@@ -360,34 +359,33 @@ public class ProductService {
 
         if (kolam.getVariants() == null) {
             kolam.setVariants(new ArrayList<>());
-        } else {
-            kolam.getVariants().clear();
         }
-
-        kolam.getVariants().add(ProductVariant.builder()
-                .product(kolam)
-                .variantName("500G")
-                .price(new BigDecimal("149.00"))
-                .discountPrice(new BigDecimal("149.00"))
-                .stockQuantity(100)
-                .isDefault(false)
-                .build());
-        kolam.getVariants().add(ProductVariant.builder()
-                .product(kolam)
-                .variantName("5KG")
-                .price(new BigDecimal("749.00"))
-                .discountPrice(new BigDecimal("749.00"))
-                .stockQuantity(100)
-                .isDefault(true)
-                .build());
-        kolam.getVariants().add(ProductVariant.builder()
-                .product(kolam)
-                .variantName("25KG")
-                .price(new BigDecimal("2999.00"))
-                .discountPrice(new BigDecimal("2999.00"))
-                .stockQuantity(100)
-                .isDefault(false)
-                .build());
+        if (kolam.getVariants().isEmpty()) {
+            kolam.getVariants().add(ProductVariant.builder()
+                    .product(kolam)
+                    .variantName("500G")
+                    .price(new BigDecimal("149.00"))
+                    .discountPrice(new BigDecimal("149.00"))
+                    .stockQuantity(100)
+                    .isDefault(false)
+                    .build());
+            kolam.getVariants().add(ProductVariant.builder()
+                    .product(kolam)
+                    .variantName("5KG")
+                    .price(new BigDecimal("749.00"))
+                    .discountPrice(new BigDecimal("749.00"))
+                    .stockQuantity(100)
+                    .isDefault(true)
+                    .build());
+            kolam.getVariants().add(ProductVariant.builder()
+                    .product(kolam)
+                    .variantName("25KG")
+                    .price(new BigDecimal("2999.00"))
+                    .discountPrice(new BigDecimal("2999.00"))
+                    .stockQuantity(100)
+                    .isDefault(false)
+                    .build());
+        }
 
         productRepository.save(kolam);
     }

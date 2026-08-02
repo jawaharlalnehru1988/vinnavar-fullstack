@@ -177,4 +177,35 @@ export const clearWishlist = async (wishlistId = getWishlistId()) => {
     return res.ok;
 };
 
+// Checkout & Razorpay API Services
+export const processCodCheckout = async (checkoutData) => {
+    const res = await fetch(`${API_BASE_URL}/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(checkoutData)
+    });
+    if (!res.ok) throw new Error("Failed to process COD checkout");
+    return res.json();
+};
+
+export const createRazorpayOrder = async (checkoutData) => {
+    const res = await fetch(`${API_BASE_URL}/checkout/create-razorpay-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(checkoutData)
+    });
+    if (!res.ok) throw new Error("Failed to create Razorpay order");
+    return res.json();
+};
+
+export const verifyRazorpayPayment = async (verificationData) => {
+    const res = await fetch(`${API_BASE_URL}/checkout/verify-razorpay-payment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(verificationData)
+    });
+    if (!res.ok) throw new Error("Failed to verify Razorpay payment");
+    return res.json();
+};
+
 

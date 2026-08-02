@@ -115,6 +115,7 @@ const ProductDetails = () => {
             });
 
             if (res.ok) {
+                window.dispatchEvent(new Event("cartUpdated"));
                 if (buyNow) {
                     navigate("/ShopCheckOut");
                 } else {

@@ -49,6 +49,15 @@ public class SiteSettingController {
         return ResponseEntity.ok(service.updateSettingFull(key, value, description, group));
     }
 
+    @DeleteMapping("/admin/settings/{key}")
+    public ResponseEntity<Void> deleteSetting(@PathVariable String key) {
+        boolean deleted = service.deleteSetting(key);
+        if (deleted) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
     @PostMapping("/admin/settings/upload-asset")
     public ResponseEntity<Map<String, String>> uploadAssetImage(@RequestParam("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {

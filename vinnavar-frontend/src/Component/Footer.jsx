@@ -1,5 +1,5 @@
-import { getImageUrl } from "../services/api";
-import React from "react";
+import { fetchSettings, getImageUrl } from "../services/api";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
@@ -8,6 +8,26 @@ const groceryshop = getImageUrl("/media/site/Grocerylogo.png");
 const Footer = () => {
   let date = new Date();
   let year = date.getFullYear();
+  const [logoUrl, setLogoUrl] = useState(groceryshop);
+  const [brandName, setBrandName] = useState("Vinnavar");
+
+  useEffect(() => {
+    const loadLogo = async () => {
+      try {
+        const settings = await fetchSettings();
+        const logo = settings?.footer_logo || settings?.store_logo;
+        if (logo) {
+          setLogoUrl(getImageUrl(logo));
+        }
+        if (settings?.store_name) {
+          setBrandName(settings.store_name);
+        }
+      } catch (err) {
+        console.error("Error fetching footer logo setting", err);
+      }
+    };
+    loadLogo();
+  }, []);
 
   return (
     <div>
@@ -25,14 +45,14 @@ const Footer = () => {
                   <div className="col-12 col-md-4">
                     <Link to="/">
                       <img
-                        src={groceryshop}
+                        src={logoUrl}
                         style={{ maxHeight: 60, width: "auto", objectFit: "contain" }}
                         alt="Vinnavar Logo"
                         className="mb-3"
                       />
                     </Link>
                     <h4 className="fw-bold text-dark mb-1" style={{ fontSize: "1.3rem", letterSpacing: "-0.5px" }}>
-                      LP Traders
+                      {brandName}
                     </h4>
                     <p className="text-muted small fw-semibold mb-0">
                       Authorized Partner: <span className="text-dark">Mr. Lokesh Rajan Shah</span>

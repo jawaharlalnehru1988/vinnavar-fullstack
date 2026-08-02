@@ -21,7 +21,7 @@ const AdminDashboard = () => {
 
     const [activeTab, setActiveTabState] = useState(getInitialTab);
     const [selectedAssetGroup, setSelectedAssetGroup] = useState("ALL");
-    const [assetGroups, setAssetGroups] = useState(["GENERAL", "HERO_SLIDER", "PROMO_BANNER", "LABELS", "LOGO", "FOOTER"]);
+    const [assetGroups, setAssetGroups] = useState(["GENERAL", "HERO_SLIDER", "PROMO_BANNER", "LABELS", "LOGO", "FOOTER", "PAYMENT"]);
 
     const setActiveTab = (tab) => {
         setActiveTabState(tab);
@@ -36,7 +36,7 @@ const AdminDashboard = () => {
             setActiveTabState(tabFromUrl);
             localStorage.setItem("admin_active_tab", tabFromUrl);
         }
-    }, [searchParams]);
+    }, [searchParams, activeTab]);
 
     // Data States
     const [products, setProducts] = useState([]);
@@ -103,6 +103,7 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         loadData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleLogout = () => {

@@ -52,6 +52,7 @@ const ShopCart = () => {
       if (res.ok) {
         const updatedCart = await res.json();
         setCart(updatedCart);
+        window.dispatchEvent(new Event("cartUpdated"));
       } else {
         Swal.fire("Error", "Failed to update quantity", "error");
       }
@@ -69,6 +70,7 @@ const ShopCart = () => {
         method: "DELETE"
       });
       if (res.ok) {
+        window.dispatchEvent(new Event("cartUpdated"));
         Swal.fire({
           icon: "success",
           title: "Item Removed",

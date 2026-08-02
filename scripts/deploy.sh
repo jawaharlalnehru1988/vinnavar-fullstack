@@ -8,8 +8,7 @@ fi
 
 echo "=== [1/5] Pulling latest changes from Git (branch: $BRANCH) ==="
 cd /var/www/vinnavar-fullstack
-git fetch origin "$BRANCH"
-git reset --hard "origin/$BRANCH"
+git pull origin "$BRANCH" --rebase --autostash || true
 
 echo "=== [2/5] Building Spring Boot Backend ==="
 cd /var/www/vinnavar-fullstack/vinnavar-backend

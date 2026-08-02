@@ -1,19 +1,15 @@
-import { API_BASE_URL, getImageUrl } from "../services/api";
+import { API_BASE_URL, fetchSettings, getImageUrl } from "../services/api";
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Grocerylogo = getImageUrl("/media/site/Grocerylogo.png");
-const menubanner = getImageUrl("/media/site/menu-banner.jpg");
-const productimage1 = getImageUrl("/media/products/product-img-1.jpg");
-const productimage2 = getImageUrl("/media/products/product-img-2.jpg");
-const productimage3 = getImageUrl("/media/products/product-img-3.jpg");
-const productimage4 = getImageUrl("/media/products/product-img-4.jpg");
-const productimage5 = getImageUrl("/media/products/product-img-5.jpg");
 
 const Header = () => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [cart, setCart] = useState(null);
   const [wishlistCount, setWishlistCount] = useState(0);
+  const [logoUrl, setLogoUrl] = useState(Grocerylogo);
 
   const fetchCart = async () => {
     const cartId = localStorage.getItem("vinnavar_cart_id");
@@ -49,15 +45,68 @@ const Header = () => {
     }
   };
 
+  const fetchLogoSetting = async () => {
+    try {
+      const settings = await fetchSettings();
+      if (settings && settings.store_logo) {
+        setLogoUrl(getImageUrl(settings.store_logo));
+      }
+    } catch (err) {
+      console.error("Error fetching logo in header", err);
+    }
+  };
+
   useEffect(() => {
     fetchCart();
     fetchWishlistCount();
-    const interval = setInterval(() => {
+    fetchLogoSetting();
+
+    const handleCartUpdated = () => {
       fetchCart();
       fetchWishlistCount();
-    }, 3000);
-    return () => clearInterval(interval);
+    };
+
+    window.addEventListener("cartUpdated", handleCartUpdated);
+    const interval = setInterval(handleCartUpdated, 3000);
+
+    return () => {
+      window.removeEventListener("cartUpdated", handleCartUpdated);
+      clearInterval(interval);
+    };
   }, []);
+
+  const handleNavigateFromCart = (path) => {
+    const offcanvasElement = document.getElementById("offcanvasRight");
+    if (offcanvasElement) {
+      const bsOffcanvas = window.bootstrap?.Offcanvas?.getInstance(offcanvasElement);
+      if (bsOffcanvas) {
+        bsOffcanvas.hide();
+      } else {
+        offcanvasElement.classList.remove("show");
+      }
+    }
+    const backdrops = document.querySelectorAll(".offcanvas-backdrop, .modal-backdrop");
+    backdrops.forEach((b) => b.remove());
+    document.body.classList.remove("offcanvas-open", "modal-open");
+    document.body.style.overflow = "";
+    document.body.style.paddingRight = "";
+
+    navigate(path);
+  };
+
+  const handleRemoveCartItem = async (itemId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/cart/items/${itemId}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        fetchCart();
+        window.dispatchEvent(new Event("cartUpdated"));
+      }
+    } catch (err) {
+      console.error("Error removing item from cart", err);
+    }
+  };
 
   const handleClick = () => {
     setIsOpen(!isOpen);
@@ -200,7 +249,7 @@ const Header = () => {
         <div className="container">
           <Link className="navbar-brand py-1 d-flex align-items-center" to="/">
             <img
-              src={Grocerylogo}
+              src={logoUrl}
               style={{ maxHeight: 50, width: "auto", objectFit: "contain" }}
               alt="Vinnavar Logo"
             />
@@ -508,7 +557,9 @@ const Header = () => {
             <h5 id="offcanvasRightLabel" className="mb-0 fs-4">
               Shop Cart
             </h5>
-            <small>Location in 382480</small>
+            <small className="text-muted fw-bold">
+              {cart?.items?.length || 0} Unique Products ({cart?.totalItemCount || 0} Items Total)
+            </small>
           </div>
           <button
             type="button"
@@ -527,9 +578,13 @@ const Header = () => {
               <div className="fs-1 mb-2">🛒</div>
               <h6>Your Organic Cart is empty</h6>
               <p className="text-muted small">Add your favorite traditional rice & organic staples.</p>
-              <Link to="/Shop" className="btn btn-sm btn-success fw-bold" data-bs-dismiss="offcanvas">
+              <button
+                type="button"
+                className="btn btn-sm btn-success fw-bold"
+                onClick={() => handleNavigateFromCart("/Shop")}
+              >
                 Shop Products
-              </Link>
+              </button>
             </div>
           ) : (
             <div>
@@ -567,6 +622,15 @@ const Header = () => {
                             <div className="fw-bold text-dark fs-6">
                               ₹{itemTotal.toLocaleString('en-IN')}
                             </div>
+                            <button
+                              type="button"
+                              className="btn btn-link text-danger p-0 mt-1 border-0 small text-decoration-none"
+                              onClick={() => handleRemoveCartItem(item.id)}
+                              title="Remove item"
+                              style={{ fontSize: "12px" }}
+                            >
+                              🗑️ Remove
+                            </button>
                           </div>
                         </div>
                       </li>
@@ -583,21 +647,21 @@ const Header = () => {
                   </span>
                 </div>
                 <div className="d-grid gap-2">
-                  <Link
-                    to="/ShopCart"
-                    className="btn btn-outline-success fw-bold"
-                    data-bs-dismiss="offcanvas"
+                  <button
+                    type="button"
+                    className="btn btn-outline-success fw-bold py-2"
+                    onClick={() => handleNavigateFromCart("/ShopCart")}
                   >
                     View Full Cart
-                  </Link>
-                  <Link
-                    to="/ShopCheckOut"
-                    className="btn btn-success btn-lg fw-bold d-flex justify-content-between align-items-center"
-                    data-bs-dismiss="offcanvas"
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-success btn-lg fw-bold d-flex justify-content-between align-items-center py-2.5 px-3"
+                    onClick={() => handleNavigateFromCart("/ShopCheckOut")}
                   >
                     <span>Proceed to Checkout</span>
                     <span>₹{(cart.subtotal || 0).toLocaleString('en-IN')} &rsaquo;</span>
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>

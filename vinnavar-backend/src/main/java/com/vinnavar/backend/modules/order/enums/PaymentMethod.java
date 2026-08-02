@@ -1,5 +1,9 @@
 package com.vinnavar.backend.modules.order.enums;
 
 public enum PaymentMethod {
-    COD
+    COD,
+    RAZORPAY,
+    ONLINE,
+    CARD,
+    UPI
 }

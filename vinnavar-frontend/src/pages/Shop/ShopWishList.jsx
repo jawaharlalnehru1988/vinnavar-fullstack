@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { MagnifyingGlass } from 'react-loader-spinner';
 import Swal from "sweetalert2";
 import ScrollToTop from "../ScrollToTop";
-import { API_BASE_URL, getImageUrl, fetchWishlist, removeFromWishlist, clearWishlist, getWishlistId } from "../../services/api";
+import { API_BASE_URL, getImageUrl, fetchWishlist, removeFromWishlist, clearWishlist } from "../../services/api";
 
 const ShopWishList = () => {
-  const navigate = useNavigate();
   const [loaderStatus, setLoaderStatus] = useState(true);
   const [wishlist, setWishlist] = useState({ items: [], totalItemCount: 0 });
   const [selectedItems, setSelectedItems] = useState([]);
@@ -26,6 +25,7 @@ const ShopWishList = () => {
 
   useEffect(() => {
     loadWishlistData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSelectAll = (e) => {

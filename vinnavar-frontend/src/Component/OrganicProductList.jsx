@@ -65,6 +65,7 @@ const OrganicProductList = ({ categoryId }) => {
             });
 
             if (response.ok) {
+                window.dispatchEvent(new Event("cartUpdated"));
                 Swal.fire({
                     icon: "success",
                     title: "Added to Organic Cart",
