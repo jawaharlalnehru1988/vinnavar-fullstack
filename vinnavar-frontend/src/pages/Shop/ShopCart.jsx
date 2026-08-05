@@ -1,7 +1,6 @@
 import { API_BASE_URL, getImageUrl } from "../../services/api";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MagnifyingGlass } from "react-loader-spinner";
 import ScrollToTop from "../ScrollToTop";
 import Swal from "sweetalert2";
 
@@ -117,211 +116,214 @@ const ShopCart = () => {
   const items = cart?.items || [];
 
   return (
-    <div>
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <ScrollToTop />
       {loaderStatus ? (
-        <div className="loader-container">
-          <MagnifyingGlass
-            visible={true}
-            height="100"
-            width="100"
-            ariaLabel="magnifying-glass-loading"
-            glassColor="#c0efff"
-            color="#0aad0a"
-          />
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 font-medium">
+          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <span>Loading Your Shopping Cart...</span>
         </div>
       ) : (
-        <section className="mb-lg-14 mb-8 mt-8">
-          <div className="container">
-            {/* HEADING */}
-            <div className="row">
-              <div className="col-12">
-                <div className="card py-1 border-0 mb-4">
-                  <div>
-                    <h1 className="fw-bold">My Organic Cart</h1>
-                    <p className="mb-0 text-muted">
-                      {items.length > 0
-                        ? `You have ${cart?.totalItemCount || items.length} item(s) in your cart.`
-                        : "Your shopping cart is currently empty."}
+        <div className="max-w-7xl mx-auto space-y-8">
+          
+          {/* Page Header */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200/60 mb-2">
+                Shopping Bag
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900">My Organic Cart</h1>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                {items.length > 0
+                  ? `You have ${cart?.totalItemCount || items.length} pure organic item(s) ready for checkout.`
+                  : "Your shopping cart is currently empty."}
+              </p>
+            </div>
+            {items.length > 0 && (
+              <button
+                type="button"
+                className="px-4 py-2 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 font-bold text-xs rounded-full border border-slate-200/80 transition-all self-start sm:self-auto"
+                onClick={handleClearCart}
+              >
+                🗑️ Clear Cart
+              </button>
+            )}
+          </div>
+
+          {/* Cart Content */}
+          {items.length === 0 ? (
+            <div className="bg-white rounded-3xl p-12 sm:p-16 border border-slate-100 shadow-sm text-center space-y-4 max-w-xl mx-auto">
+              <div className="text-5xl">🛒</div>
+              <h2 className="text-xl font-black text-slate-900">Your Cart is Empty</h2>
+              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                Explore our certified organic grains, traditional rice varieties, and cold-pressed oils.
+              </p>
+              <div className="pt-2">
+                <Link
+                  to="/Shop"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-full shadow-lg shadow-emerald-700/20 transition-all active:scale-95"
+                >
+                  <span>Explore Organic Catalog</span>
+                  <span>➔</span>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              
+              {/* Left Column: Cart Items List */}
+              <div className="lg:col-span-2 space-y-6">
+                
+                {/* Free Shipping Highlight Banner */}
+                <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 rounded-2xl p-4 border border-emerald-200/80 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
+                    <span className="text-base">🌱</span>
+                    <span>Free Delivery Unlocked! Inclusive of shipping charges &amp; all GST taxes.</span>
+                  </div>
+                  <Link
+                    to="/ShopCheckOut"
+                    className="px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-full transition-all shadow-sm"
+                  >
+                    Checkout Now ➔
+                  </Link>
+                </div>
+
+                {/* Items List Card */}
+                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-100">
+                  {items.map((item) => {
+                    const product = item.product || {};
+                    const variant = item.variant || {};
+                    const imgUrl = getImageUrl(product.imageUrl || product.imageUrls?.[0]);
+                    const itemTotal = item.unitPrice ? item.unitPrice * item.quantity : 0;
+
+                    return (
+                      <div key={item.id} className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        {/* Image & Info */}
+                        <div className="flex items-center gap-4 w-full sm:w-auto">
+                          <Link to={`/product/${product.slug}`} className="flex-shrink-0">
+                            <img
+                              src={imgUrl}
+                              alt={product.name}
+                              className="w-20 h-20 sm:w-24 sm:h-24 object-contain rounded-2xl bg-slate-50 border border-slate-100 p-2"
+                            />
+                          </Link>
+                          <div className="space-y-1">
+                            <h3 className="font-bold text-slate-900 text-sm hover:text-emerald-700 transition-colors">
+                              <Link to={`/product/${product.slug}`}>{product.name}</Link>
+                            </h3>
+                            <div className="flex items-center gap-2">
+                              <span className="inline-block px-2.5 py-0.5 bg-slate-100 text-emerald-800 text-[10px] font-extrabold rounded-full border border-slate-200/60">
+                                {variant.variantName || "Standard"}
+                              </span>
+                              <span className="text-xs font-medium text-slate-500">₹{item.unitPrice} / unit</span>
+                            </div>
+                            <button
+                              type="button"
+                              className="text-[11px] font-bold text-red-500 hover:text-red-700 pt-1 block"
+                              onClick={() => handleRemoveItem(item.id)}
+                              disabled={updatingItemId === item.id}
+                            >
+                              🗑️ Remove
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Quantity Controls & Price */}
+                        <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                          {/* Quantity Selector */}
+                          <div className="flex items-center border border-slate-200 rounded-full bg-slate-50 p-1">
+                            <button
+                              type="button"
+                              className="w-7 h-7 rounded-full bg-white text-slate-700 font-black text-sm flex items-center justify-center hover:bg-slate-200 transition-colors disabled:opacity-50"
+                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                              disabled={updatingItemId === item.id}
+                            >
+                              -
+                            </button>
+                            <span className="w-8 text-center text-xs font-black text-slate-900">
+                              {item.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              className="w-7 h-7 rounded-full bg-white text-slate-700 font-black text-sm flex items-center justify-center hover:bg-slate-200 transition-colors disabled:opacity-50"
+                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                              disabled={updatingItemId === item.id}
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          {/* Item Total */}
+                          <div className="text-right">
+                            <span className="text-base font-black text-slate-900">
+                              ₹{itemTotal.toLocaleString("en-IN")}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Back to Shop Link */}
+                <div>
+                  <Link
+                    to="/Shop"
+                    className="inline-flex items-center gap-2 text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors"
+                  >
+                    <span>← Continue Shopping</span>
+                  </Link>
+                </div>
+
+              </div>
+
+              {/* Right Column: Order Summary Card */}
+              <div className="lg:col-span-1">
+                <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-6 sticky top-24">
+                  <h2 className="font-black text-slate-900 text-lg border-b border-slate-100 pb-3">
+                    Order Summary
+                  </h2>
+
+                  <div className="space-y-3 text-xs font-medium">
+                    <div className="flex justify-between text-slate-600">
+                      <span>Item Subtotal ({cart?.totalItemCount || items.length} items)</span>
+                      <span className="font-bold text-slate-900">₹{subtotal.toLocaleString("en-IN")}</span>
+                    </div>
+                    <div className="flex justify-between text-slate-600">
+                      <span>Shipping &amp; Delivery</span>
+                      <span className="font-bold text-emerald-600">FREE</span>
+                    </div>
+                    <div className="flex justify-between text-slate-600">
+                      <span>GST Taxes</span>
+                      <span className="font-bold text-emerald-600">Inclusive</span>
+                    </div>
+                    <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-sm font-black text-slate-900">
+                      <span>Total Amount</span>
+                      <span className="text-xl text-emerald-700">₹{subtotal.toLocaleString("en-IN")}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-full shadow-lg shadow-emerald-700/20 transition-all active:scale-95 flex items-center justify-between px-6"
+                    onClick={() => navigate("/ShopCheckOut")}
+                  >
+                    <span>Proceed to Checkout</span>
+                    <span>₹{subtotal.toLocaleString("en-IN")} ➔</span>
+                  </button>
+
+                  <div className="text-center pt-2">
+                    <p className="text-[11px] text-slate-400 font-semibold">
+                      🔒 Safe &amp; Secure Checkout • 100% Organic Guarantee
                     </p>
                   </div>
                 </div>
               </div>
+
             </div>
+          )}
 
-            {/* MAIN CART ROW */}
-            {items.length === 0 ? (
-              <div className="text-center py-5 bg-white rounded shadow-sm my-4">
-                <div className="mb-3 display-1 text-muted">🛒</div>
-                <h3 className="fw-bold text-dark">Your Cart is Empty</h3>
-                <p className="text-muted mb-4">Explore our pure traditional organic rice, oils, and natural products.</p>
-                <Link to="/Shop" className="btn btn-success btn-lg fw-bold px-4">
-                  Explore Products
-                </Link>
-              </div>
-            ) : (
-              <div className="row">
-                <div className="col-lg-8 col-md-7">
-                  <div className="py-3">
-                    {/* FREE SHIPPING ALERT */}
-                    <div className="alert alert-success p-3 d-flex align-items-center justify-content-between" role="alert">
-                      <div>
-                        <strong>🌱 Free Delivery Unlocked!</strong> Inclusive of shipping charges & all taxes.
-                      </div>
-                      <Link to="/ShopCheckOut" className="btn btn-sm btn-success fw-bold">
-                        Checkout Now &rsaquo;
-                      </Link>
-                    </div>
-
-                    <ul className="list-group list-group-flush border rounded bg-white mb-4">
-                      {items.map((item) => {
-                        const product = item.product || {};
-                        const variant = item.variant || {};
-                        const imgUrl = getImageUrl(product.imageUrl || product.imageUrls?.[0]);
-                        const itemTotal = item.unitPrice ? (item.unitPrice * item.quantity) : 0;
-
-                        return (
-                          <li key={item.id} className="list-group-item py-3 px-3">
-                            <div className="row align-items-center">
-                              {/* PRODUCT IMAGE */}
-                              <div className="col-3 col-md-2">
-                                <Link to={`/product/${product.slug}`}>
-                                  <img
-                                    src={imgUrl}
-                                    alt={product.name}
-                                    className="img-fluid rounded border p-1"
-                                    style={{ maxHeight: "80px", objectFit: "contain" }}
-                                  />
-                                </Link>
-                              </div>
-
-                              {/* PRODUCT INFO */}
-                              <div className="col-4 col-md-5">
-                                <h6 className="mb-1 fw-bold">
-                                  <Link to={`/product/${product.slug}`} className="text-decoration-none text-dark">
-                                    {product.name}
-                                  </Link>
-                                </h6>
-                                <span className="badge bg-light text-success border me-2">
-                                  {variant.variantName || "Standard"}
-                                </span>
-                                <span className="small text-muted">
-                                  ₹{item.unitPrice} each
-                                </span>
-
-                                <div className="mt-2 small">
-                                  <button
-                                    type="button"
-                                    className="btn btn-link p-0 text-danger text-decoration-none small"
-                                    onClick={() => handleRemoveItem(item.id)}
-                                    disabled={updatingItemId === item.id}
-                                  >
-                                    🗑️ Remove
-                                  </button>
-                                </div>
-                              </div>
-
-                              {/* QUANTITY CONTROL */}
-                              <div className="col-3 col-md-3">
-                                <div className="input-group input-group-sm justify-content-center" style={{ maxWidth: "120px" }}>
-                                  <button
-                                    className="btn btn-outline-secondary fw-bold"
-                                    type="button"
-                                    onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                                    disabled={updatingItemId === item.id}
-                                  >
-                                    -
-                                  </button>
-                                  <input
-                                    type="text"
-                                    className="form-control text-center fw-bold px-1"
-                                    value={item.quantity}
-                                    readOnly
-                                  />
-                                  <button
-                                    className="btn btn-outline-secondary fw-bold"
-                                    type="button"
-                                    onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                                    disabled={updatingItemId === item.id}
-                                  >
-                                    +
-                                  </button>
-                                </div>
-                              </div>
-
-                              {/* ITEM TOTAL PRICE */}
-                              <div className="col-2 text-end">
-                                <span className="fw-bold fs-6 text-dark">
-                                  ₹{itemTotal.toLocaleString('en-IN')}
-                                </span>
-                              </div>
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-
-                    {/* CART ACTION BUTTONS */}
-                    <div className="d-flex justify-content-between align-items-center mt-3">
-                      <Link to="/Shop" className="btn btn-outline-success fw-bold">
-                        &lsaquo; Continue Shopping
-                      </Link>
-                      <button
-                        type="button"
-                        className="btn btn-outline-danger fw-bold"
-                        onClick={handleClearCart}
-                      >
-                        Clear Cart
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* SIDEBAR SUMMARY */}
-                <div className="col-12 col-lg-4 col-md-5">
-                  <div className="mb-5 card shadow-sm border-0 mt-3 mt-md-0">
-                    <div className="card-body p-4">
-                      <h5 className="fw-bold mb-3 text-dark">Order Summary</h5>
-                      
-                      <div className="card border-light mb-3">
-                        <ul className="list-group list-group-flush small">
-                          <li className="list-group-item d-flex justify-content-between align-items-center py-2">
-                            <span>Item Subtotal ({cart?.totalItemCount || items.length} items)</span>
-                            <span className="fw-bold">₹{subtotal.toLocaleString('en-IN')}</span>
-                          </li>
-                          <li className="list-group-item d-flex justify-content-between align-items-center py-2">
-                            <span>Shipping & Delivery</span>
-                            <span className="text-success fw-bold">FREE</span>
-                          </li>
-                          <li className="list-group-item d-flex justify-content-between align-items-center py-2 bg-light">
-                            <span className="fw-bold fs-6 text-dark">Total Amount</span>
-                            <span className="fw-bold fs-5 text-success">
-                              ₹{subtotal.toLocaleString('en-IN')}
-                            </span>
-                          </li>
-                        </ul>
-                      </div>
-
-                      <div className="d-grid gap-2 mb-3">
-                        <button
-                          className="btn btn-success btn-lg fw-bold d-flex justify-content-between align-items-center py-3"
-                          onClick={() => navigate("/ShopCheckOut")}
-                        >
-                          <span>Proceed to Checkout</span>
-                          <span>₹{subtotal.toLocaleString('en-IN')} &rsaquo;</span>
-                        </button>
-                      </div>
-
-                      <p className="text-muted small text-center mb-0">
-                        🔒 Safe & Secure Checkout • 100% Organic Guarantee
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
+        </div>
       )}
     </div>
   );

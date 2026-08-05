@@ -98,4 +98,13 @@ public class OrderService {
         }
         return orderRepository.save(order);
     }
+
+    @Transactional
+    public Order updateOrderTracking(Long orderId, String courierName, String trackingNumber) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        order.setCourierName(courierName);
+        order.setTrackingNumber(trackingNumber);
+        return orderRepository.save(order);
+    }
 }

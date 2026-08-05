@@ -1,7 +1,6 @@
 import { API_BASE_URL, createRazorpayOrder, getImageUrl, processCodCheckout, verifyRazorpayPayment } from "../../services/api";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MagnifyingGlass } from 'react-loader-spinner';
 import Swal from 'sweetalert2';
 import ScrollToTop from "../ScrollToTop";
 
@@ -178,7 +177,7 @@ const ShopCheckOut = () => {
                         contact: shippingForm.phone
                     },
                     theme: {
-                        color: "#0aad0a"
+                        color: "#047857"
                     },
                     handler: async function (response) {
                         try {
@@ -196,7 +195,7 @@ const ShopCheckOut = () => {
                                 title: "Payment Successful! 🎉",
                                 html: `Thank you for your order!<br/>Order Number: <strong>${verification.orderNumber || razorpayData.orderNumber}</strong><br/>Payment ID: <code>${response.razorpay_payment_id}</code>`,
                                 confirmButtonText: "Return to Home",
-                                confirmButtonColor: "#0aad0a"
+                                confirmButtonColor: "#047857"
                             }).then(() => {
                                 navigate("/");
                             });
@@ -230,7 +229,6 @@ const ShopCheckOut = () => {
                 Swal.fire("Checkout Failed", err.message || "Failed to initiate Razorpay payment.", "error");
             }
         } else {
-            // Cash on Delivery
             try {
                 const order = await processCodCheckout(checkoutData);
                 localStorage.removeItem("vinnavar_cart_id");
@@ -240,7 +238,7 @@ const ShopCheckOut = () => {
                     title: "Order Placed (COD)! 🎉",
                     html: `Thank you for your order! Your Order ID is <strong>${order.orderNumber}</strong>.<br/>We will deliver your pure organic items shortly.`,
                     confirmButtonText: "Return to Home",
-                    confirmButtonColor: "#0aad0a"
+                    confirmButtonColor: "#047857"
                 }).then(() => {
                     navigate("/");
                 });
@@ -253,406 +251,365 @@ const ShopCheckOut = () => {
     };
 
     return (
-        <div>
+        <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+            <ScrollToTop />
             {loaderStatus ? (
-                <div className="loader-container d-flex justify-content-center align-items-center my-5 py-5">
-                    <MagnifyingGlass
-                        visible={true}
-                        height="100"
-                        width="100"
-                        ariaLabel="magnifying-glass-loading"
-                        glassColor="#c0efff"
-                        color="#0aad0a"
-                    />
+                <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 font-medium">
+                    <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <span>Initializing Secure Checkout...</span>
                 </div>
             ) : (
-                <>
-                    <ScrollToTop />
-                    <section className="mb-lg-14 mb-8 mt-6">
-                        <div className="container">
-                            <div className="row mb-4">
-                                <div className="col-12">
-                                    <h1 className="fw-bold mb-1 text-success">🛍️ Secure Checkout</h1>
-                                    <p className="text-muted small">
-                                        100% Pure Organic Staples. Fast delivery across Tamil Nadu & India.
-                                    </p>
+                <div className="max-w-7xl mx-auto space-y-8">
+                    
+                    {/* Header Banner */}
+                    <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 rounded-3xl p-8 text-white shadow-xl">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <span className="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-200 text-xs font-extrabold rounded-full border border-emerald-400/30 uppercase tracking-widest mb-2">
+                                    Trusted Razorpay Gateway
+                                </span>
+                                <h1 className="text-2xl sm:text-3xl font-black">🛍️ Secure Checkout</h1>
+                                <p className="text-emerald-100 text-xs sm:text-sm mt-1">
+                                    100% Pure Organic Staples. Delivered directly to your home across India.
+                                </p>
+                            </div>
+                            <Link
+                                to="/ShopCart"
+                                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-full border border-white/20 transition-all self-start sm:self-auto"
+                            >
+                                ← Edit Shopping Cart
+                            </Link>
+                        </div>
+                    </div>
+
+                    <form onSubmit={handlePlaceOrder}>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            
+                            {/* Left Column: Delivery & Billing Details (2 cols) */}
+                            <div className="lg:col-span-2 space-y-6">
+                                
+                                {/* 1. Shipping Address Card */}
+                                <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
+                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+                                        <span className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-sm">
+                                            1
+                                        </span>
+                                        <h2 className="font-extrabold text-slate-900 text-base">
+                                            Shipping &amp; Delivery Address
+                                        </h2>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                                        <div>
+                                            <label className="block font-bold text-slate-700 mb-1">Full Name *</label>
+                                            <input
+                                                type="text"
+                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                name="name"
+                                                placeholder="e.g. Lokesh Rajan"
+                                                value={shippingForm.name}
+                                                onChange={handleShippingChange}
+                                                required
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block font-bold text-slate-700 mb-1">Mobile Phone Number *</label>
+                                            <input
+                                                type="tel"
+                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                name="phone"
+                                                placeholder="+91 9876543210"
+                                                value={shippingForm.phone}
+                                                onChange={handleShippingChange}
+                                                required
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block font-bold text-slate-700 mb-1">Email Address (Optional)</label>
+                                            <input
+                                                type="email"
+                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                name="email"
+                                                placeholder="you@example.com"
+                                                value={shippingForm.email}
+                                                onChange={handleShippingChange}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block font-bold text-slate-700 mb-1">User GSTIN (Optional)</label>
+                                            <input
+                                                type="text"
+                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 uppercase font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                name="gstin"
+                                                placeholder="33AAAAA0000A1Z5"
+                                                value={shippingForm.gstin}
+                                                onChange={handleShippingChange}
+                                            />
+                                        </div>
+
+                                        <div className="sm:col-span-2">
+                                            <label className="block font-bold text-slate-700 mb-1">House / Flat / Street Address *</label>
+                                            <textarea
+                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                name="street"
+                                                rows="2"
+                                                placeholder="#16, MS Nagar Phase 2, Kurumanthangal Road"
+                                                value={shippingForm.street}
+                                                onChange={handleShippingChange}
+                                                required
+                                            ></textarea>
+                                        </div>
+
+                                        <div>
+                                            <label className="block font-bold text-slate-700 mb-1">City / Town</label>
+                                            <input
+                                                type="text"
+                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                name="city"
+                                                placeholder="Arani"
+                                                value={shippingForm.city}
+                                                onChange={handleShippingChange}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block font-bold text-slate-700 mb-1">State</label>
+                                            <input
+                                                type="text"
+                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                name="state"
+                                                value={shippingForm.state}
+                                                onChange={handleShippingChange}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block font-bold text-slate-700 mb-1">Pincode *</label>
+                                            <input
+                                                type="text"
+                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                name="pincode"
+                                                placeholder="632314"
+                                                value={shippingForm.pincode}
+                                                onChange={handleShippingChange}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 2. Billing Address Card */}
+                                <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
+                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+                                        <span className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-sm">
+                                            2
+                                        </span>
+                                        <h2 className="font-extrabold text-slate-900 text-base">
+                                            Billing Address
+                                        </h2>
+                                    </div>
+
+                                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80">
+                                        <label className="flex items-center gap-3 cursor-pointer select-none">
+                                            <input
+                                                type="checkbox"
+                                                checked={sameAsShipping}
+                                                onChange={handleSameAsShippingToggle}
+                                                className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
+                                            />
+                                            <span className="text-xs font-bold text-slate-900">
+                                                Billing Address is same as Shipping Address
+                                            </span>
+                                        </label>
+                                    </div>
+
+                                    {!sameAsShipping && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                                            <div>
+                                                <label className="block font-bold text-slate-700 mb-1">Billing Full Name *</label>
+                                                <input
+                                                    type="text"
+                                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                    name="name"
+                                                    value={billingForm.name}
+                                                    onChange={handleBillingChange}
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block font-bold text-slate-700 mb-1">Billing Phone Number *</label>
+                                                <input
+                                                    type="tel"
+                                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                    name="phone"
+                                                    value={billingForm.phone}
+                                                    onChange={handleBillingChange}
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div className="sm:col-span-2">
+                                                <label className="block font-bold text-slate-700 mb-1">Billing Address *</label>
+                                                <textarea
+                                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                    name="street"
+                                                    rows="2"
+                                                    value={billingForm.street}
+                                                    onChange={handleBillingChange}
+                                                    required
+                                                ></textarea>
+                                            </div>
+
+                                            <div>
+                                                <label className="block font-bold text-slate-700 mb-1">City / Town</label>
+                                                <input
+                                                    type="text"
+                                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                    name="city"
+                                                    value={billingForm.city}
+                                                    onChange={handleBillingChange}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block font-bold text-slate-700 mb-1">Pincode *</label>
+                                                <input
+                                                    type="text"
+                                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                    name="pincode"
+                                                    value={billingForm.pincode}
+                                                    onChange={handleBillingChange}
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* 3. Payment Method Card */}
+                                <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-4">
+                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+                                        <span className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-sm">
+                                            3
+                                        </span>
+                                        <h2 className="font-extrabold text-slate-900 text-base">
+                                            Payment Method
+                                        </h2>
+                                    </div>
+
+                                    <div className="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-200/80 flex items-center justify-between gap-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-4 h-4 rounded-full bg-emerald-700 border-2 border-white shadow-xs"></div>
+                                            <div>
+                                                <div className="font-bold text-slate-900 text-xs sm:text-sm">
+                                                    Razorpay Payment Gateway (UPI, Cards, NetBanking)
+                                                </div>
+                                                <div className="text-slate-500 text-[11px] mt-0.5">
+                                                    Pay securely via GPay, PhonePe, Paytm, Credit/Debit Cards, &amp; NetBanking.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span className="px-2.5 py-1 bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-xs">
+                                            Instant &amp; 100% Safe
+                                        </span>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            {/* Right Column: Order Summary (1 col) */}
+                            <div className="lg:col-span-1">
+                                <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-6 sticky top-24">
+                                    <h2 className="font-black text-slate-900 text-lg border-b border-slate-100 pb-3">
+                                        Order Summary
+                                    </h2>
+
+                                    {(!cart || !cart.items || cart.items.length === 0) ? (
+                                        <div className="text-center py-6 text-slate-400 space-y-3">
+                                            <p className="text-xs">Your cart is empty.</p>
+                                            <Link to="/Shop" className="inline-block px-4 py-2 bg-emerald-700 text-white text-xs font-bold rounded-full">
+                                                Browse Products
+                                            </Link>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="max-h-64 overflow-y-auto space-y-3 pr-1 divide-y divide-slate-100">
+                                                {cart.items.map((item) => {
+                                                    const product = item.product || {};
+                                                    const variant = item.variant || {};
+                                                    const imgUrl = getImageUrl(product.imageUrl || product.imageUrls?.[0]);
+                                                    const itemTotal = item.unitPrice ? item.unitPrice * item.quantity : 0;
+
+                                                    return (
+                                                        <div key={item.id} className="pt-3 first:pt-0 flex items-center justify-between gap-3 text-xs">
+                                                            <div className="flex items-center gap-3">
+                                                                <img
+                                                                    src={imgUrl}
+                                                                    alt={product.name}
+                                                                    className="w-10 h-10 object-contain rounded-xl bg-slate-50 border border-slate-100 p-1"
+                                                                />
+                                                                <div>
+                                                                    <h4 className="font-bold text-slate-900 text-xs truncate max-w-[130px]">
+                                                                        {product.name}
+                                                                    </h4>
+                                                                    <span className="text-[10px] text-emerald-700 font-semibold">
+                                                                        {variant.variantName} x {item.quantity}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <span className="font-extrabold text-slate-900">
+                                                                ₹{itemTotal.toLocaleString("en-IN")}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            <div className="space-y-2 text-xs font-medium pt-4 border-t border-slate-100">
+                                                <div className="flex justify-between text-slate-600">
+                                                    <span>Items Subtotal</span>
+                                                    <span className="font-bold text-slate-900">₹{(cart.subtotal || 0).toLocaleString("en-IN")}</span>
+                                                </div>
+                                                <div className="flex justify-between text-slate-600">
+                                                    <span>Shipping &amp; GST</span>
+                                                    <span className="font-bold text-emerald-600">FREE</span>
+                                                </div>
+                                                <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-sm font-black text-slate-900">
+                                                    <span>Total Payable</span>
+                                                    <span className="text-xl text-emerald-700">₹{(cart.subtotal || 0).toLocaleString("en-IN")}</span>
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                type="submit"
+                                                className="w-full py-4 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-full shadow-lg shadow-emerald-700/20 transition-all active:scale-95 disabled:opacity-50"
+                                                disabled={isProcessing}
+                                            >
+                                                {isProcessing ? (
+                                                    "Processing Secure Payment..."
+                                                ) : (
+                                                    `🔒 Pay ₹${(cart.subtotal || 0).toLocaleString("en-IN")} via Razorpay`
+                                                )}
+                                            </button>
+
+                                            <div className="text-center">
+                                                <p className="text-[11px] text-slate-400 font-semibold">
+                                                    🛡️ 100% Encrypted &amp; Verified by Razorpay
+                                                </p>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
-                            <form onSubmit={handlePlaceOrder}>
-                                <div className="row g-4">
-                                    {/* Left Column: Delivery Address & Payment Method */}
-                                    <div className="col-lg-7 col-md-12">
-                                        {/* Card 1: Customer & Delivery Address */}
-                                        <div className="card shadow-sm border-0 mb-4 rounded-3">
-                                            <div className="card-header bg-success text-white fw-bold py-3">
-                                                📍 1. Shipping & Delivery Address
-                                            </div>
-                                            <div className="card-body p-4">
-                                                <div className="row g-3">
-                                                    <div className="col-12 col-md-6">
-                                                        <label className="form-label small fw-bold">Full Name *</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control"
-                                                            name="name"
-                                                            placeholder="e.g. Lokesh Rajan"
-                                                            value={shippingForm.name}
-                                                            onChange={handleShippingChange}
-                                                            required
-                                                        />
-                                                    </div>
-                                                    <div className="col-12 col-md-6">
-                                                        <label className="form-label small fw-bold">Mobile Phone Number *</label>
-                                                        <input
-                                                            type="tel"
-                                                            className="form-control"
-                                                            name="phone"
-                                                            placeholder="+91 9876543210"
-                                                            value={shippingForm.phone}
-                                                            onChange={handleShippingChange}
-                                                            required
-                                                        />
-                                                    </div>
-                                                    <div className="col-12 col-md-6">
-                                                        <label className="form-label small fw-bold">Email Address (Optional)</label>
-                                                        <input
-                                                            type="email"
-                                                            className="form-control"
-                                                            name="email"
-                                                            placeholder="you@example.com"
-                                                            value={shippingForm.email}
-                                                            onChange={handleShippingChange}
-                                                        />
-                                                    </div>
-                                                    <div className="col-12 col-md-6">
-                                                        <label className="form-label small fw-bold">User GSTIN (Optional)</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control text-uppercase"
-                                                            name="gstin"
-                                                            placeholder="e.g. 33AAAAA0000A1Z5"
-                                                            value={shippingForm.gstin}
-                                                            onChange={handleShippingChange}
-                                                        />
-                                                        <div className="form-text text-muted" style={{ fontSize: "11px" }}>Optional to fill for tax invoice</div>
-                                                    </div>
-                                                    <div className="col-12">
-                                                        <label className="form-label small fw-bold">House / Flat / Street Address *</label>
-                                                        <textarea
-                                                            className="form-control"
-                                                            name="street"
-                                                            rows="2"
-                                                            placeholder="#16, MS Nagar Phase 2, Kurumanthangal Road"
-                                                            value={shippingForm.street}
-                                                            onChange={handleShippingChange}
-                                                            required
-                                                        ></textarea>
-                                                    </div>
-                                                    <div className="col-12 col-md-4">
-                                                        <label className="form-label small fw-bold">City / Town</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control"
-                                                            name="city"
-                                                            placeholder="Arani"
-                                                            value={shippingForm.city}
-                                                            onChange={handleShippingChange}
-                                                        />
-                                                    </div>
-                                                    <div className="col-12 col-md-4">
-                                                        <label className="form-label small fw-bold">State</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control"
-                                                            name="state"
-                                                            value={shippingForm.state}
-                                                            onChange={handleShippingChange}
-                                                        />
-                                                    </div>
-                                                    <div className="col-12 col-md-4">
-                                                        <label className="form-label small fw-bold">Pincode *</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control"
-                                                            name="pincode"
-                                                            placeholder="632314"
-                                                            value={shippingForm.pincode}
-                                                            onChange={handleShippingChange}
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Card 2: Billing Address */}
-                                        <div className="card shadow-sm border-0 mb-4 rounded-3">
-                                            <div className="card-header bg-success text-white fw-bold py-3 d-flex justify-content-between align-items-center">
-                                                <span>💳 2. Billing Address</span>
-                                                <span className="badge bg-white text-success px-2 py-1" style={{ fontSize: "11px" }}>Tax & Invoice</span>
-                                            </div>
-                                            <div className="card-body p-4">
-                                                <div className="p-3 bg-light rounded border mb-3">
-                                                    <label
-                                                        htmlFor="sameAsShippingCheck"
-                                                        className="d-inline-flex align-items-center gap-3 fw-bold text-dark cursor-pointer m-0 user-select-none"
-                                                        style={{ cursor: "pointer" }}
-                                                    >
-                                                        <span className="position-relative d-inline-block flex-shrink-0" style={{ width: "48px", height: "26px" }}>
-                                                            <input
-                                                                type="checkbox"
-                                                                id="sameAsShippingCheck"
-                                                                checked={sameAsShipping}
-                                                                onChange={handleSameAsShippingToggle}
-                                                                className="opacity-0 position-absolute w-100 h-100 top-0 start-0 m-0"
-                                                                style={{ cursor: "pointer", zIndex: 2 }}
-                                                            />
-                                                            <span
-                                                                className="position-absolute top-0 start-0 w-100 h-100 rounded-pill"
-                                                                style={{
-                                                                    backgroundColor: sameAsShipping ? "#198754" : "#ced4da",
-                                                                    transition: "background-color 0.2s ease"
-                                                                }}
-                                                            />
-                                                            <span
-                                                                className="position-absolute rounded-circle bg-white shadow-sm"
-                                                                style={{
-                                                                    top: "3px",
-                                                                    left: sameAsShipping ? "25px" : "3px",
-                                                                    width: "20px",
-                                                                    height: "20px",
-                                                                    transition: "left 0.2s ease"
-                                                                }}
-                                                            />
-                                                        </span>
-                                                        <span className="fs-6 fw-bold text-dark ms-2">
-                                                            Billing Address is same as Shipping Address
-                                                        </span>
-                                                    </label>
-                                                </div>
-
-                                                <div className="row g-3">
-                                                    <div className="col-12 col-md-6">
-                                                        <label className="form-label small fw-bold">
-                                                            Billing Full Name * {sameAsShipping && <span className="text-muted fw-normal ms-1" style={{ fontSize: "11px" }}>(Auto-synced)</span>}
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control"
-                                                            name="name"
-                                                            placeholder="e.g. Lokesh Rajan"
-                                                            value={sameAsShipping ? shippingForm.name : billingForm.name}
-                                                            onChange={sameAsShipping ? undefined : handleBillingChange}
-                                                            readOnly={sameAsShipping}
-                                                            required
-                                                        />
-                                                    </div>
-                                                    <div className="col-12 col-md-6">
-                                                        <label className="form-label small fw-bold">
-                                                            Billing Phone Number * {sameAsShipping && <span className="text-muted fw-normal ms-1" style={{ fontSize: "11px" }}>(Auto-synced)</span>}
-                                                        </label>
-                                                        <input
-                                                            type="tel"
-                                                            className="form-control"
-                                                            name="phone"
-                                                            placeholder="+91 9876543210"
-                                                            value={sameAsShipping ? shippingForm.phone : billingForm.phone}
-                                                            onChange={sameAsShipping ? undefined : handleBillingChange}
-                                                            readOnly={sameAsShipping}
-                                                            required
-                                                        />
-                                                    </div>
-                                                    <div className="col-12">
-                                                        <label className="form-label small fw-bold">
-                                                            Billing Email (Optional) {sameAsShipping && <span className="text-muted fw-normal ms-1" style={{ fontSize: "11px" }}>(Auto-synced)</span>}
-                                                        </label>
-                                                        <input
-                                                            type="email"
-                                                            className="form-control"
-                                                            name="email"
-                                                            placeholder="you@example.com"
-                                                            value={sameAsShipping ? shippingForm.email : billingForm.email}
-                                                            onChange={sameAsShipping ? undefined : handleBillingChange}
-                                                            readOnly={sameAsShipping}
-                                                        />
-                                                    </div>
-                                                    <div className="col-12">
-                                                        <label className="form-label small fw-bold">
-                                                            Billing House / Flat / Street Address * {sameAsShipping && <span className="text-muted fw-normal ms-1" style={{ fontSize: "11px" }}>(Auto-synced)</span>}
-                                                        </label>
-                                                        <textarea
-                                                            className="form-control"
-                                                            name="street"
-                                                            rows="2"
-                                                            placeholder="#16, MS Nagar Phase 2, Kurumanthangal Road"
-                                                            value={sameAsShipping ? shippingForm.street : billingForm.street}
-                                                            onChange={sameAsShipping ? undefined : handleBillingChange}
-                                                            readOnly={sameAsShipping}
-                                                            required
-                                                        ></textarea>
-                                                    </div>
-                                                    <div className="col-12 col-md-4">
-                                                        <label className="form-label small fw-bold">Billing City / Town</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control"
-                                                            name="city"
-                                                            placeholder="Arani"
-                                                            value={sameAsShipping ? shippingForm.city : billingForm.city}
-                                                            onChange={sameAsShipping ? undefined : handleBillingChange}
-                                                            readOnly={sameAsShipping}
-                                                        />
-                                                    </div>
-                                                    <div className="col-12 col-md-4">
-                                                        <label className="form-label small fw-bold">Billing State</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control"
-                                                            name="state"
-                                                            value={sameAsShipping ? shippingForm.state : billingForm.state}
-                                                            onChange={sameAsShipping ? undefined : handleBillingChange}
-                                                            readOnly={sameAsShipping}
-                                                        />
-                                                    </div>
-                                                    <div className="col-12 col-md-4">
-                                                        <label className="form-label small fw-bold">Billing Pincode *</label>
-                                                        <input
-                                                            type="text"
-                                                            className="form-control"
-                                                            name="pincode"
-                                                            placeholder="632314"
-                                                            value={sameAsShipping ? shippingForm.pincode : billingForm.pincode}
-                                                            onChange={sameAsShipping ? undefined : handleBillingChange}
-                                                            readOnly={sameAsShipping}
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Card 3: Payment Method */}
-                                        <div className="card shadow-sm border-0 mb-4 rounded-3">
-                                            <div className="card-header bg-success text-white fw-bold py-3">
-                                                💳 3. Payment Method
-                                            </div>
-                                            <div className="card-body p-4">
-                                                {/* Razorpay Online Payment Option */}
-                                                <div className="card p-3 border border-success bg-light rounded-3">
-                                                    <div className="d-flex align-items-center">
-                                                        <div className="form-check me-3">
-                                                            <input
-                                                                className="form-check-input"
-                                                                type="radio"
-                                                                name="paymentOption"
-                                                                id="payRazorpay"
-                                                                checked={true}
-                                                                readOnly
-                                                            />
-                                                        </div>
-                                                        <div className="w-100">
-                                                            <div className="d-flex justify-content-between align-items-center">
-                                                                <div>
-                                                                    <strong className="text-dark d-block fs-6">Razorpay Online Payment (UPI, Cards, NetBanking)</strong>
-                                                                    <span className="text-muted small">Pay securely via UPI (GPay, PhonePe, Paytm), Credit/Debit Cards, NetBanking, and Wallets.</span>
-                                                                </div>
-                                                                <span className="badge bg-success px-2.5 py-1.5 ms-2">Instant & Secure</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Right Column: Order Summary */}
-                                    <div className="col-lg-5 col-md-12">
-                                        <div className="card shadow-sm border-0 sticky-top" style={{ top: "90px" }}>
-                                            <div className="card-header bg-light fw-bold py-3 border-bottom">
-                                                📦 Order Details & Summary
-                                            </div>
-                                            {(!cart || !cart.items || cart.items.length === 0) ? (
-                                                <div className="p-4 text-center text-muted">
-                                                    <p className="mb-2">Your cart is currently empty.</p>
-                                                    <Link to="/Shop" className="btn btn-sm btn-success">Browse Products</Link>
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    <ul className="list-group list-group-flush" style={{ maxHeight: "300px", overflowY: "auto" }}>
-                                                        {cart.items.map((item) => {
-                                                            const product = item.product || {};
-                                                            const variant = item.variant || {};
-                                                            const imgUrl = getImageUrl(product.imageUrl || product.imageUrls?.[0]);
-                                                            const itemTotal = item.unitPrice ? (item.unitPrice * item.quantity) : 0;
-
-                                                            return (
-                                                                <li key={item.id} className="list-group-item px-4 py-3">
-                                                                    <div className="row align-items-center g-2">
-                                                                        <div className="col-2">
-                                                                            <img
-                                                                                src={imgUrl}
-                                                                                alt={product.name}
-                                                                                className="img-fluid rounded border p-1"
-                                                                                style={{ maxHeight: "45px", objectFit: "contain" }}
-                                                                            />
-                                                                        </div>
-                                                                        <div className="col-6">
-                                                                            <h6 className="mb-0 small fw-bold text-truncate">{product.name}</h6>
-                                                                            <span className="badge bg-light text-success border small">
-                                                                                {variant.variantName}
-                                                                            </span>
-                                                                        </div>
-                                                                        <div className="col-2 text-center text-muted small">
-                                                                            x{item.quantity}
-                                                                        </div>
-                                                                        <div className="col-2 text-end">
-                                                                            <span className="fw-bold small">
-                                                                                ₹{itemTotal.toLocaleString('en-IN')}
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                </li>
-                                                            );
-                                                        })}
-                                                    </ul>
-
-                                                    <div className="card-body bg-light border-top p-4">
-                                                        <div className="d-flex justify-content-between mb-2 small">
-                                                            <span>Items Subtotal</span>
-                                                            <span className="fw-bold">₹{(cart.subtotal || 0).toLocaleString('en-IN')}</span>
-                                                        </div>
-                                                        <div className="d-flex justify-content-between mb-2 small">
-                                                            <span>Delivery & Taxes</span>
-                                                            <span className="text-success fw-bold">FREE</span>
-                                                        </div>
-                                                        <hr />
-                                                        <div className="d-flex justify-content-between fw-bold fs-5 text-dark mb-4">
-                                                            <span>Total Payable</span>
-                                                            <span className="text-success">₹{(cart.subtotal || 0).toLocaleString('en-IN')}</span>
-                                                        </div>
-
-                                                        <button
-                                                            type="submit"
-                                                            className="btn btn-success btn-lg w-100 fw-bold py-3 shadow-sm"
-                                                            disabled={isProcessing}
-                                                        >
-                                                            {isProcessing ? (
-                                                                "Processing Payment..."
-                                                            ) : (
-                                                                `🔒 Pay ₹${(cart.subtotal || 0).toLocaleString('en-IN')} via Razorpay`
-                                                            )}
-                                                        </button>
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
                         </div>
-                    </section>
-                </>
+                    </form>
+
+                </div>
             )}
         </div>
     );

@@ -5,8 +5,8 @@ const COURIER_PROVIDERS = [
   {
     id: "amazon",
     name: "Amazon Shipping",
-    logoText: "📦 Amazon",
-    badgeBg: "bg-warning text-dark",
+    logoText: "📦",
+    badgeBg: "bg-amber-100 text-amber-900 border-amber-300",
     url: "https://track.amazon.in",
     searchUrl: (awb) => `https://track.amazon.in/tracking/${encodeURIComponent(awb)}`,
     description: "Track packages shipped via Amazon Shipping & Logistics network.",
@@ -14,8 +14,8 @@ const COURIER_PROVIDERS = [
   {
     id: "xpressbees",
     name: "Xpressbees Courier",
-    logoText: "🐝 Xpressbees",
-    badgeBg: "bg-primary text-white",
+    logoText: "🐝",
+    badgeBg: "bg-blue-100 text-blue-900 border-blue-300",
     url: "https://www.xpressbees.com/track",
     searchUrl: (awb) => `https://www.xpressbees.com/shipment/tracking?awb=${encodeURIComponent(awb)}`,
     description: "Fast express delivery status tracking across India.",
@@ -23,8 +23,8 @@ const COURIER_PROVIDERS = [
   {
     id: "delhivery",
     name: "Delhivery Express",
-    logoText: "🚚 Delhivery",
-    badgeBg: "bg-danger text-white",
+    logoText: "🚚",
+    badgeBg: "bg-red-100 text-red-900 border-red-300",
     url: "https://www.delhivery.com/tracking",
     searchUrl: (awb) => `https://www.delhivery.com/track/package/${encodeURIComponent(awb)}`,
     description: "Real-time location updates for Delhivery courier services.",
@@ -34,263 +34,201 @@ const COURIER_PROVIDERS = [
 const TrackOrder = () => {
   const [selectedCourier, setSelectedCourier] = useState(COURIER_PROVIDERS[0]);
   const [trackingNumber, setTrackingNumber] = useState("");
-  const [activeUrl, setActiveUrl] = useState(COURIER_PROVIDERS[0].url);
-  const [isIframeLoading, setIsIframeLoading] = useState(true);
 
-  const handleSelectProvider = (provider) => {
-    setSelectedCourier(provider);
-    setIsIframeLoading(true);
-    if (trackingNumber.trim()) {
-      setActiveUrl(provider.searchUrl(trackingNumber.trim()));
-    } else {
-      setActiveUrl(provider.url);
-    }
+  const handleOpenTracking = (e) => {
+    e?.preventDefault();
+    const targetUrl = trackingNumber.trim()
+      ? selectedCourier.searchUrl(trackingNumber.trim())
+      : selectedCourier.url;
+    window.open(targetUrl, "_blank", "noopener,noreferrer");
   };
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (trackingNumber.trim()) {
-      setIsIframeLoading(true);
-      setActiveUrl(selectedCourier.searchUrl(trackingNumber.trim()));
-    } else {
-      setActiveUrl(selectedCourier.url);
-    }
+  const getDirectUrl = (provider) => {
+    return trackingNumber.trim()
+      ? provider.searchUrl(trackingNumber.trim())
+      : provider.url;
   };
 
   return (
-    <div className="bg-light min-vh-100 py-4 py-md-5">
-      <div className="container">
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto space-y-8">
+        
         {/* Breadcrumb Navigation */}
-        <nav aria-label="breadcrumb" className="mb-3">
-          <ol className="breadcrumb">
-            <li className="breadcrumb-item">
-              <Link to="/" className="text-decoration-none text-success font-monospace fw-bold">
-                Home
-              </Link>
-            </li>
-            <li className="breadcrumb-item active fw-semibold" aria-current="page">
-              Track Order
-            </li>
-          </ol>
+        <nav aria-label="Breadcrumb" className="flex items-center text-sm font-medium text-slate-500 space-x-2">
+          <Link to="/" className="text-emerald-600 hover:text-emerald-700 font-bold transition-colors">
+            Home
+          </Link>
+          <span>/</span>
+          <span className="text-slate-900 font-semibold">Track Order</span>
         </nav>
 
-        {/* Page Header */}
-        <div className="bg-white rounded-4 shadow-sm p-4 p-md-5 mb-4 text-center border-start border-success border-5">
-          <span className="badge bg-success-subtle text-success border border-success px-3 py-2 rounded-pill fw-bold mb-2">
-            LIVE ORDER TRACKING
-          </span>
-          <h1 className="fw-bold text-dark display-6 mb-2">Track Your Package & Shipment</h1>
-          <p className="text-muted fs-6 mx-auto mb-0" style={{ maxWidth: "680px" }}>
-            Monitor your order status in real-time. Enter your AWB / Tracking number or select your courier partner below to view current location and delivery progress.
-          </p>
-        </div>
-
-        {/* Search & Provider Selection Section */}
-        <div className="row g-4 mb-4">
-          <div className="col-12">
-            <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
-              <form onSubmit={handleSearchSubmit} className="row g-3 align-items-center">
-                <div className="col-md-7 col-lg-8">
-                  <label htmlFor="trackingInput" className="form-label fw-bold text-secondary mb-1">
-                    Enter AWB / Tracking ID / Order Number
-                  </label>
-                  <div className="input-group input-group-lg">
-                    <span className="input-group-text bg-light text-muted border-end-0">
-                      🔍
-                    </span>
-                    <input
-                      type="text"
-                      id="trackingInput"
-                      className="form-control bg-light border-start-0 fs-6"
-                      placeholder="e.g. SF123456789IN / 14002938102"
-                      value={trackingNumber}
-                      onChange={(e) => setTrackingNumber(e.target.value)}
-                    />
-                    {trackingNumber && (
-                      <button
-                        type="button"
-                        className="btn btn-light border-start-0 border text-muted"
-                        onClick={() => {
-                          setTrackingNumber("");
-                          setActiveUrl(selectedCourier.url);
-                        }}
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="col-md-5 col-lg-4 d-flex align-items-end gap-2 mt-3 mt-md-0">
-                  <button
-                    type="submit"
-                    className="btn btn-success btn-lg w-100 fw-bold shadow-sm"
-                    style={{ backgroundColor: "#2d6a4f", borderColor: "#2d6a4f" }}
-                  >
-                    Track Package
-                  </button>
-                </div>
-              </form>
-            </div>
+        {/* Hero Banner Header */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-900 rounded-3xl p-8 sm:p-12 text-white shadow-xl">
+          <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="relative z-10 text-center max-w-3xl mx-auto space-y-4">
+            <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-widest bg-emerald-400/20 text-emerald-200 border border-emerald-400/30 backdrop-blur-md">
+              Live Order Tracking
+            </span>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight">
+              Track Your Package & Shipment
+            </h1>
+            <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto">
+              Enter your AWB / Tracking number or select your courier partner below to open the official live tracking page in one click.
+            </p>
           </div>
         </div>
 
-        {/* Courier Provider Tabs */}
-        <div className="mb-4">
-          <h5 className="fw-bold mb-3 text-dark">Select Logistics / Courier Provider</h5>
-          <div className="row g-3">
+        {/* Tracking Search Card */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-md border border-slate-100">
+          <form onSubmit={handleOpenTracking} className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="flex-1 w-full space-y-2">
+              <label htmlFor="trackingInput" className="block text-xs font-bold uppercase tracking-wider text-slate-600">
+                Enter AWB / Tracking ID / Order Number
+              </label>
+              <div className="relative flex items-center">
+                <span className="absolute left-4 text-slate-400 text-lg">🔍</span>
+                <input
+                  type="text"
+                  id="trackingInput"
+                  className="w-full pl-12 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-400"
+                  placeholder="e.g. SF123456789IN / 14002938102"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                />
+                {trackingNumber && (
+                  <button
+                    type="button"
+                    className="absolute right-3 p-1.5 text-slate-400 hover:text-slate-600 transition-colors"
+                    onClick={() => setTrackingNumber("")}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full md:w-auto px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-2xl shadow-lg shadow-emerald-600/25 transition-all duration-200 flex items-center justify-center gap-2 flex-shrink-0 active:scale-95"
+            >
+              <span>Track on {selectedCourier.name}</span>
+              <span className="text-lg">↗</span>
+            </button>
+          </form>
+        </div>
+
+        {/* Courier Provider Cards */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+            Select Logistics / Courier Provider
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {COURIER_PROVIDERS.map((provider) => {
               const isSelected = selectedCourier.id === provider.id;
+              const directUrl = getDirectUrl(provider);
               return (
-                <div key={provider.id} className="col-md-4">
-                  <div
-                    className={`card h-100 rounded-4 border-2 transition-all cursor-pointer ${
-                      isSelected
-                        ? "border-success shadow bg-white"
-                        : "border-light-subtle shadow-sm bg-white"
-                    }`}
-                    style={{
-                      cursor: "pointer",
-                      transition: "transform 0.2s ease, border-color 0.2s ease",
-                      borderColor: isSelected ? "#2b9348" : "#e0e0e0",
-                    }}
-                    onClick={() => handleSelectProvider(provider)}
-                  >
-                    <div className="card-body p-3 d-flex align-items-center justify-content-between">
-                      <div className="d-flex align-items-center gap-3">
-                        <div
-                          className="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm"
-                          style={{
-                            width: "48px",
-                            height: "48px",
-                            backgroundColor: isSelected ? "#e8f5e9" : "#f8f9fa",
-                            fontSize: "20px",
-                          }}
-                        >
-                          {provider.logoText.split(" ")[0]}
-                        </div>
-                        <div>
-                          <h6 className="fw-bold text-dark mb-0">{provider.name}</h6>
-                          <small className="text-muted" style={{ fontSize: "12px" }}>
-                            {provider.description}
-                          </small>
-                        </div>
+                <div
+                  key={provider.id}
+                  onClick={() => setSelectedCourier(provider)}
+                  className={`group relative bg-white rounded-3xl p-6 border-2 cursor-pointer transition-all duration-300 flex flex-col justify-between space-y-6 ${
+                    isSelected
+                      ? "border-emerald-500 shadow-xl shadow-emerald-500/10 -translate-y-1"
+                      : "border-slate-100 shadow-sm hover:border-slate-200 hover:shadow-md"
+                  }`}
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm ${
+                        isSelected ? "bg-emerald-50 text-emerald-700" : "bg-slate-50 text-slate-600"
+                      }`}>
+                        {provider.logoText}
                       </div>
-                      <span className={`badge ${provider.badgeBg} rounded-pill`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold border ${provider.badgeBg}`}>
                         {isSelected ? "Active" : "Select"}
                       </span>
                     </div>
+
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-base group-hover:text-emerald-600 transition-colors">
+                        {provider.name}
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                        {provider.description}
+                      </p>
+                    </div>
                   </div>
+
+                  <a
+                    href={directUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 ${
+                      isSelected
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20"
+                        : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                    }`}
+                  >
+                    <span>Go to {provider.name} Tracking</span>
+                    <span>↗</span>
+                  </a>
                 </div>
               );
             })}
           </div>
         </div>
 
-        {/* Iframe View & External Link Action Bar */}
-        <div className="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
-          <div className="card-header bg-dark text-white p-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
-            <div className="d-flex align-items-center gap-2">
-              <span className="spinner-grow spinner-grow-sm text-success" role="status" />
-              <span className="fw-bold">
-                Embed Status: {selectedCourier.name} Portal
-              </span>
-              <span className="badge bg-secondary font-monospace ms-2 d-none d-sm-inline">
-                {activeUrl}
-              </span>
-            </div>
-
-            <div className="d-flex gap-2">
-              <a
-                href={activeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-sm btn-outline-light rounded-pill fw-semibold"
-              >
-                🔗 Open Provider Site in New Tab
-              </a>
-            </div>
+        {/* Direct Redirect Banner Card */}
+        <div className="bg-white rounded-3xl p-8 sm:p-10 shadow-md border border-slate-100 text-center space-y-6">
+          <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center text-3xl mx-auto shadow-inner">
+            🔗
           </div>
-
-          <div className="position-relative bg-white" style={{ minHeight: "550px" }}>
-            {isIframeLoading && (
-              <div
-                className="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-white"
-                style={{ zIndex: 5, opacity: 0.9 }}
-              >
-                <div className="spinner-border text-success mb-3" style={{ width: "3rem", height: "3rem" }} role="status">
-                  <span className="visually-hidden">Loading tracking portal...</span>
-                </div>
-                <h6 className="fw-bold text-secondary">Loading {selectedCourier.name} tracking page...</h6>
-                <p className="small text-muted mb-0">Please wait standard connection time.</p>
-              </div>
-            )}
-
-            <iframe
-              title={`Tracking - ${selectedCourier.name}`}
-              src={activeUrl}
-              className="w-100 border-0"
-              style={{ height: "650px" }}
-              onLoad={() => setIsIframeLoading(false)}
-            />
+          <div className="max-w-2xl mx-auto space-y-2">
+            <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
+              Direct Official Tracking Portal Access
+            </h3>
+            <p className="text-sm text-slate-500 leading-relaxed">
+              Logistics companies (Amazon Shipping, Xpressbees, Delhivery) enforce security restrictions (<code>X-Frame-Options</code>). Click below to view live shipment updates directly on the official <strong>{selectedCourier.name}</strong> portal.
+            </p>
           </div>
-
-          {/* External Fallback Notification Banner */}
-          <div className="card-footer bg-light p-3 text-muted border-top">
-            <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
-              <div className="small">
-                <strong>Notice:</strong> If the iframe preview above appears blank due to third-party courier security policies, click 
-                <a
-                  href={activeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="fw-bold text-success mx-1"
-                >
-                  Direct Tracking Portal Link ↗
-                </a>
-                to complete your query on their website.
-              </div>
-              <button
-                type="button"
-                className="btn btn-sm btn-light border text-dark fw-bold"
-                onClick={() => setIsIframeLoading(true)}
-              >
-                🔄 Refresh Frame
-              </button>
-            </div>
+          <div>
+            <a
+              href={getDirectUrl(selectedCourier)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-2xl shadow-lg shadow-emerald-600/25 transition-all duration-200 active:scale-95"
+            >
+              <span>Open {selectedCourier.name} Portal in New Tab</span>
+              <span className="text-lg">↗</span>
+            </a>
           </div>
         </div>
 
         {/* FAQs & Quick Guide */}
-        <div className="row g-4">
-          <div className="col-md-4">
-            <div className="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
-              <div className="fs-3 mb-2">📩</div>
-              <h6 className="fw-bold text-dark">Where is my AWB Number?</h6>
-              <p className="text-muted small mb-0">
-                Check your SMS or order confirmation email sent right after dispatch. The AWB / Tracking number is listed next to your delivery partner details.
-              </p>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-3">
+            <div className="text-2xl">📩</div>
+            <h4 className="font-bold text-slate-900 text-sm">Where is my AWB Number?</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Check your SMS or order confirmation email sent right after dispatch. The AWB / Tracking number is listed next to your delivery partner details.
+            </p>
           </div>
-          <div className="col-md-4">
-            <div className="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
-              <div className="fs-3 mb-2">⚡</div>
-              <h6 className="fw-bold text-dark">Real-Time Transit Updates</h6>
-              <p className="text-muted small mb-0">
-                Logistics status updates automatically every few hours as your organic products move through regional fulfillment hubs.
-              </p>
-            </div>
+          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-3">
+            <div className="text-2xl">⚡</div>
+            <h4 className="font-bold text-slate-900 text-sm">Real-Time Transit Updates</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Logistics status updates automatically every few hours as your organic products move through regional fulfillment hubs.
+            </p>
           </div>
-          <div className="col-md-4">
-            <div className="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
-              <div className="fs-3 mb-2">🎧</div>
-              <h6 className="fw-bold text-dark">Need Delivery Help?</h6>
-              <p className="text-muted small mb-0">
-                If your order status hasn't updated in 48 hours, reach out to our Vinnavar support desk or contact customer service via WhatsApp.
-              </p>
-            </div>
+          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-3">
+            <div className="text-2xl">🎧</div>
+            <h4 className="font-bold text-slate-900 text-sm">Need Delivery Help?</h4>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              If your order status hasn't updated in 48 hours, reach out to our Vinnavar support desk or contact customer service via WhatsApp.
+            </p>
           </div>
         </div>
+
       </div>
     </div>
   );

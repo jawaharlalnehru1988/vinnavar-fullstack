@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { MagnifyingGlass } from "react-loader-spinner";
 import ScrollToTop from "../ScrollToTop";
 import { fetchBlogBySlug, fetchBlogsByCategory, fetchBlogs, getImageUrl } from "../../services/api";
 
@@ -21,7 +20,6 @@ const BlogSingle = () => {
         setLoading(true);
         let article = await fetchBlogBySlug(slug);
         
-        // Fallback to first blog if slug is not found
         if (!article) {
           const all = await fetchBlogs();
           if (all && all.length > 0) article = all[0];
@@ -51,24 +49,22 @@ const BlogSingle = () => {
     const rawLines = content.split("\n");
     const elements = [];
     let currentList = [];
-    let listType = null; // 'bullet' or 'numbered'
+    let listType = null;
 
     const flushList = (keyPrefix) => {
       if (currentList.length === 0) return;
 
       if (listType === "bullet") {
         elements.push(
-          <div key={`list-${keyPrefix}`} className="card border-0 bg-light p-4 rounded-4 my-4 shadow-sm">
-            <h5 className="fw-bold text-success mb-3 d-flex align-items-center gap-2">
-              <span>🥗</span> Key Ingredients & Items Required
-            </h5>
-            <div className="row g-3">
+          <div key={`list-${keyPrefix}`} className="bg-slate-50 border border-slate-200/80 p-6 rounded-3xl my-6 space-y-3 shadow-xs">
+            <h4 className="font-extrabold text-emerald-800 text-sm flex items-center gap-2 uppercase tracking-wide">
+              <span>🥗</span> Key Ingredients &amp; Items Required
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               {currentList.map((item, iIdx) => (
-                <div key={iIdx} className="col-12 col-md-6 d-flex align-items-start gap-2">
-                  <span className="text-success fs-5 mt-n1">✅</span>
-                  <span className="text-dark fw-medium" style={{ lineHeight: "1.55" }}>
-                    {renderInlineStyles(item)}
-                  </span>
+                <div key={iIdx} className="flex items-start gap-2 text-slate-800 font-medium">
+                  <span className="text-emerald-600 text-sm mt-0.5">✅</span>
+                  <span className="leading-relaxed">{renderInlineStyles(item)}</span>
                 </div>
               ))}
             </div>
@@ -76,16 +72,13 @@ const BlogSingle = () => {
         );
       } else if (listType === "numbered") {
         elements.push(
-          <div key={`list-${keyPrefix}`} className="my-4 ps-1">
+          <div key={`list-${keyPrefix}`} className="my-6 space-y-3">
             {currentList.map((item, iIdx) => (
-              <div key={iIdx} className="d-flex align-items-start gap-3 mb-3 p-3.5 bg-white rounded-4 border shadow-sm">
-                <span
-                  className="badge bg-success rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm"
-                  style={{ width: "32px", height: "32px", fontSize: "0.95rem" }}
-                >
+              <div key={iIdx} className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-slate-100 shadow-xs">
+                <span className="w-7 h-7 rounded-full bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
                   {iIdx + 1}
                 </span>
-                <div className="text-dark pt-1" style={{ lineHeight: "1.7", fontSize: "1.05rem" }}>
+                <div className="text-slate-800 text-sm leading-relaxed pt-0.5">
                   {renderInlineStyles(item)}
                 </div>
               </div>
@@ -106,7 +99,6 @@ const BlogSingle = () => {
         return;
       }
 
-      // Check Bullet (- or *)
       if (/^[-*]\s+/.test(trimmed)) {
         if (listType && listType !== "bullet") flushList(idx);
         listType = "bullet";
@@ -114,7 +106,6 @@ const BlogSingle = () => {
         return;
       }
 
-      // Check Numbered (1. 2.)
       if (/^\d+\.\s+/.test(trimmed)) {
         if (listType && listType !== "numbered") flushList(idx);
         listType = "numbered";
@@ -122,31 +113,29 @@ const BlogSingle = () => {
         return;
       }
 
-      // Non-list line encountered
       flushList(idx);
 
-      // Check Headers
       if (trimmed.startsWith("### ")) {
         elements.push(
-          <h3 key={idx} className="fw-bold text-dark mt-4 mb-3" style={{ fontSize: "1.4rem" }}>
+          <h3 key={idx} className="font-extrabold text-slate-900 text-lg mt-6 mb-3">
             {trimmed.replace(/^###\s+/, "")}
           </h3>
         );
       } else if (trimmed.startsWith("## ")) {
         elements.push(
-          <h2 key={idx} className="fw-bold text-dark mt-5 mb-3" style={{ fontSize: "1.75rem" }}>
+          <h2 key={idx} className="font-black text-slate-900 text-xl mt-8 mb-4">
             {trimmed.replace(/^##\s+/, "")}
           </h2>
         );
       } else if (trimmed.startsWith("# ")) {
         elements.push(
-          <h1 key={idx} className="fw-bold text-dark mt-5 mb-3" style={{ fontSize: "2rem" }}>
+          <h1 key={idx} className="font-black text-slate-900 text-2xl mt-8 mb-4">
             {trimmed.replace(/^#\s+/, "")}
           </h1>
         );
       } else {
         elements.push(
-          <p key={idx} className="text-secondary mb-3.5" style={{ fontSize: "1.1rem", lineHeight: "1.85" }}>
+          <p key={idx} className="text-slate-600 text-sm leading-relaxed mb-4">
             {renderInlineStyles(trimmed)}
           </p>
         );
@@ -157,13 +146,12 @@ const BlogSingle = () => {
     return elements;
   };
 
-  // Helper for bold **text** in markdown
   const renderInlineStyles = (text) => {
     const parts = text.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, index) => {
       if (part.startsWith("**") && part.endsWith("**")) {
         return (
-          <strong key={index} className="fw-bold text-dark">
+          <strong key={index} className="font-extrabold text-slate-900">
             {part.slice(2, -2)}
           </strong>
         );
@@ -173,158 +161,129 @@ const BlogSingle = () => {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       {loading ? (
-        <div className="loader-container">
-          <MagnifyingGlass
-            visible={true}
-            height="100"
-            width="100"
-            ariaLabel="magnifying-glass-loading"
-            glassColor="#c0efff"
-            color="#0aad0a"
-          />
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 font-medium">
+          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <span>Loading Article Details...</span>
         </div>
       ) : !blog ? (
-        <div className="container py-5 text-center">
-          <h3>Blog article not found</h3>
-          <Link to="/Blog" className="btn btn-success rounded-pill mt-3">
+        <div className="max-w-md mx-auto text-center py-16 space-y-4 bg-white rounded-3xl border border-slate-100 p-8">
+          <h3 className="font-black text-slate-900 text-lg">Article Not Found</h3>
+          <Link to="/Blog" className="inline-block px-5 py-2.5 bg-emerald-700 text-white font-bold text-xs rounded-full">
             Back to All Articles
           </Link>
         </div>
       ) : (
         <>
           <ScrollToTop />
-          <div className="bg-light py-4 border-bottom">
-            <div className="container">
-              {/* Breadcrumbs */}
-              <nav aria-label="breadcrumb">
-                <ol className="breadcrumb m-0 small">
-                  <li className="breadcrumb-item">
-                    <Link to="/" className="text-decoration-none text-muted">
-                      Home
-                    </Link>
-                  </li>
-                  <li className="breadcrumb-item">
-                    <Link to="/Blog" className="text-decoration-none text-muted">
-                      Blog
-                    </Link>
-                  </li>
-                  <li className="breadcrumb-item">
-                    <Link
-                      to={`/BlogCategory?category=${encodeURIComponent(blog.category)}`}
-                      className="text-decoration-none text-muted"
-                    >
-                      {blog.category}
-                    </Link>
-                  </li>
-                  <li className="breadcrumb-item active text-dark fw-semibold" aria-current="page">
-                    {blog.title}
-                  </li>
-                </ol>
-              </nav>
-            </div>
-          </div>
+          <div className="max-w-4xl mx-auto space-y-8">
+            
+            {/* Breadcrumbs */}
+            <nav aria-label="Breadcrumb" className="flex items-center text-xs font-medium text-slate-500 space-x-2">
+              <Link to="/" className="text-emerald-600 hover:text-emerald-700 font-bold">Home</Link>
+              <span>/</span>
+              <Link to="/Blog" className="text-emerald-600 hover:text-emerald-700 font-bold">Blog</Link>
+              <span>/</span>
+              <Link to={`/BlogCategory?category=${encodeURIComponent(blog.category)}`} className="text-slate-700 font-semibold">
+                {blog.category}
+              </Link>
+            </nav>
 
-          <article className="py-8">
-            <div className="container">
-              <div className="row justify-content-center">
-                <div className="col-lg-9 col-12">
-                  {/* Category Pill */}
-                  <div className="mb-3">
-                    <Link
-                      to={`/BlogCategory?category=${encodeURIComponent(blog.category)}`}
-                      className="badge bg-success px-3 py-1.5 text-uppercase fw-bold text-decoration-none rounded-pill"
-                    >
-                      {blog.category}
-                    </Link>
-                  </div>
-
-                  {/* Main Title */}
-                  <h1 className="fw-bold display-5 text-dark mb-4" style={{ lineHeight: "1.25" }}>
-                    {blog.title}
-                  </h1>
-
-                  {/* Excerpt Lead */}
-                  {blog.shortDescription && (
-                    <p className="lead text-muted mb-4 fs-5" style={{ lineHeight: "1.6" }}>
-                      {blog.shortDescription}
-                    </p>
-                  )}
-
-                  {/* Main Featured Image */}
-                  <div className="mb-5">
-                    <img
-                      src={getImageUrl(blog.imageUrl)}
-                      alt={blog.title}
-                      className="img-fluid rounded-4 shadow-sm w-100"
-                      style={{ maxHeight: "500px", objectFit: "cover" }}
-                    />
-                  </div>
-
-                  {/* Article Body Content */}
-                  <div className="article-body bg-white p-4 p-md-5 rounded-4 shadow-sm border mb-5">
-                    {renderFormattedContent(blog.content)}
-                  </div>
-
-                  {/* Back to Blog Action Bar */}
-                  <div className="d-flex justify-content-between align-items-center pt-4 border-top">
-                    <Link to="/Blog" className="btn btn-outline-success rounded-pill px-4 fw-semibold">
-                      ← Back to All Articles
-                    </Link>
-                    <Link
-                      to={`/BlogCategory?category=${encodeURIComponent(blog.category)}`}
-                      className="btn btn-success text-white rounded-pill px-4 fw-semibold"
-                    >
-                      More in {blog.category} →
-                    </Link>
-                  </div>
-                </div>
+            {/* Main Article Container */}
+            <article className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 sm:p-10 space-y-6">
+              <div>
+                <Link
+                  to={`/BlogCategory?category=${encodeURIComponent(blog.category)}`}
+                  className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-extrabold uppercase tracking-widest rounded-full border border-emerald-200/60 mb-3"
+                >
+                  {blog.category}
+                </Link>
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 leading-tight">
+                  {blog.title}
+                </h1>
+                {blog.shortDescription && (
+                  <p className="text-sm sm:text-base text-slate-500 mt-3 leading-relaxed font-medium">
+                    {blog.shortDescription}
+                  </p>
+                )}
               </div>
 
-              {/* Related Articles Section */}
-              {relatedBlogs.length > 0 && (
-                <div className="mt-10 pt-5 border-top">
-                  <h3 className="fw-bold mb-4 text-center">Related Articles You Might Enjoy</h3>
-                  <div className="row">
-                    {relatedBlogs.map((rel) => (
-                      <div key={rel.id} className="col-12 col-md-4 mb-4">
-                        <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+              {/* Featured Image */}
+              <div className="rounded-3xl overflow-hidden max-h-[480px] bg-slate-100">
+                <img
+                  src={getImageUrl(blog.imageUrl)}
+                  alt={blog.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Formatted Content */}
+              <div className="pt-4 border-t border-slate-100">
+                {renderFormattedContent(blog.content)}
+              </div>
+
+              {/* Article Actions Bar */}
+              <div className="pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
+                <Link
+                  to="/Blog"
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-full transition-all"
+                >
+                  ← Back to All Articles
+                </Link>
+                <Link
+                  to={`/BlogCategory?category=${encodeURIComponent(blog.category)}`}
+                  className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-full transition-all shadow-md shadow-emerald-700/20"
+                >
+                  More in {blog.category} ➔
+                </Link>
+              </div>
+            </article>
+
+            {/* Related Articles Section */}
+            {relatedBlogs.length > 0 && (
+              <div className="space-y-6 pt-6">
+                <h3 className="text-xl font-black text-slate-900 text-center">
+                  Related Articles You Might Enjoy
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  {relatedBlogs.map((rel) => (
+                    <div
+                      key={rel.id}
+                      className="group bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all p-4 flex flex-col justify-between"
+                    >
+                      <div className="space-y-3">
+                        <div className="h-36 rounded-2xl overflow-hidden bg-slate-100">
                           <Link to={`/blog/${rel.slug}`}>
                             <img
                               src={getImageUrl(rel.imageUrl)}
                               alt={rel.title}
-                              className="card-img-top"
-                              style={{ height: "200px", objectFit: "cover" }}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                           </Link>
-                          <div className="card-body p-4 d-flex flex-column">
-                            <span className="text-success fw-bold small text-uppercase mb-2">
-                              {rel.category}
-                            </span>
-                            <h5 className="card-title fw-bold mb-2">
-                              <Link to={`/blog/${rel.slug}`} className="text-dark text-decoration-none">
-                                {rel.title}
-                              </Link>
-                            </h5>
-                            <p className="card-text text-muted small flex-grow-1">
-                              {rel.shortDescription || (rel.content?.substring(0, 90) + "...")}
-                            </p>
-                            <Link
-                              to={`/blog/${rel.slug}`}
-                              className="btn btn-sm btn-outline-success rounded-pill mt-3 align-self-start fw-semibold"
-                            >
-                              Read Full Article →
-                            </Link>
-                          </div>
                         </div>
+                        <span className="text-[10px] font-extrabold text-emerald-700 uppercase tracking-widest">
+                          {rel.category}
+                        </span>
+                        <h4 className="font-bold text-slate-900 text-sm line-clamp-2 group-hover:text-emerald-700 transition-colors">
+                          <Link to={`/blog/${rel.slug}`}>{rel.title}</Link>
+                        </h4>
                       </div>
-                    ))}
-                  </div>
+                      <div className="pt-3 mt-3 border-t border-slate-100">
+                        <Link
+                          to={`/blog/${rel.slug}`}
+                          className="text-xs font-bold text-emerald-700 hover:text-emerald-800"
+                        >
+                          Read Article ➔
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              )}
-            </div>
-          </article>
+              </div>
+            )}
+
+          </div>
         </>
       )}
     </div>

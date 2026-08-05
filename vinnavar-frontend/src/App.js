@@ -18,9 +18,6 @@ import MyAccountSetting from "./pages/Accounts/MyAcconutSetting";
 import MyAcconutNotification from "./pages/Accounts/MyAcconutNotification";
 import MyAcconutPaymentMethod from "./pages/Accounts/MyAcconutPaymentMethod";
 import MyAccountAddress from "./pages/Accounts/MyAccountAddress";
-import MyAccountForgetPassword from "./pages/Accounts/MyAccountForgetPassword";
-import MyAccountSignIn from "./pages/Accounts/MyAccountSignIn";
-import MyAccountSignUp from "./pages/Accounts/MyAccountSignUp";
 import FAQ from "./pages/FooterElements/Faq";
 import Coupons from "./pages/FooterElements/Coupons";
 import Careers from "./pages/FooterElements/Careers";
@@ -83,9 +80,9 @@ const AppContent = () => {
         <Route path="/MyAcconutNotification" element={<MyAcconutNotification />} />
         <Route path="/MyAcconutPaymentMethod" element={<MyAcconutPaymentMethod />} />
         <Route path="/MyAccountAddress" element={<MyAccountAddress />} />
-        <Route path="/MyAccountForgetPassword" element={<MyAccountForgetPassword />} />
-        <Route path="/MyAccountSignIn" element={<MyAccountSignIn />} />
-        <Route path="/MyAccountSignUp" element={<MyAccountSignUp />} />
+        <Route path="/MyAccountForgetPassword" element={<Navigate to="/" replace />} />
+        <Route path="/MyAccountSignIn" element={<Navigate to="/" replace />} />
+        <Route path="/MyAccountSignUp" element={<Navigate to="/" replace />} />
         {/* About pages */}
         <Route path="/Blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogSingle />} />

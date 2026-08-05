@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 50" width="80" height="26">
+  <rect x="0" y="5" width="40" height="40" rx="10" fill="#5F259F"/>
+  <path fill="#FFFFFF" d="M14 15 h12 v20 h-4 v-8 h-8 z M22 19 v6 h-4 v-6 z"/>
+  <text x="48" y="34" font-family="Arial, sans-serif" font-weight="bold" font-size="25" fill="#5F259F">PhonePe</text>
+</svg>

@@ -222,7 +222,10 @@ const AdminDashboard = () => {
 
     const handleRemoveImage = (index) => {
         setProductForm((prev) => {
-            const updatedImages = prev.imageUrls.filter((_, i) => i !== index);
+            const currentList = (prev.imageUrls && prev.imageUrls.length > 0)
+                ? prev.imageUrls
+                : (prev.imageUrl ? [prev.imageUrl] : []);
+            const updatedImages = currentList.filter((_, i) => i !== index);
             let updatedPrimary = prev.imageUrl;
             if (!updatedImages.includes(updatedPrimary)) {
                 updatedPrimary = updatedImages[0] || "";
@@ -343,6 +346,10 @@ const AdminDashboard = () => {
     const handleEditProduct = (prod) => {
         setEditingProductId(prod.id);
         const defaultVar = prod.variants?.[0] || {};
+        const initialImages = (Array.isArray(prod.imageUrls) && prod.imageUrls.length > 0)
+            ? prod.imageUrls
+            : (prod.imageUrl ? [prod.imageUrl] : []);
+
         setProductForm({
             name: prod.name || "",
             slug: prod.slug || "",
@@ -350,8 +357,8 @@ const AdminDashboard = () => {
             shortDescription: prod.shortDescription || "",
             fullDescription: prod.fullDescription || "",
             benefits: prod.benefits || "",
-            imageUrl: prod.imageUrl || "",
-            imageUrls: prod.imageUrls || (prod.imageUrl ? [prod.imageUrl] : []),
+            imageUrl: prod.imageUrl || (initialImages[0] || ""),
+            imageUrls: initialImages,
             videoUrl: prod.videoUrl || "",
             featured: prod.featured || false,
             active: prod.active || true,
@@ -536,6 +543,24 @@ const AdminDashboard = () => {
         }
     };
 
+    // Order Tracking Update
+    const handleOrderTrackingUpdate = async (orderId, courierName, trackingNumber) => {
+        try {
+            const params = new URLSearchParams();
+            if (courierName) params.append("courierName", courierName);
+            if (trackingNumber) params.append("trackingNumber", trackingNumber);
+            const res = await fetch(`${API_BASE_URL}/admin/orders/${orderId}/tracking?${params.toString()}`, {
+                method: "PUT"
+            });
+            if (res.ok) {
+                Swal.fire({ icon: "success", title: "Logistics & Tracking Updated", timer: 1500, showConfirmButton: false });
+                loadData();
+            }
+        } catch (err) {
+            Swal.fire("Error", "Failed to update tracking info", "error");
+        }
+    };
+
     if (loading) return <div className="text-center my-5 fs-4">Loading Admin Dashboard...</div>;
 
     const totalRevenue = orders.reduce((acc, o) => acc + (o.totalAmount || 0), 0);
@@ -631,7 +656,6 @@ const AdminDashboard = () => {
                                         <th>Product Name</th>
                                         <th>Category</th>
                                         <th>Variant / Price</th>
-                                        <th>Featured</th>
                                         <th>Status</th>
                                         <th className="text-end">Actions</th>
                                     </tr>
@@ -659,7 +683,6 @@ const AdminDashboard = () => {
                                                         {defaultVar.variantName || "Standard"}: ₹{defaultVar.discountPrice || defaultVar.price || 0}
                                                     </span>
                                                 </td>
-                                                <td>{p.featured ? <span className="badge bg-warning text-dark">Featured</span> : "No"}</td>
                                                 <td>
                                                     <span className={`badge ${p.active ? "bg-success" : "bg-secondary"}`}>
                                                         {p.active ? "Active" : "Inactive"}
@@ -754,6 +777,7 @@ const AdminDashboard = () => {
                                         <th>Order #</th>
                                         <th>Customer</th>
                                         <th>Items</th>
+                                        <th>Logistics & Tracking</th>
                                         <th>Total Amount</th>
                                         <th>Payment</th>
                                         <th>Status</th>
@@ -776,6 +800,22 @@ const AdminDashboard = () => {
                                                         • {item.productName} ({item.variantName}) x{item.quantity} = ₹{item.totalPrice}
                                                     </div>
                                                 ))}
+                                            </td>
+                                            <td>
+                                                {o.courierName ? (
+                                                    <div>
+                                                        <span className="badge bg-success-subtle text-success border border-success mb-1">
+                                                            📦 {o.courierName}
+                                                        </span>
+                                                        {o.trackingNumber && (
+                                                            <div className="small font-monospace text-dark fw-bold">
+                                                                AWB: {o.trackingNumber}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-muted small">Not assigned</span>
+                                                )}
                                             </td>
                                             <td className="fw-bold fs-6">₹{o.totalAmount}</td>
                                             <td><span className="badge bg-info text-dark">{o.paymentMethod}</span></td>
@@ -869,6 +909,58 @@ const AdminDashboard = () => {
                                                     <option value="DELIVERED">DELIVERED</option>
                                                     <option value="CANCELLED">CANCELLED</option>
                                                 </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Logistics & Shipment Tracking */}
+                                    <div className="card border-0 shadow-sm mb-4 bg-white rounded-3">
+                                        <div className="card-header bg-white border-0 fw-bold text-success fs-6 py-3 border-bottom d-flex align-items-center justify-content-between">
+                                            <span>🚚 Logistics & Shipment Tracking</span>
+                                            {selectedOrderModal.courierName && (
+                                                <span className="badge bg-success-subtle text-success border border-success">
+                                                    {selectedOrderModal.courierName}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="card-body">
+                                            <div className="row g-3 align-items-end">
+                                                <div className="col-md-5">
+                                                    <label className="form-label small fw-bold text-secondary mb-1">Logistics / Courier Partner</label>
+                                                    <select
+                                                        className="form-select border-success"
+                                                        value={selectedOrderModal.courierName || ""}
+                                                        onChange={(e) => setSelectedOrderModal({ ...selectedOrderModal, courierName: e.target.value })}
+                                                    >
+                                                        <option value="">Select Logistics Partner</option>
+                                                        <option value="Amazon Shipping">Amazon Shipping</option>
+                                                        <option value="Xpressbees Courier">Xpressbees Courier</option>
+                                                        <option value="Delhivery Express">Delhivery Express</option>
+                                                        <option value="DTDC Express">DTDC Express</option>
+                                                        <option value="India Post">India Post</option>
+                                                        <option value="Blue Dart">Blue Dart</option>
+                                                        <option value="Other Courier">Other Courier</option>
+                                                    </select>
+                                                </div>
+                                                <div className="col-md-5">
+                                                    <label className="form-label small fw-bold text-secondary mb-1">AWB / Tracking Number</label>
+                                                    <input
+                                                        type="text"
+                                                        className="form-control border-success"
+                                                        placeholder="e.g. SF123456789IN / 14002938102"
+                                                        value={selectedOrderModal.trackingNumber || ""}
+                                                        onChange={(e) => setSelectedOrderModal({ ...selectedOrderModal, trackingNumber: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="col-md-2">
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-success w-100 fw-bold shadow-sm"
+                                                        onClick={() => handleOrderTrackingUpdate(selectedOrderModal.id, selectedOrderModal.courierName, selectedOrderModal.trackingNumber)}
+                                                    >
+                                                        Save
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1063,9 +1155,10 @@ const AdminDashboard = () => {
                                             {uploadingImage && <div className="small text-primary mt-1">Uploading image(s)...</div>}
 
                                             {/* Thumbnails preview */}
-                                            {productForm.imageUrls && productForm.imageUrls.length > 0 && (
+                                            {((productForm.imageUrls && productForm.imageUrls.length > 0) || productForm.imageUrl) && (
                                                 <div className="d-flex flex-wrap gap-2 mt-2 align-items-center">
-                                                    {productForm.imageUrls.map((url, idx) => {
+                                                    {((productForm.imageUrls && productForm.imageUrls.length > 0) ? productForm.imageUrls : [productForm.imageUrl]).map((url, idx) => {
+                                                        if (!url) return null;
                                                         const isPrimary = (productForm.imageUrl === url) || (!productForm.imageUrl && idx === 0);
                                                         return (
                                                             <div key={idx} className="position-relative border rounded p-1 text-center bg-light" style={{ width: "90px" }}>

@@ -12,9 +12,17 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +30,9 @@ public class ProductService {
 
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
+
+    @Value("${app.media.dir:/var/www/vinnavar-fullstack/vinnavar-backend/media}")
+    private String mediaDir;
 
     public List<Category> getAllActiveCategories() {
         return categoryRepository.findAll();
@@ -101,6 +112,11 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
+        Set<String> oldMedia = new HashSet<>();
+        if (product.getImageUrl() != null) oldMedia.add(product.getImageUrl());
+        if (product.getImageUrls() != null) oldMedia.addAll(product.getImageUrls());
+        if (product.getVideoUrl() != null) oldMedia.add(product.getVideoUrl());
+
         if (dto.getCategoryId() != null) {
             Category category = categoryRepository.findById(dto.getCategoryId()).orElse(null);
             product.setCategory(category);
@@ -143,12 +159,77 @@ public class ProductService {
             }
         }
 
-        return productRepository.save(product);
+        Product saved = productRepository.save(product);
+
+        Set<String> newMedia = new HashSet<>();
+        if (saved.getImageUrl() != null) newMedia.add(saved.getImageUrl());
+        if (saved.getImageUrls() != null) newMedia.addAll(saved.getImageUrls());
+        if (saved.getVideoUrl() != null) newMedia.add(saved.getVideoUrl());
+
+        oldMedia.removeAll(newMedia);
+        deleteUnusedMediaFiles(oldMedia);
+
+        return saved;
     }
 
     @Transactional
     public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
+        Product product = productRepository.findById(id).orElse(null);
+        if (product == null) {
+            return;
+        }
+
+        Set<String> mediaUrls = new HashSet<>();
+        if (product.getImageUrl() != null && !product.getImageUrl().isBlank()) {
+            mediaUrls.add(product.getImageUrl());
+        }
+        if (product.getImageUrls() != null) {
+            for (String url : product.getImageUrls()) {
+                if (url != null && !url.isBlank()) {
+                    mediaUrls.add(url);
+                }
+            }
+        }
+        if (product.getVideoUrl() != null && !product.getVideoUrl().isBlank()) {
+            mediaUrls.add(product.getVideoUrl());
+        }
+
+        productRepository.delete(product);
+        productRepository.flush();
+
+        deleteUnusedMediaFiles(mediaUrls);
+    }
+
+    private void deleteUnusedMediaFiles(Collection<String> mediaUrls) {
+        if (mediaUrls == null || mediaUrls.isEmpty()) {
+            return;
+        }
+
+        List<Product> remainingProducts = productRepository.findAll();
+
+        for (String url : mediaUrls) {
+            if (url == null || !url.startsWith("/media/")) {
+                continue;
+            }
+
+            boolean isUsed = remainingProducts.stream().anyMatch(p ->
+                    url.equals(p.getImageUrl()) ||
+                    (p.getImageUrls() != null && p.getImageUrls().contains(url)) ||
+                    url.equals(p.getVideoUrl())
+            );
+
+            if (!isUsed) {
+                try {
+                    String relativePath = url.substring("/media/".length());
+                    Path fileToDelete = Paths.get(mediaDir, relativePath);
+                    if (Files.exists(fileToDelete) && Files.isRegularFile(fileToDelete)) {
+                        Files.deleteIfExists(fileToDelete);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Failed to delete media file: " + url + " - " + e.getMessage());
+                }
+            }
+        }
     }
 
     @Transactional

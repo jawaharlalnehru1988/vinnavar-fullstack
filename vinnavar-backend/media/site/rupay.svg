@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 40" width="75" height="24">
+  <text x="0" y="30" font-family="Arial, sans-serif" font-weight="900" font-style="italic" font-size="28" fill="#0B5299">Ru</text>
+  <text x="38" y="30" font-family="Arial, sans-serif" font-weight="900" font-style="italic" font-size="28" fill="#F37023">Pay</text>
+  <path fill="#0B5299" d="M100 8 L112 20 L100 32 Z"/>
+  <path fill="#F37023" d="M110 8 L122 20 L110 32 Z"/>
+</svg>

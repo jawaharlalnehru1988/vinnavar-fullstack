@@ -460,7 +460,7 @@ const Home = () => {
                       </div>
                     </div>
                     <div className="row g-4 justify-content-center">
-                      {categories.slice(0, 4).map((cat) => (
+                      {categories.filter(cat => offerProducts.some(p => p.category?.id === cat.id)).slice(0, 4).map((cat) => (
                         <div key={cat.id} className="col-lg-3 col-md-6 col-12 fade-zoom">
                           <Zoom>
                             <div className="card h-100 category-card border-0 shadow-sm rounded-3 overflow-hidden">
@@ -516,7 +516,7 @@ const Home = () => {
               {/* section */}
             </>
             <>
-              <OrganicProductList categoryId={selectedCategoryId} />
+              <OrganicProductList categoryId={selectedCategoryId} limit={8} />
             </>
 
             <>

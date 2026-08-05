@@ -80,6 +80,10 @@ public class Order {
     @Builder.Default
     private OrderStatus orderStatus = OrderStatus.CONFIRMED;
 
+    private String courierName;
+
+    private String trackingNumber;
+
     private LocalDateTime createdAt;
 
     @PrePersist

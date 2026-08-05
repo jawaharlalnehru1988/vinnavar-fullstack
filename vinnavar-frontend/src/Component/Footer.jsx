@@ -113,6 +113,59 @@ const Footer = () => {
 
                 </div>
 
+                {/* Payment Methods & Security Banner */}
+                <div className="border-top mt-4 pt-4">
+                  <div className="row g-4 align-items-center">
+                    
+                    {/* Left Column: Trusted & Secured by Razorpay */}
+                    <div className="col-12 col-lg-4 text-center text-lg-start">
+                      <div className="d-flex align-items-center justify-content-center justify-content-lg-start gap-3">
+                        <div className="bg-success-subtle text-success p-2 rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 44, height: 44 }}>
+                          <i className="fa fa-shield-alt fs-4 text-success" />
+                        </div>
+                        <div>
+                          <span className="fw-bold text-dark d-block" style={{ fontSize: "0.85rem" }}>
+                            Trusted & 100% Secured Payment
+                          </span>
+                          <div className="d-flex align-items-center gap-1.5 mt-1 justify-content-center justify-content-lg-start">
+                            <span className="small text-muted" style={{ fontSize: "0.75rem" }}>Powered by</span>
+                            <img src={getImageUrl("/media/site/razorpay.svg")} alt="Razorpay" title="Razorpay Secure" style={{ height: "22px", width: "auto", objectFit: "contain" }} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Column: Official Payment Brand SVGs */}
+                    <div className="col-12 col-lg-8">
+                      <div className="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-end gap-3">
+                        
+                        {/* UPI & Wallets */}
+                        <div className="bg-light border rounded-3 p-2.5 px-3 d-flex align-items-center gap-2.5">
+                          <span className="small fw-bold text-secondary text-uppercase me-1" style={{ fontSize: "0.7rem", letterSpacing: "0.5px" }}>UPI & Apps:</span>
+                          <div className="d-flex align-items-center gap-2.5 flex-wrap justify-content-center">
+                            <img src={getImageUrl("/media/site/paytm.svg")} alt="Paytm" title="Paytm" style={{ height: "20px", width: "auto", objectFit: "contain" }} />
+                            <img src={getImageUrl("/media/site/phonepe.svg")} alt="PhonePe" title="PhonePe" style={{ height: "20px", width: "auto", objectFit: "contain" }} />
+                            <img src={getImageUrl("/media/site/gpay.svg")} alt="Google Pay" title="Google Pay" style={{ height: "20px", width: "auto", objectFit: "contain" }} />
+                            <img src={getImageUrl("/media/site/upi.svg")} alt="UPI" title="All UPI Payments" style={{ height: "20px", width: "auto", objectFit: "contain" }} />
+                          </div>
+                        </div>
+
+                        {/* Debit / Credit Cards */}
+                        <div className="bg-light border rounded-3 p-2.5 px-3 d-flex align-items-center gap-2.5">
+                          <span className="small fw-bold text-secondary text-uppercase me-1" style={{ fontSize: "0.7rem", letterSpacing: "0.5px" }}>Cards:</span>
+                          <div className="d-flex align-items-center gap-2.5 flex-wrap justify-content-center">
+                            <img src={getImageUrl("/media/site/visa.svg")} alt="Visa" title="Visa Card" style={{ height: "20px", width: "auto", objectFit: "contain" }} />
+                            <img src={getImageUrl("/media/site/mastercard.svg")} alt="Mastercard" title="Mastercard" style={{ height: "20px", width: "auto", objectFit: "contain" }} />
+                            <img src={getImageUrl("/media/site/rupay.svg")} alt="RuPay" title="RuPay Card" style={{ height: "20px", width: "auto", objectFit: "contain" }} />
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
                 {/* Unified Footer Copyright line inside the same container */}
                 <div className="border-top mt-4 pt-4 text-center">
                   <div className="text-muted small">

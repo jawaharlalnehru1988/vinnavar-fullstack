@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import { API_BASE_URL, fetchProducts, getImageUrl, toggleWishlist } from "../services/api";
 
-const OrganicProductList = ({ categoryId }) => {
+const OrganicProductList = ({ categoryId, limit = 8 }) => {
     const [products, setProducts] = useState([]);
     const [selectedVariants, setSelectedVariants] = useState({});
     const [loading, setLoading] = useState(true);
@@ -100,102 +100,129 @@ const OrganicProductList = ({ categoryId }) => {
     };
 
     if (loading) {
-        return <div className="text-center my-5">Loading Organic Products...</div>;
+        return (
+            <div className="flex flex-col items-center justify-center py-16 text-slate-500 font-medium">
+                <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-3"></div>
+                <span>Loading Pure Organic Products...</span>
+            </div>
+        );
     }
 
     return (
-        <section className="my-lg-8 my-4">
-            <div className="container">
-                <div className="row">
-                    <div className="col-12 text-center mb-6">
-                        <h3 className="h3style" data-title="Pure Organic Products">
-                            Pure Organic Products
-                        </h3>
-                        <div className="wt-separator bg-primarys"></div>
-                        <div className="wt-separator2 bg-primarys"></div>
+        <section className="py-12 bg-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* Header Title Bar */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/50">
+                            100% Certified Organic
+                        </span>
+                        <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-tight">
+                            Pure Organic Staples &amp; Products
+                        </h2>
+                    </div>
+                    <div>
+                        <Link
+                            to="/Shop"
+                            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-all shadow-xs active:scale-95"
+                        >
+                            <span>View All Products</span>
+                            <span>➔</span>
+                        </Link>
                     </div>
                 </div>
 
-                <div className="row g-4 row-cols-lg-4 row-cols-md-2 row-cols-1">
-                    {products.map((product) => {
+                {/* Product Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {(limit ? products.slice(0, limit) : products).map((product) => {
                         const currentVariant = selectedVariants[product.id] || product.variants?.[0];
                         const imgUrl = getImageUrl(product.imageUrl);
 
                         return (
-                            <div key={product.id} className="col">
-                                <div className="card card-product h-100 shadow-sm border-0">
-                                    <div className="card-body d-flex flex-column justify-content-between">
-                                        <div className="text-center position-relative mb-3">
-                                            {product.featured && (
-                                                <div className="position-absolute top-0 start-0">
-                                                    <span className="badge bg-success">Organic Best Seller</span>
-                                                </div>
-                                            )}
-                                            <button
-                                                className="btn btn-sm btn-light rounded-circle shadow-sm position-absolute top-0 end-0 me-1 mt-1 p-2 border"
-                                                title="Add to Wishlist"
-                                                onClick={() => handleToggleWishlist(product)}
-                                                style={{ width: "34px", height: "34px", display: "flex", alignItems: "center", justifyContent: "center" }}
-                                            >
-                                                <i className="far fa-heart text-danger"></i>
-                                            </button>
-                                            <Link to={`/product/${product.slug}`} style={{ height: "180px", overflow: "hidden" }} className="d-flex align-items-center justify-content-center text-decoration-none">
-                                                <img
-                                                    src={imgUrl}
-                                                    alt={product.name}
-                                                    className="img-fluid rounded hover-zoom"
-                                                    style={{ maxHeight: "100%", objectFit: "contain" }}
-                                                />
-                                            </Link>
-                                        </div>
+                            <div
+                                key={product.id}
+                                className="group relative bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
+                            >
+                                <div className="space-y-4">
+                                    {/* Image Container & Badges */}
+                                    <div className="relative bg-slate-50 rounded-2xl p-4 h-48 flex items-center justify-center overflow-hidden">
+                                        {product.featured && (
+                                            <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white uppercase tracking-wider shadow-sm">
+                                                Best Seller
+                                            </span>
+                                        )}
+                                        <button
+                                            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-white transition-all"
+                                            title="Add to Wishlist"
+                                            onClick={() => handleToggleWishlist(product)}
+                                        >
+                                            ❤️
+                                        </button>
 
-                                        <div className="text-small mb-1 text-muted fw-bold">
-                                            {product.category?.name}
-                                        </div>
-                                        <h5 className="fs-6 mb-2">
-                                            <Link to={`/product/${product.slug}`} className="text-decoration-none text-dark hover-primary">
+                                        <Link to={`/product/${product.slug}`} className="w-full h-full flex items-center justify-center">
+                                            <img
+                                                src={imgUrl}
+                                                alt={product.name}
+                                                className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                                            />
+                                        </Link>
+                                    </div>
+
+                                    {/* Details */}
+                                    <div>
+                                        <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wide">
+                                            {product.category?.name || "Organic Staples"}
+                                        </span>
+                                        <h3 className="font-bold text-slate-900 text-sm mt-1 truncate hover:text-emerald-700 transition-colors">
+                                            <Link to={`/product/${product.slug}`}>
                                                 {product.name}
                                             </Link>
-                                        </h5>
-                                        <p className="text-muted small mb-2">{product.shortDescription}</p>
-
-                                        {/* Variant selection */}
-                                        {product.variants && product.variants.length > 0 && (
-                                            <div className="mb-3">
-                                                <label className="form-label small text-muted mb-1">Select Size / Volume:</label>
-                                                <select
-                                                    className="form-select form-select-sm"
-                                                    value={currentVariant?.id || ""}
-                                                    onChange={(e) => handleVariantChange(product.id, e.target.value)}
-                                                >
-                                                    {product.variants.map((v) => (
-                                                        <option key={v.id} value={v.id}>
-                                                            {v.variantName} - ₹{v.discountPrice || v.price}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        )}
-
-                                        <div className="d-flex justify-content-between align-items-center mt-auto">
-                                            <div>
-                                                <span className="text-dark fw-bold fs-5">
-                                                    ₹{currentVariant?.discountPrice || currentVariant?.price || 0}
-                                                </span>
-                                                {currentVariant?.discountPrice && (
-                                                    <span className="text-decoration-line-through text-muted ms-2 small">
-                                                        ₹{currentVariant?.price}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <button
-                                                className="btn btn-primary btn-sm px-3"
-                                                onClick={() => handleAddToCart(product)}
-                                            >
-                                                + Add
-                                            </button>
-                                        </div>
+                                        </h3>
+                                        <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                                            {product.shortDescription}
+                                        </p>
                                     </div>
+
+                                    {/* Variant selector */}
+                                    {product.variants && product.variants.length > 0 && (
+                                        <div className="space-y-1">
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                                Size / Volume:
+                                            </label>
+                                            <select
+                                                className="w-full py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500"
+                                                value={currentVariant?.id || ""}
+                                                onChange={(e) => handleVariantChange(product.id, e.target.value)}
+                                            >
+                                                {product.variants.map((v) => (
+                                                    <option key={v.id} value={v.id}>
+                                                        {v.variantName} - ₹{v.discountPrice || v.price}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Price & Add Button */}
+                                <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
+                                    <div>
+                                        <span className="text-base font-black text-slate-900">
+                                            ₹{currentVariant?.discountPrice || currentVariant?.price || 0}
+                                        </span>
+                                        {currentVariant?.discountPrice && (
+                                            <span className="text-xs text-slate-400 line-through ml-1.5 font-medium">
+                                                ₹{currentVariant?.price}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-full shadow-md shadow-emerald-700/20 transition-all active:scale-95"
+                                        onClick={() => handleAddToCart(product)}
+                                    >
+                                        + Add
+                                    </button>
                                 </div>
                             </div>
                         );

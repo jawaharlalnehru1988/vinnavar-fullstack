@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { MagnifyingGlass } from "react-loader-spinner";
-import { Zoom } from "react-awesome-reveal";
 import ScrollToTop from "../ScrollToTop";
 import { fetchBlogsByCategory, fetchBlogs, fetchBlogCategories, getImageUrl } from "../../services/api";
 
@@ -35,115 +33,117 @@ const BlogCategory = () => {
   }, [selectedCategory]);
 
   return (
-    <div>
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+      <ScrollToTop />
       {loaderStatus ? (
-        <div className="loader-container">
-          <MagnifyingGlass
-            visible={true}
-            height="100"
-            width="100"
-            ariaLabel="magnifying-glass-loading"
-            glassColor="#c0efff"
-            color="#0aad0a"
-          />
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 font-medium">
+          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <span>Loading Articles for {selectedCategory}...</span>
         </div>
       ) : (
-        <>
-          <ScrollToTop />
-          <div>
-            {/* Header section */}
-            <section className="mt-8">
-              <div className="container">
-                <div className="row align-items-center">
-                  <div className="col-md-6 col-12 mb-4">
-                    <h1 className="fw-bold">{selectedCategory}</h1>
-                    <p className="text-muted">
-                      Discover our curated organic articles and recipes for {selectedCategory}.
-                    </p>
-                  </div>
+        <div className="max-w-7xl mx-auto space-y-8">
+          
+          {/* Category Header Banner */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200/60 mb-2">
+                Category Articles
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900">{selectedCategory}</h1>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-xl">
+                Discover our curated organic articles and recipes for {selectedCategory}.
+              </p>
+            </div>
 
-                  {/* Category Nav Links */}
-                  <div className="col-md-6 col-12 text-md-end mb-4">
-                    <div className="d-flex flex-wrap justify-content-md-end gap-2">
-                      <Link
-                        to="/BlogCategory?category=All"
-                        className={`btn btn-sm rounded-pill ${
-                          selectedCategory === "All" ? "btn-success" : "btn-outline-success"
-                        }`}
-                      >
-                        All
-                      </Link>
-                      {categories.map((cat, idx) => (
-                        <Link
-                          key={idx}
-                          to={`/BlogCategory?category=${encodeURIComponent(cat)}`}
-                          className={`btn btn-sm rounded-pill ${
-                            selectedCategory.toLowerCase() === cat.toLowerCase()
-                              ? "btn-success"
-                              : "btn-outline-success"
-                          }`}
-                        >
-                          {cat}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Articles Grid */}
-            <section className="mb-lg-14 mb-8">
-              <div className="container">
-                <div className="row">
-                  {blogs.length === 0 ? (
-                    <div className="col-12 text-center py-5">
-                      <p className="text-muted">No articles found in this category.</p>
-                      <Link to="/Blog" className="btn btn-outline-success rounded-pill mt-2">
-                        Back to All Blogs
-                      </Link>
-                    </div>
-                  ) : (
-                    blogs.map((blog) => (
-                      <div key={blog.id} className="col-12 col-md-6 col-lg-4 mb-8">
-                        <Zoom>
-                          <div className="mb-4">
-                            <Link to={`/blog/${blog.slug}`}>
-                              <div className="img-zoom">
-                                <img
-                                  src={getImageUrl(blog.imageUrl)}
-                                  alt={blog.title}
-                                  className="img-fluid rounded-3 w-100"
-                                  style={{ height: "240px", objectFit: "cover" }}
-                                />
-                              </div>
-                            </Link>
-                          </div>
-                        </Zoom>
-                        <div className="mb-2">
-                          <span className="text-success fw-bold small text-uppercase">{blog.category}</span>
-                        </div>
-                        <div>
-                          <h2 className="h5 mb-2">
-                            <Link to={`/blog/${blog.slug}`} className="text-inherit text-decoration-none">
-                              {blog.title}
-                            </Link>
-                          </h2>
-                          <p className="text-muted small">
-                            {blog.shortDescription || (blog.content?.substring(0, 100) + "...")}
-                          </p>
-                          <Link to={`/blog/${blog.slug}`} className="btn btn-sm btn-outline-success rounded-pill fw-semibold mt-2">
-                            Read Full Article →
-                          </Link>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </section>
+            {/* Category Nav Links */}
+            <div className="flex flex-wrap gap-2 items-center">
+              <Link
+                to="/BlogCategory?category=All"
+                className={`px-4 py-2 text-xs font-bold rounded-full transition-all ${
+                  selectedCategory === "All"
+                    ? "bg-emerald-700 text-white shadow-md shadow-emerald-700/20"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                All
+              </Link>
+              {categories.map((cat, idx) => (
+                <Link
+                  key={idx}
+                  to={`/BlogCategory?category=${encodeURIComponent(cat)}`}
+                  className={`px-4 py-2 text-xs font-bold rounded-full transition-all ${
+                    selectedCategory.toLowerCase() === cat.toLowerCase()
+                      ? "bg-emerald-700 text-white shadow-md shadow-emerald-700/20"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  {cat}
+                </Link>
+              ))}
+            </div>
           </div>
-        </>
+
+          {/* Articles Grid */}
+          {blogs.length === 0 ? (
+            <div className="bg-white rounded-3xl p-12 border border-slate-100 text-center space-y-4 max-w-md mx-auto">
+              <div className="text-4xl">📚</div>
+              <h3 className="font-bold text-slate-900 text-base">No articles found in {selectedCategory}</h3>
+              <p className="text-xs text-slate-500">Check back soon or explore other blog categories!</p>
+              <div className="pt-2">
+                <Link
+                  to="/Blog"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-700 text-white text-xs font-bold rounded-full shadow-md"
+                >
+                  Back to All Blogs ➔
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {blogs.map((blog) => (
+                <div
+                  key={blog.id}
+                  className="group bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col justify-between"
+                >
+                  <div className="space-y-4 p-5">
+                    <div className="relative h-48 rounded-2xl overflow-hidden bg-slate-100">
+                      <Link to={`/blog/${blog.slug}`}>
+                        <img
+                          src={getImageUrl(blog.imageUrl)}
+                          alt={blog.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </Link>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] font-extrabold text-emerald-700 uppercase tracking-widest">
+                        {blog.category}
+                      </span>
+                      <h3 className="font-bold text-slate-900 text-base mt-1 line-clamp-2 leading-snug group-hover:text-emerald-700 transition-colors">
+                        <Link to={`/blog/${blog.slug}`}>{blog.title}</Link>
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-2 line-clamp-2 leading-relaxed">
+                        {blog.shortDescription || (blog.content?.substring(0, 90) + "...")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-5 pt-0 border-t border-slate-100/60 mt-4 flex items-center justify-between">
+                    <Link
+                      to={`/blog/${blog.slug}`}
+                      className="text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors inline-flex items-center gap-1"
+                    >
+                      <span>Read Article</span>
+                      <span>➔</span>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+        </div>
       )}
     </div>
   );

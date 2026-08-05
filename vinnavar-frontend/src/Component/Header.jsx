@@ -1,16 +1,23 @@
 import { API_BASE_URL, fetchSettings, getImageUrl, customerLogin, customerRegister, customerForgotPassword } from "../services/api";
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 
 const Grocerylogo = getImageUrl("/media/site/Grocerylogo.png");
 
 const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [cart, setCart] = useState(null);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [logoUrl, setLogoUrl] = useState(Grocerylogo);
+
+  const isActive = (path) => {
+    if (path === "/" && location.pathname === "/") return true;
+    if (path !== "/" && location.pathname.startsWith(path)) return true;
+    return false;
+  };
 
   // Authentication & User State
   const [authMode, setAuthMode] = useState("SIGN_IN"); // "SIGN_IN" | "SIGN_UP" | "FORGOT_PASSWORD"
@@ -289,441 +296,300 @@ const Header = () => {
 
   return (
     <>
-      <header className="sticky-top bg-white shadow-sm" style={{ position: "sticky", top: 0, zIndex: 1040 }}>
-      <div className="w-100 py-1" style={{ background: "#2b9348", fontSize: "13px", fontWeight: "600", letterSpacing: "0.5px", overflow: "hidden" }}>
-        {/* eslint-disable-next-line jsx-a11y/no-distracting-elements */}
-        <marquee behavior="scroll" direction="left" scrollamount="6" style={{ verticalAlign: "middle", margin: 0, color: "#fff" }}>
-          🌱 Our product is 100 percent natural and available at your doorstep within prescribed time. 🚚
-        </marquee>
-      </div>
-      <>
-        <div className="border-bottom">
-          <div className="bg-light py-2">
-            <div className="container">
-              <div className="row align-items-center">
-                <div className="col-md-7 col-12 d-flex align-items-center mb-2 mb-md-0">
-                  <span className="badge bg-success font-monospace px-2 py-1 me-2" style={{ fontSize: '11px' }}>DEALS</span>
-                  <span className="small text-secondary fw-semibold">Super Value Deals - Save more with 100% Pure Organic Staples</span>
-                </div>
-                <div className="col-md-5 col-12 text-end d-flex justify-content-end align-items-center">
-                  <div className="d-flex align-items-center gap-2">
-                    {/* Track Order Link */}
-                    <Link
-                      to="/TrackOrder"
-                      className="btn btn-sm btn-outline-success fw-bold d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm"
-                      title="Track Order"
-                    >
-                      <span style={{ fontSize: '16px', lineHeight: '1' }}>🚚</span>
-                      <span className="small">Track</span>
-                    </Link>
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm transition-all">
+        {/* Top Marquee Bar */}
+        <div className="w-full py-1.5 bg-emerald-800 text-white font-medium text-xs tracking-wide overflow-hidden">
+          {/* eslint-disable-next-line jsx-a11y/no-distracting-elements */}
+          <marquee behavior="scroll" direction="left" scrollamount="6" className="m-0 align-middle">
+            🌱 100% Certified Pure Natural Organic Staples & Cold-Pressed Oils delivered directly to your doorstep! 🚚 Free Shipping across India!
+          </marquee>
+        </div>
 
-                    {/* Wishlist Link */}
-                    <Link
-                      to="/ShopWishList"
-                      className="btn btn-sm btn-light border shadow-sm d-flex align-items-center gap-1.5 fw-bold px-3 py-1.5 text-dark rounded-pill"
-                      title="Wishlist"
-                    >
-                      <span style={{ fontSize: '16px', lineHeight: '1' }}>❤️</span>
-                      <span className="small">Wishlist</span>
-                      <span className="badge bg-danger rounded-pill ms-1" style={{ fontSize: '10px' }}>{wishlistCount}</span>
-                    </Link>
+        {/* Main Header Utilities */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between gap-4">
+            
+            {/* Logo */}
+            <Link to="/" className="flex items-center flex-shrink-0 group">
+              <img
+                src={logoUrl}
+                className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105"
+                alt="Vinnavar Logo"
+              />
+            </Link>
 
-                    {/* Account / Login Button */}
-                    {currentUser ? (
-                      <div className="dropdown">
-                        <button
-                          className="btn btn-sm btn-success fw-bold dropdown-toggle d-flex align-items-center gap-2 px-3 py-1.5 rounded-pill shadow-sm"
-                          type="button"
-                          data-bs-toggle="dropdown"
-                          aria-expanded="false"
-                          style={{ backgroundColor: '#2d6a4f', borderColor: '#2d6a4f' }}
-                        >
-                          <span
-                            className="d-inline-flex align-items-center justify-content-center rounded-circle bg-white text-success fw-bold shadow-sm"
-                            style={{
-                              width: '26px',
-                              height: '26px',
-                              fontSize: '11px',
-                              letterSpacing: '0.5px',
-                              lineHeight: 1,
-                              color: '#2d6a4f'
-                            }}
-                          >
-                            {getUserInitials(currentUser.name)}
-                          </span>
-                          <span className="small">Hi, {currentUser.name ? currentUser.name.split(" ")[0] : "Account"}</span>
-                        </button>
-                        <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-1" style={{ fontSize: '14px', zIndex: 1060 }}>
-                          <li className="px-3 py-2 border-bottom bg-light d-flex align-items-center gap-2.5">
-                            <span
-                              className="d-inline-flex align-items-center justify-content-center rounded-circle text-white fw-bold shadow-sm me-2"
-                              style={{
-                                width: '36px',
-                                height: '36px',
-                                fontSize: '14px',
-                                backgroundColor: '#2d6a4f'
-                              }}
-                            >
-                              {getUserInitials(currentUser.name)}
-                            </span>
-                            <div>
-                              <div className="fw-bold text-dark">{currentUser.name}</div>
-                              <div className="text-muted small">📱 +91 {currentUser.mobileNumber}</div>
-                            </div>
-                          </li>
-                          <li>
-                            <Link className="dropdown-item fw-semibold py-2" to="/MyAccountOrder">
-                              📦 My Orders
-                            </Link>
-                          </li>
-                          <li>
-                            <Link className="dropdown-item fw-semibold py-2" to="/MyAccountSetting">
-                              ⚙️ Account Settings
-                            </Link>
-                          </li>
-                          <li><hr className="dropdown-divider my-1" /></li>
-                          <li>
-                            <button className="dropdown-item text-danger fw-bold py-2" onClick={handleLogout}>
-                              🚪 Sign Out
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    ) : (
-                      <Link
-                        to="#!"
-                        className="btn btn-sm btn-success fw-bold d-flex align-items-center gap-1.5 px-3.5 py-1.5 text-white shadow rounded-pill"
-                        data-bs-toggle="modal"
-                        data-bs-target="#userModal"
-                        onClick={() => setAuthMode("SIGN_IN")}
-                        style={{ backgroundColor: '#2d6a4f', borderColor: '#2d6a4f' }}
-                      >
-                        <span style={{ fontSize: '16px', lineHeight: '1' }}>👤</span>
-                        <span className="small">Login</span>
-                      </Link>
-                    )}
-
-                    {/* Cart Button */}
-                    <Link
-                      className="btn btn-sm btn-light border shadow-sm d-flex align-items-center gap-1.5 fw-bold px-3 py-1.5 text-dark rounded-pill"
-                      data-bs-toggle="offcanvas"
-                      data-bs-target="#offcanvasRight"
-                      to="#offcanvasExample"
-                      role="button"
-                      aria-controls="offcanvasRight"
-                      title="Shopping Cart"
-                    >
-                      <span style={{ fontSize: '16px', lineHeight: '1' }}>🛒</span>
-                      <span className="small">Cart</span>
-                      <span className="badge bg-success rounded-pill ms-1" style={{ fontSize: '10px' }}>
-                        {cart?.totalItemCount || cart?.items?.length || 0}
-                      </span>
-                    </Link>
-                  </div>
-                </div>
+            {/* Search Input */}
+            <div className="hidden md:flex flex-1 max-w-md mx-4">
+              <div className="relative w-full">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+                <input
+                  type="text"
+                  className="w-full pl-10 pr-4 py-2 bg-slate-100/80 hover:bg-slate-100 border border-slate-200 rounded-full text-slate-900 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none transition-all placeholder:text-slate-400"
+                  placeholder="Search organic rice, cold-pressed oils, spices..."
+                  onClick={() => navigate("/Shop")}
+                />
               </div>
             </div>
-          </div>
-        </div>
-      </>
-      <>
-        <div className="container  displaydesign">
-          <div className="row g-4">
-            <div className="col-8 col-sm-4 col-lg-9 py-2 ">
-              <input
-                className="form-control "
-                style={{ width: "100%" }}
-                list="datalistOptions"
-                id="exampleDataList"
-                placeholder="Type to search..."
-              />
-            </div>
-            <div className="col-4 col-sm-4 col-lg-3 py-2 d-flex" style={{ justifyContent: 'center' }}>
-              {/* Button trigger modal */}
-              {/* <button
-            type="button"
-            className="btn btn-primary "
-            data-bs-toggle="modal"
-            data-bs-target="/ShoplocationModal"
-          >
-            <i className="feather-icon icon-map-pin me-2" />
-            Location
-          </button> */}
-              <div className="d-flex align-items-center gap-2">
-                {/* Track Order Link */}
-                <Link
-                  to="/TrackOrder"
-                  className="btn btn-sm btn-outline-success fw-bold d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm"
-                  title="Track Order"
-                >
-                  <span style={{ fontSize: '16px', lineHeight: '1' }}>🚚</span>
-                  <span className="small">Track</span>
-                </Link>
 
-                {/* Wishlist Link */}
-                <Link
-                  to="/ShopWishList"
-                  className="btn btn-sm btn-light border shadow-sm d-flex align-items-center gap-1.5 fw-bold px-3 py-1.5 text-dark rounded-pill"
-                  title="Wishlist"
-                >
-                  <span style={{ fontSize: '16px', lineHeight: '1' }}>❤️</span>
-                  <span className="small">Wishlist</span>
-                  <span className="badge bg-danger rounded-pill ms-1" style={{ fontSize: '10px' }}>{wishlistCount}</span>
-                </Link>
+            {/* Right Action Icons */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Track Order */}
+              <Link
+                to="/TrackOrder"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/60 transition-all shadow-xs"
+                title="Track Order"
+              >
+                <span className="text-sm">🚚</span>
+                <span className="hidden sm:inline">Track</span>
+              </Link>
 
-                {/* Account / Login Button */}
-                <Link
-                  to="#!"
-                  className="btn btn-sm btn-success fw-bold d-flex align-items-center gap-1.5 px-3.5 py-1.5 text-white shadow rounded-pill"
+              {/* Wishlist */}
+              <Link
+                to="/ShopWishList"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all shadow-xs"
+                title="Wishlist"
+              >
+                <span className="text-sm">❤️</span>
+                <span className="hidden sm:inline">Wishlist</span>
+                <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-red-500 text-white">
+                  {wishlistCount}
+                </span>
+              </Link>
+
+              {/* Account / User Menu */}
+              {currentUser ? (
+                <div className="dropdown relative">
+                  <button
+                    className="btn btn-sm btn-success fw-bold dropdown-toggle inline-flex items-center gap-2 px-3 py-1.5 rounded-full shadow-xs bg-emerald-700 hover:bg-emerald-800 border-none text-white text-xs"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-emerald-800 font-extrabold text-[10px]">
+                      {getUserInitials(currentUser.name)}
+                    </span>
+                    <span className="hidden sm:inline">Hi, {currentUser.name ? currentUser.name.split(" ")[0] : "Account"}</span>
+                  </button>
+                  <ul className="dropdown-menu dropdown-menu-end shadow-xl border border-slate-100 rounded-2xl p-2 mt-2 font-sans text-xs">
+                    <li className="px-3 py-2.5 border-b border-slate-100 bg-slate-50 rounded-xl mb-1 flex items-center gap-2.5">
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-700 text-white font-extrabold text-xs">
+                        {getUserInitials(currentUser.name)}
+                      </span>
+                      <div>
+                        <div className="font-bold text-slate-900 text-xs">{currentUser.name}</div>
+                        <div className="text-slate-500 text-[11px]">📱 +91 {currentUser.mobileNumber}</div>
+                      </div>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item rounded-lg py-2 font-medium hover:bg-emerald-50 hover:text-emerald-700" to="/MyAccountOrder">
+                        📦 My Orders
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item rounded-lg py-2 font-medium hover:bg-emerald-50 hover:text-emerald-700" to="/MyAccountSetting">
+                        ⚙️ Account Settings
+                      </Link>
+                    </li>
+                    <li><hr className="dropdown-divider my-1" /></li>
+                    <li>
+                      <button className="dropdown-item rounded-lg py-2 font-bold text-red-600 hover:bg-red-50" onClick={handleLogout}>
+                        🚪 Sign Out
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 shadow-md shadow-emerald-700/20 transition-all active:scale-95 border-none"
                   data-bs-toggle="modal"
                   data-bs-target="#userModal"
-                  style={{ backgroundColor: '#2d6a4f', borderColor: '#2d6a4f' }}
+                  onClick={() => setAuthMode("SIGN_IN")}
                 >
-                  <span style={{ fontSize: '16px', lineHeight: '1' }}>👤</span>
-                  <span className="small">Login</span>
-                </Link>
+                  <span className="text-sm">👤</span>
+                  <span>Login</span>
+                </button>
+              )}
 
-                {/* Cart Button */}
-                <Link
-                  className="btn btn-sm btn-light border shadow-sm d-flex align-items-center gap-1.5 fw-bold px-3 py-1.5 text-dark rounded-pill"
-                  data-bs-toggle="offcanvas"
-                  data-bs-target="#offcanvasRight"
-                  to="#offcanvasExample"
-                  role="button"
-                  aria-controls="offcanvasRight"
-                  title="Shopping Cart"
-                >
-                  <span style={{ fontSize: '16px', lineHeight: '1' }}>🛒</span>
-                  <span className="small">Cart</span>
-                  <span className="badge bg-success rounded-pill ms-1" style={{ fontSize: '10px' }}>
-                    {cart?.totalItemCount || cart?.items?.length || 0}
-                  </span>
-                </Link>
-              </div>
+              {/* Shopping Cart */}
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 transition-all active:scale-95"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#offcanvasRight"
+                title="Shopping Cart"
+              >
+                <span className="text-sm">🛒</span>
+                <span className="hidden sm:inline">Cart</span>
+                <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white">
+                  {cart?.totalItemCount || cart?.items?.length || 0}
+                </span>
+              </button>
+
+              {/* Mobile Navigation Toggle */}
+              <button
+                className="md:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 focus:outline-none"
+                type="button"
+                onClick={handleClick}
+                data-bs-toggle="collapse"
+                data-bs-target="#mobileNav"
+              >
+                <span className="text-xl">☰</span>
+              </button>
             </div>
           </div>
         </div>
-      </>
-      <nav className="navbar navbar-expand-lg navbar-light sticky-top">
-        <div className="container">
-          <Link className="navbar-brand py-1 d-flex align-items-center" to="/">
-            <img
-              src={logoUrl}
-              style={{ maxHeight: 50, width: "auto", objectFit: "contain" }}
-              alt="Vinnavar Logo"
-            />
-          </Link>
-          <input
-            className="form-control responsivesearch "
-            list="datalistOptions"
-            id="exampleDataList"
-            placeholder="Type to search..."
-            fdprocessedid="9icrif"
-            style={{ width: "35%" }}
-          />
 
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-toggle="collapse"
-            data-target="#mobile_nav"
-            aria-controls="mobile_nav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <div className={`containerr ${isOpen ? 'change' : ''}`} onClick={handleClick}>
-              <div className="bar1"></div>
-              <div className="bar2"></div>
-              <div className="bar3"></div>
-            </div>
-      </button>
-
-      <div className="collapse navbar-collapse" id="mobile_nav">
-        <ul className="navbar-nav mr-auto mt-2 mt-lg-0 float-md-right"></ul>
-        <ul className="navbar-nav navbar-light">
-
-          <li className="nav-item">
-            <Link className="nav-link" to="/">
-              Home
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link className="nav-link fw-semibold text-success" to="/TrackOrder">
-              🚚 Track Order
-            </Link>
-          </li>
-          <li className="nav-item dmenu dropdown">
-            <Link
-              className="nav-link dropdown-toggle"
-              to="#"
-              id="navbarDropdown"
-              role="button"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-            >
-              About
-            </Link>
-            <div
-              className="dropdown-menu sm-menu"
-              aria-labelledby="navbarDropdown"
-            >
-              <Link class="dropdown-item" to="/Blog">
-                Blog
-              </Link>
-              {/* <Link className="dropdown-item" to="pages/blog-single.html">
-                    Blog Single
-                  </Link> */}
-              <Link className="dropdown-item" to="/BlogCategory">
-                Blog Category
-              </Link>
-              <a className="dropdown-item" href="#corporate-contact" onClick={scrollToContact}>
-                Contact Corporate Admin
-              </a>
-            </div>
-          </li>
-
-          <li className="nav-item dmenu dropdown">
-            <Link
-              className="nav-link dropdown-toggle"
-              to="#"
-              id="navbarDropdown"
-              role="button"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-            >
-              Shop
-            </Link>
-            <div
-              className="dropdown-menu sm-menu"
-              aria-labelledby="navbarDropdown"
-            >
-              <Link className="dropdown-item" to="/Shop">
-                Shop
-              </Link>
-              <Link className="dropdown-item" to="/ShopWishList">
-                Shop Wishlist
-              </Link>
-              <Link className="dropdown-item" to="/ShopCart">
-                Shop Cart
-              </Link>
-              <Link className="dropdown-item" to="/ShopCheckOut">
-                Shop Checkout
-              </Link>
-            </div>
-          </li>
-
-
-          {/* <li className="nav-item dmenu dropdown">
+        {/* Secondary Navigation Bar with Submenus & Active Page Highlighting */}
+        <div className="border-t border-slate-100 bg-slate-50/50 hidden md:block">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <ul className="flex items-center gap-8 py-2.5 text-xs font-bold tracking-wide uppercase">
+              {/* Home */}
+              <li>
                 <Link
-                  className="nav-link dropdown-toggle"
-                  to="#"
-                  id="navbarDropdown"
-                  role="button"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
+                  to="/"
+                  className={`transition-colors py-1 ${
+                    isActive("/") ? "text-emerald-700 font-black border-b-2 border-emerald-600" : "text-slate-700 hover:text-emerald-600 font-semibold"
+                  }`}
                 >
-                  Pages
+                  Home
                 </Link>
-                <div
-                  className="dropdown-menu sm-menu"
-                  aria-labelledby="navbarDropdown"
+              </li>
+
+              {/* Shop Dropdown */}
+              <li className="group relative py-1">
+                <Link
+                  to="/Shop"
+                  className={`inline-flex items-center gap-1 transition-colors ${
+                    isActive("/Shop") ? "text-emerald-700 font-black border-b-2 border-emerald-600" : "text-slate-700 hover:text-emerald-600 font-semibold"
+                  }`}
                 >
-                  <Link class="dropdown-item" to="pages/blog.html">
-                    Blog
+                  <span>Shop</span>
+                  <span className="text-[10px]">▼</span>
+                </Link>
+                <div className="absolute left-0 top-full hidden group-hover:block w-48 bg-white border border-slate-100 shadow-xl rounded-2xl p-2 z-50 normal-case">
+                  <Link to="/Shop" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                    🛍️ Shop Catalog
                   </Link>
-                  <div>
-                    <Link className="dropdown-item" to="pages/blog-single.html">
-                      Blog Single
-                    </Link>
-                    <Link
-                      className="dropdown-item"
-                      to="pages/blog-category.html"
+                  <Link to="/ShopWishList" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                    ❤️ Wishlist ({wishlistCount})
+                  </Link>
+                  <Link to="/ShopCart" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                    🛒 Shopping Cart
+                  </Link>
+                  <Link to="/ShopCheckOut" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                    💳 Checkout
+                  </Link>
+                </div>
+              </li>
+
+              {/* Track Shipment */}
+              <li>
+                <Link
+                  to="/TrackOrder"
+                  className={`flex items-center gap-1 transition-colors py-1 ${
+                    isActive("/TrackOrder") || isActive("/track")
+                      ? "text-emerald-700 font-black border-b-2 border-emerald-600"
+                      : "text-slate-700 hover:text-emerald-600 font-semibold"
+                  }`}
+                >
+                  <span>🚚</span>
+                  <span>Track Shipment</span>
+                </Link>
+              </li>
+
+              {/* About Dropdown */}
+              <li className="group relative py-1">
+                <span
+                  className={`inline-flex items-center gap-1 cursor-pointer transition-colors ${
+                    isActive("/Blog") || isActive("/BlogCategory")
+                      ? "text-emerald-700 font-black border-b-2 border-emerald-600"
+                      : "text-slate-700 hover:text-emerald-600 font-semibold"
+                  }`}
+                >
+                  <span>About</span>
+                  <span className="text-[10px]">▼</span>
+                </span>
+                <div className="absolute left-0 top-full hidden group-hover:block w-52 bg-white border border-slate-100 shadow-xl rounded-2xl p-2 z-50 normal-case">
+                  <Link to="/Blog" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                    📝 Blog &amp; Articles
+                  </Link>
+                  <Link to="/BlogCategory" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                    📚 Blog Categories
+                  </Link>
+                  <a
+                    href="#corporate-contact"
+                    onClick={scrollToContact}
+                    className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl"
+                  >
+                    📞 Contact Admin Desk
+                  </a>
+                </div>
+              </li>
+
+              {/* Account Dropdown */}
+              <li className="group relative py-1">
+                {currentUser ? (
+                  <>
+                    <span
+                      className={`inline-flex items-center gap-1 cursor-pointer transition-colors ${
+                        isActive("/MyAccount")
+                          ? "text-emerald-700 font-black border-b-2 border-emerald-600"
+                          : "text-slate-700 hover:text-emerald-600 font-semibold"
+                      }`}
                     >
-                      Blog Category
-                    </Link>
-                    <Link className="dropdown-item" to="pages/about.html">
-                      About us
-                    </Link>
-                    <Link className="dropdown-item" to="pages/404error.html">
-                      404 Error
-                    </Link>
-                    <Link className="dropdown-item" to="pages/contact.html">
-                      Contact
-                    </Link>
-                  </div>
-                </div>
-              </li> */}
-
-
-
-          <li className="nav-item dmenu dropdown">
-            <Link
-              className="nav-link dropdown-toggle"
-              to=""
-              id="navbarDropdown"
-              role="button"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-            >
-              Account
-            </Link>
-            <div
-              className="dropdown-menu sm-menu"
-              aria-labelledby="navbarDropdown"
-            >
-              <div>
-                <div>
-                  <Link className="dropdown-item" to="/MyAccountSignIn">
-                    Sign in
-                  </Link>
-                  <Link className="dropdown-item" to="/MyAccountSignUp">
-                    Signup
-                  </Link>
-                  <Link
-                    className="dropdown-item"
-                    to="/MyAccountForgetPassword"
+                      <span>Account</span>
+                      <span className="text-[10px]">▼</span>
+                    </span>
+                    <div className="absolute left-0 top-full hidden group-hover:block w-56 bg-white border border-slate-100 shadow-xl rounded-2xl p-2 z-50 normal-case">
+                      <Link to="/MyAccountOrder" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                        📦 My Orders
+                      </Link>
+                      <Link to="/MyAccountSetting" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                        ⚙️ Account Settings
+                      </Link>
+                      <Link to="/MyAccountAddress" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                        📍 Saved Addresses
+                      </Link>
+                      <Link to="/MyAcconutPaymentMethod" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                        💳 Payment Methods
+                      </Link>
+                      <Link to="/MyAcconutNotification" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                        🔔 Notifications
+                      </Link>
+                      <button className="block w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl mt-1 border-t border-slate-100" onClick={handleLogout}>
+                        🚪 Sign Out
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1 cursor-pointer transition-colors text-slate-700 hover:text-emerald-600 font-semibold border-none bg-transparent"
+                    data-bs-toggle="modal"
+                    data-bs-target="#userModal"
+                    onClick={() => setAuthMode("SIGN_IN")}
                   >
-                    Forgot Password
-                  </Link>
-                  <Link className="dropdown-item" to="/MyAccountOrder">
-                    Orders
-                  </Link>
-                  <Link className="dropdown-item" to="/MyAccountSetting">
-                    Settings
-                  </Link>
-                  <Link className="dropdown-item" to="/MyAccountAddress">
-                    Address
-                  </Link>
-                  <Link
-                    className="dropdown-item"
-                    to="/MyAcconutPaymentMethod"
-                  >
-                    Payment Method
-                  </Link>
-                  <Link
-                    className="dropdown-item"
-                    to="/MyAcconutNotification"
-                  >
-                    Notification
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </li>
-          {/* <li className="nav-item">
-                <Link className="nav-link" to="">
-                  Contact us
-                </Link>
-              </li> */}
-        </ul>
-      </div>
-    </div>
-  </nav>
-</header>
+                    <span>Account</span>
+                  </button>
+                )}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Mobile Dropdown Menu */}
+        <div className="collapse md:hidden border-t border-slate-100 px-4 py-3 bg-white" id="mobileNav">
+          <div className="space-y-2 text-sm font-semibold">
+            <Link to="/" className={`block py-2 ${isActive("/") ? "text-emerald-700 font-bold" : "text-slate-800"}`}>Home</Link>
+            <Link to="/Shop" className={`block py-2 ${isActive("/Shop") ? "text-emerald-700 font-bold" : "text-slate-800"}`}>Shop Catalog</Link>
+            <Link to="/TrackOrder" className={`block py-2 ${isActive("/TrackOrder") ? "text-emerald-700 font-bold" : "text-slate-800"}`}>🚚 Track Order</Link>
+            <Link to="/Blog" className={`block py-2 ${isActive("/Blog") ? "text-emerald-700 font-bold" : "text-slate-800"}`}>Blog &amp; Articles</Link>
+            <Link to="/BlogCategory" className="block py-2 text-slate-600 pl-3">↳ Blog Categories</Link>
+            <a href="#corporate-contact" onClick={scrollToContact} className="block py-2 text-slate-800">Contact Us</a>
+          </div>
+        </div>
+      </header>
       {/* Customer User Authentication Modal */}
       <div
         className="modal fade"

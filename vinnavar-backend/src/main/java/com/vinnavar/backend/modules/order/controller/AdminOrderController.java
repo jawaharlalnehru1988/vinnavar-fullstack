@@ -29,4 +29,14 @@ public class AdminOrderController {
         Order updated = orderService.updateOrderStatus(id, status);
         return ResponseEntity.ok(updated);
     }
+
+    @PutMapping("/{id}/tracking")
+    public ResponseEntity<Order> updateOrderTracking(
+            @PathVariable Long id,
+            @RequestParam(required = false) String courierName,
+            @RequestParam(required = false) String trackingNumber
+    ) {
+        Order updated = orderService.updateOrderTracking(id, courierName, trackingNumber);
+        return ResponseEntity.ok(updated);
+    }
 }
