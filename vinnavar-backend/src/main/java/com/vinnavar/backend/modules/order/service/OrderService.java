@@ -48,6 +48,8 @@ public class OrderService {
                 .customerEmail(request.getCustomerEmail())
                 .customerPhone(request.getCustomerPhone())
                 .shippingAddress(request.getShippingAddress())
+                .billingAddress(request.getBillingAddress() != null ? request.getBillingAddress() : request.getShippingAddress())
+                .gstin(request.getGstin())
                 .totalAmount(totalAmount)
                 .paymentMethod(request.getPaymentMethod() != null ? request.getPaymentMethod() : PaymentMethod.COD)
                 .paymentStatus("PENDING_COD")

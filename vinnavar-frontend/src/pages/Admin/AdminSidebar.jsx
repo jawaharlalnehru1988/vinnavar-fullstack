@@ -51,6 +51,8 @@ const AdminSidebar = ({
         { id: "overview", label: "📊 Overview", desc: "Store statistics & metrics" },
         { id: "products", label: "📦 Product Catalog", desc: "Add, edit, delete products & images" },
         { id: "categories", label: "🗂️ Categories", desc: "Manage product categories" },
+        { id: "customers", label: "👥 Registered Customers", desc: "Manage customer profiles & CRUD" },
+        { id: "testimonials", label: "💬 Customer Testimonials", desc: "Manage moving carousel reviews" },
         { id: "assets", label: "🖼️ Site Assets & Images", desc: "Manage store logo, hero sliders & banners", isDropdown: true },
         { id: "blogs", label: "📝 Blog Articles", desc: "Manage blog posts & recipes" },
         { id: "orders", label: "🚚 Customer Orders", desc: "View orders & update order statuses" }

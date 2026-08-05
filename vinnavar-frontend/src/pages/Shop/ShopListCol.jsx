@@ -542,9 +542,9 @@ const ShopListCol = () => {
                                   <div className=" mt-6">
                                     {/* price */}
                                     <div>
-                                      <span className="text-dark">$18</span>{" "}
+                                      <span className="text-dark">₹18</span>{" "}
                                       <span className="text-decoration-line-through text-muted">
-                                        $24
+                                        ₹24
                                       </span>
                                     </div>
                                     {/* btn */}
@@ -665,7 +665,7 @@ const ShopListCol = () => {
                                   <div className=" mt-6">
                                     {/* price */}
                                     <div>
-                                      <span className="text-dark">$24</span>
+                                      <span className="text-dark">₹24</span>
                                     </div>
                                     {/* btn */}
                                     <div className="mt-3">
@@ -791,7 +791,7 @@ const ShopListCol = () => {
                                   <div className=" mt-6">
                                     {/* price */}
                                     <div>
-                                      <span className="text-dark">$14</span>
+                                      <span className="text-dark">₹14</span>
                                     </div>
                                     {/* btn */}
                                     <div className="mt-3">
@@ -911,9 +911,9 @@ const ShopListCol = () => {
                                   <div className=" mt-6">
                                     {/* price */}
                                     <div>
-                                      <span className="text-dark">$3</span>{" "}
+                                      <span className="text-dark">₹3</span>{" "}
                                       <span className="text-decoration-line-through text-muted">
-                                        $9
+                                        ₹9
                                       </span>
                                     </div>
                                     {/* btn */}
@@ -1034,9 +1034,9 @@ const ShopListCol = () => {
                                   <div className=" mt-6">
                                     {/* price */}
                                     <div>
-                                      <span className="text-dark">$13</span>{" "}
+                                      <span className="text-dark">₹13</span>{" "}
                                       <span className="text-decoration-line-through text-muted">
-                                        $19
+                                        ₹19
                                       </span>
                                     </div>
                                     {/* btn */}

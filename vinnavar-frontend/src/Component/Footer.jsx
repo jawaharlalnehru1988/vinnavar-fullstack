@@ -55,12 +55,12 @@ const Footer = () => {
                       {brandName}
                     </h4>
                     <p className="text-muted small fw-semibold mb-0">
-                      Authorized Partner: <span className="text-dark">Mr. Lokesh Rajan Shah</span>
+                      Sole Proprietor: <span className="text-dark">Mr. Lokesh Rajan Shah</span>
                     </p>
                   </div>
 
                   {/* Column 2: Contact & Support */}
-                  <div className="col-12 col-md-4 px-md-4">
+                  <div className="col-12 col-md-4 px-md-4" id="corporate-contact">
                     <h6 className="text-uppercase text-success fw-bold small mb-3" style={{ letterSpacing: "1px", fontSize: "0.8rem" }}>
                       Corporate Contact
                     </h6>

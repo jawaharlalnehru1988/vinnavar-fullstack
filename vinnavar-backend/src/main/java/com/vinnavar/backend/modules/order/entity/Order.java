@@ -37,7 +37,28 @@ public class Order {
     private String customerPhone;
 
     @Embedded
+    @AttributeOverrides({
+        @AttributeOverride(name = "fullName", column = @Column(name = "shipping_full_name")),
+        @AttributeOverride(name = "phone", column = @Column(name = "shipping_phone")),
+        @AttributeOverride(name = "streetAddress", column = @Column(name = "shipping_street_address")),
+        @AttributeOverride(name = "city", column = @Column(name = "shipping_city")),
+        @AttributeOverride(name = "state", column = @Column(name = "shipping_state")),
+        @AttributeOverride(name = "pincode", column = @Column(name = "shipping_pincode"))
+    })
     private ShippingAddress shippingAddress;
+
+    @Embedded
+    @AttributeOverrides({
+        @AttributeOverride(name = "fullName", column = @Column(name = "billing_full_name")),
+        @AttributeOverride(name = "phone", column = @Column(name = "billing_phone")),
+        @AttributeOverride(name = "streetAddress", column = @Column(name = "billing_street_address")),
+        @AttributeOverride(name = "city", column = @Column(name = "billing_city")),
+        @AttributeOverride(name = "state", column = @Column(name = "billing_state")),
+        @AttributeOverride(name = "pincode", column = @Column(name = "billing_pincode"))
+    })
+    private ShippingAddress billingAddress;
+
+    private String gstin;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default

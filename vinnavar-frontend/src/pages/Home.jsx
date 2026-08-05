@@ -1,16 +1,16 @@
-import { getImageUrl, fetchCategories } from "../services/api";
+import { getImageUrl, fetchCategories, fetchProducts, API_BASE_URL, toggleWishlist } from "../services/api";
 import { Link } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
 import { Zoom } from "react-awesome-reveal";
 import { MagnifyingGlass } from "react-loader-spinner";
+import Swal from "sweetalert2";
 import FAQ from "./FooterElements/Faq";
 import OrganicProductList from "../Component/OrganicProductList";
+import TestimonialsCarousel from "../Component/TestimonialsCarousel";
 
 const bannerdeal = getImageUrl("/media/site/banner-deal1.jpg");
 const product11 = getImageUrl("/media/products/product-img-11.jpg");
-const product12 = getImageUrl("/media/products/product-img-12.jpg");
-const product13 = getImageUrl("/media/products/product-img-13.jpg");
 const refresh = getImageUrl("/media/site/refresh-cw.svg");
 const clock = getImageUrl("/media/site/clock.svg");
 const gift = getImageUrl("/media/site/gift.svg");
@@ -22,6 +22,7 @@ const package1 = getImageUrl("/media/site/package.svg");
 const Home = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [offerProducts, setOfferProducts] = useState([]);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -32,8 +33,70 @@ const Home = () => {
         console.error("Failed to load categories", err);
       }
     };
+    const loadOfferProducts = async () => {
+      try {
+        const data = await fetchProducts();
+        setOfferProducts(data);
+      } catch (err) {
+        console.error("Failed to load offer products", err);
+      }
+    };
     loadCategories();
+    loadOfferProducts();
   }, []);
+
+  const handleAddToCart = async (product) => {
+    const variant = product.variants?.find((v) => v.default) || product.variants?.[0];
+    if (!variant) return;
+
+    let cartId = localStorage.getItem("vinnavar_cart_id");
+    if (!cartId) {
+      cartId = "cart_" + Math.random().toString(36).substring(2, 11);
+      localStorage.setItem("vinnavar_cart_id", cartId);
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/cart/items`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cartId: cartId,
+          productId: product.id,
+          variantId: variant.id,
+          quantity: 1
+        })
+      });
+
+      if (response.ok) {
+        window.dispatchEvent(new Event("cartUpdated"));
+        Swal.fire({
+          icon: "success",
+          title: "Added to Cart",
+          text: `${product.name} added to cart!`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+    } catch (err) {
+      Swal.fire("Cart Error", "Failed to add product to cart.", "error");
+    }
+  };
+
+  const handleToggleWishlist = async (product) => {
+    const variant = product.variants?.find((v) => v.default) || product.variants?.[0];
+    try {
+      await toggleWishlist(product.id, variant?.id);
+      Swal.fire({
+        icon: "success",
+        title: "Wishlist Updated",
+        text: `${product.name} updated in your wishlist!`,
+        timer: 1200,
+        showConfirmButton: false
+      });
+    } catch (err) {
+      Swal.fire("Wishlist Error", "Could not update wishlist.", "error");
+    }
+  };
 
   const settings1 = {
     dots: true,
@@ -267,462 +330,107 @@ const Home = () => {
                     <div className="col-md-9 ">
                       <div className="image-itemss">
                         <Slider {...settings1}>
-                          <div className="images swiper-slide px-4 ">
-                            <div className="col ">
-                              <div className="card card-product">
-                                <div className="card-body">
-                                  <div className="text-center  position-relative ">
-                                    {" "}
-                                    <Link to="#!">
-                                      <img
-                                        src={product11}
-                                        alt="Grocery Ecommerce Template"
-                                        className="mb-3 img-fluid"
-                                      />
-                                    </Link>
-                                    <div className="card-product-action">
-                                      <Link
-                                        to="#!"
-                                        className="btn-action"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#quickViewModal"
-                                      >
-                                        <i
-                                          className="bi bi-eye"
-                                          data-bs-toggle="tooltip"
-                                          data-bs-html="true"
-                                          title="Quick View"
-                                        />
-                                      </Link>
-                                      <Link
-                                        to="#!"
-                                        className="btn-action"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-html="true"
-                                        title="Wishlist"
-                                      >
-                                        <i className="bi bi-heart" />
-                                      </Link>
-                                      <Link
-                                        to="#!"
-                                        className="btn-action"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-html="true"
-                                        title="Compare"
-                                      >
-                                        <i className="bi bi-arrow-left-right" />
-                                      </Link>
+                          {offerProducts.length > 0 ? (
+                            offerProducts.map((product) => {
+                              const defaultVar = product.variants?.find((v) => v.default) || product.variants?.[0];
+                              const price = defaultVar?.discountPrice || defaultVar?.price || 0;
+                              const originalPrice = defaultVar?.discountPrice ? defaultVar?.price : null;
+                              const prodImg = product.imageUrl || defaultVar?.imageUrl ? getImageUrl(product.imageUrl || defaultVar?.imageUrl) : product11;
+
+                              return (
+                                <div key={product.id} className="images swiper-slide px-2">
+                                  <div className="col">
+                                    <div className="card card-product shadow-sm border-0 rounded-3">
+                                      <div className="card-body p-3">
+                                        <div className="text-center position-relative mb-2">
+                                          {originalPrice && (
+                                            <div className="position-absolute top-0 start-0">
+                                              <span className="badge bg-danger rounded-pill px-2 py-1" style={{ fontSize: "10px" }}>
+                                                OFFER
+                                              </span>
+                                            </div>
+                                          )}
+                                          <Link to={`/product/${product.slug}`}>
+                                            <img
+                                              src={prodImg}
+                                              alt={product.name}
+                                              className="mb-2 img-fluid rounded"
+                                              style={{ height: "140px", objectFit: "contain", width: "100%" }}
+                                            />
+                                          </Link>
+                                          <div className="card-product-action">
+                                            <Link
+                                              to={`/product/${product.slug}`}
+                                              className="btn-action"
+                                              title="Quick View"
+                                            >
+                                              <i className="bi bi-eye" />
+                                            </Link>
+                                            <button
+                                              type="button"
+                                              className="btn-action border-0 bg-transparent"
+                                              title="Wishlist"
+                                              onClick={() => handleToggleWishlist(product)}
+                                            >
+                                              <i className="bi bi-heart text-danger" />
+                                            </button>
+                                          </div>
+                                        </div>
+                                        <div className="text-small mb-1">
+                                          <small className="text-muted fw-semibold">
+                                            {product.category?.name || "Organic Staples"}
+                                          </small>
+                                        </div>
+                                        <h2 className="fs-6 fw-bold mb-2 text-truncate">
+                                          <Link
+                                            to={`/product/${product.slug}`}
+                                            className="text-inherit text-decoration-none text-dark"
+                                          >
+                                            {product.name}
+                                          </Link>
+                                        </h2>
+                                        <div className="d-flex justify-content-between align-items-center mt-2 mb-2">
+                                          <div>
+                                            <span className="text-dark fw-bold me-1">₹{price}</span>
+                                            {originalPrice && (
+                                              <span className="text-decoration-line-through text-muted small">
+                                                ₹{originalPrice}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div>
+                                            <small className="text-warning">
+                                              <i className="bi bi-star-fill" />
+                                              <i className="bi bi-star-fill" />
+                                              <i className="bi bi-star-fill" />
+                                              <i className="bi bi-star-fill" />
+                                              <i className="bi bi-star-half" />
+                                            </small>
+                                            <span>
+                                              <small className="ms-1 fw-semibold">4.5</small>
+                                            </span>
+                                          </div>
+                                        </div>
+                                        <div className="d-grid mt-2">
+                                          <button
+                                            type="button"
+                                            className="btn btn-primary btn-sm fw-bold"
+                                            onClick={() => handleAddToCart(product)}
+                                          >
+                                            + Add to cart
+                                          </button>
+                                        </div>
+                                      </div>
                                     </div>
-                                  </div>
-                                  <div className="text-small mb-1">
-                                    <Link
-                                      to="#!"
-                                      className="text-decoration-none text-muted"
-                                    >
-                                      <small>Fruits &amp; Vegetables</small>
-                                    </Link>
-                                  </div>
-                                  <h2 className="fs-6">
-                                    <Link
-                                      to="#!"
-                                      className="text-inherit text-decoration-none"
-                                    >
-                                      Golden Pineapple
-                                    </Link>
-                                  </h2>
-                                  <div className="d-flex justify-content-between align-items-center mt-3">
-                                    <div>
-                                      <span className="text-dark">$13</span>{" "}
-                                      <span className="text-decoration-line-through text-muted">
-                                        $18
-                                      </span>
-                                    </div>
-                                    <div>
-                                      <small className="text-warning">
-                                        {" "}
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-half" />
-                                      </small>
-                                      <span>
-                                        <small>4.5</small>
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <div className="d-grid mt-2">
-                                    <Link to="#!" className="btn btn-primary ">
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width={16}
-                                        height={16}
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={2}
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        className="feather feather-plus"
-                                      >
-                                        <line x1={12} y1={5} x2={12} y2={19} />
-                                        <line x1={5} y1={12} x2={19} y2={12} />
-                                      </svg>{" "}
-                                      Add to cart{" "}
-                                    </Link>
-                                  </div>
-                                  <div className="d-flex justify-content-start text-center mt-3">
-                                    <div
-                                      className="deals-countdown w-100"
-                                      data-countdown="2022/11/11 00:00:00"
-                                    />
                                   </div>
                                 </div>
-                              </div>
+                              );
+                            })
+                          ) : (
+                            <div className="text-center py-4 text-muted">
+                              Loading offer products...
                             </div>
-                          </div>
-                          <div className="images swiper-slide px-4">
-                            <div className="col">
-                              <div className="card card-product">
-                                <div className="card-body">
-                                  <div className="text-center  position-relative ">
-                                    {" "}
-                                    <Link to="#!">
-                                      <img
-                                        src={product12}
-                                        alt="Grocery Ecommerce Template"
-                                        className="mb-3 img-fluid"
-                                      />
-                                    </Link>
-                                    <div className="card-product-action">
-                                      <Link
-                                        to="#!"
-                                        className="btn-action"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#quickViewModal"
-                                      >
-                                        <i
-                                          className="bi bi-eye"
-                                          data-bs-toggle="tooltip"
-                                          data-bs-html="true"
-                                          title="Quick View"
-                                        />
-                                      </Link>
-                                      <Link
-                                        to="#!"
-                                        className="btn-action"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-html="true"
-                                        title="Wishlist"
-                                      >
-                                        <i className="bi bi-heart" />
-                                      </Link>
-                                      <Link
-                                        to="#!"
-                                        className="btn-action"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-html="true"
-                                        title="Compare"
-                                      >
-                                        <i className="bi bi-arrow-left-right" />
-                                      </Link>
-                                    </div>
-                                  </div>
-                                  <div className="text-small mb-1">
-                                    <Link
-                                      to="#!"
-                                      className="text-decoration-none text-muted"
-                                    >
-                                      <small>Fruits &amp; Vegetables</small>
-                                    </Link>
-                                  </div>
-                                  <h2 className="fs-6">
-                                    <Link
-                                      to="#!"
-                                      className="text-inherit text-decoration-none"
-                                    >
-                                      Golden Pineapple
-                                    </Link>
-                                  </h2>
-                                  <div className="d-flex justify-content-between align-items-center mt-3">
-                                    <div>
-                                      <span className="text-dark">$13</span>{" "}
-                                      <span className="text-decoration-line-through text-muted">
-                                        $18
-                                      </span>
-                                    </div>
-                                    <div>
-                                      <small className="text-warning">
-                                        {" "}
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-half" />
-                                      </small>
-                                      <span>
-                                        <small>4.5</small>
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <div className="d-grid mt-2">
-                                    <Link to="#!" className="btn btn-primary ">
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width={16}
-                                        height={16}
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={2}
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        className="feather feather-plus"
-                                      >
-                                        <line x1={12} y1={5} x2={12} y2={19} />
-                                        <line x1={5} y1={12} x2={19} y2={12} />
-                                      </svg>{" "}
-                                      Add to cart{" "}
-                                    </Link>
-                                  </div>
-                                  <div className="d-flex justify-content-start text-center mt-3">
-                                    <div
-                                      className="deals-countdown w-100"
-                                      data-countdown="2022/11/11 00:00:00"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="images swiper-slide px-4">
-                            <div className="col">
-                              <div className="card card-product">
-                                <div className="card-body">
-                                  <div className="text-center  position-relative ">
-                                    {" "}
-                                    <Link to="#!">
-                                      <img
-                                        src={product13}
-                                        alt="Grocery Ecommerce Template"
-                                        className="mb-3 img-fluid"
-                                      />
-                                    </Link>
-                                    <div className="card-product-action">
-                                      <Link
-                                        to="#!"
-                                        className="btn-action"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#quickViewModal"
-                                      >
-                                        <i
-                                          className="bi bi-eye"
-                                          data-bs-toggle="tooltip"
-                                          data-bs-html="true"
-                                          title="Quick View"
-                                        />
-                                      </Link>
-                                      <Link
-                                        to="#!"
-                                        className="btn-action"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-html="true"
-                                        title="Wishlist"
-                                      >
-                                        <i className="bi bi-heart" />
-                                      </Link>
-                                      <Link
-                                        to="#!"
-                                        className="btn-action"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-html="true"
-                                        title="Compare"
-                                      >
-                                        <i className="bi bi-arrow-left-right" />
-                                      </Link>
-                                    </div>
-                                  </div>
-                                  <div className="text-small mb-1">
-                                    <Link
-                                      to="#!"
-                                      className="text-decoration-none text-muted"
-                                    >
-                                      <small>Fruits &amp; Vegetables</small>
-                                    </Link>
-                                  </div>
-                                  <h2 className="fs-6">
-                                    <Link
-                                      to="#!"
-                                      className="text-inherit text-decoration-none"
-                                    >
-                                      Golden Pineapple
-                                    </Link>
-                                  </h2>
-                                  <div className="d-flex justify-content-between align-items-center mt-3">
-                                    <div>
-                                      <span className="text-dark">$13</span>{" "}
-                                      <span className="text-decoration-line-through text-muted">
-                                        $18
-                                      </span>
-                                    </div>
-                                    <div>
-                                      <small className="text-warning">
-                                        {" "}
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-half" />
-                                      </small>
-                                      <span>
-                                        <small>4.5</small>
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <div className="d-grid mt-2">
-                                    <Link to="#!" className="btn btn-primary ">
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width={16}
-                                        height={16}
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={2}
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        className="feather feather-plus"
-                                      >
-                                        <line x1={12} y1={5} x2={12} y2={19} />
-                                        <line x1={5} y1={12} x2={19} y2={12} />
-                                      </svg>{" "}
-                                      Add to cart{" "}
-                                    </Link>
-                                  </div>
-                                  <div className="d-flex justify-content-start text-center mt-3">
-                                    <div
-                                      className="deals-countdown w-100"
-                                      data-countdown="2022/11/11 00:00:00"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="images swiper-slide px-4">
-                            <div className="col">
-                              <div className="card card-product">
-                                <div className="card-body">
-                                  <div className="text-center  position-relative ">
-                                    {" "}
-                                    <Link to="#!">
-                                      <img
-                                        src={product13}
-                                        alt="Grocery Ecommerce Template"
-                                        className="mb-3 img-fluid"
-                                      />
-                                    </Link>
-                                    <div className="card-product-action">
-                                      <Link
-                                        to="#!"
-                                        className="btn-action"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#quickViewModal"
-                                      >
-                                        <i
-                                          className="bi bi-eye"
-                                          data-bs-toggle="tooltip"
-                                          data-bs-html="true"
-                                          title="Quick View"
-                                        />
-                                      </Link>
-                                      <Link
-                                        to="#!"
-                                        className="btn-action"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-html="true"
-                                        title="Wishlist"
-                                      >
-                                        <i className="bi bi-heart" />
-                                      </Link>
-                                      <Link
-                                        to="#!"
-                                        className="btn-action"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-html="true"
-                                        title="Compare"
-                                      >
-                                        <i className="bi bi-arrow-left-right" />
-                                      </Link>
-                                    </div>
-                                  </div>
-                                  <div className="text-small mb-1">
-                                    <Link
-                                      to="#!"
-                                      className="text-decoration-none text-muted"
-                                    >
-                                      <small>Fruits &amp; Vegetables</small>
-                                    </Link>
-                                  </div>
-                                  <h2 className="fs-6">
-                                    <Link
-                                      to="#!"
-                                      className="text-inherit text-decoration-none"
-                                    >
-                                      Golden Pineapple
-                                    </Link>
-                                  </h2>
-                                  <div className="d-flex justify-content-between align-items-center mt-3">
-                                    <div>
-                                      <span className="text-dark">$13</span>{" "}
-                                      <span className="text-decoration-line-through text-muted">
-                                        $18
-                                      </span>
-                                    </div>
-                                    <div>
-                                      <small className="text-warning">
-                                        {" "}
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-fill" />
-                                        <i className="bi bi-star-half" />
-                                      </small>
-                                      <span>
-                                        <small>4.5</small>
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <div className="d-grid mt-2">
-                                    <Link to="#!" className="btn btn-primary ">
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width={16}
-                                        height={16}
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={2}
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        className="feather feather-plus"
-                                      >
-                                        <line x1={12} y1={5} x2={12} y2={19} />
-                                        <line x1={5} y1={12} x2={19} y2={12} />
-                                      </svg>{" "}
-                                      Add to cart{" "}
-                                    </Link>
-                                  </div>
-                                  <div className="d-flex justify-content-start text-center mt-3">
-                                    <div
-                                      className="deals-countdown w-100"
-                                      data-countdown="2022/11/11 00:00:00"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+                          )}
                         </Slider>
                       </div>
                     </div>
@@ -757,17 +465,27 @@ const Home = () => {
                           <Zoom>
                             <div className="card h-100 category-card border-0 shadow-sm rounded-3 overflow-hidden">
                               {/* Category Image */}
-                              <div className="position-relative overflow-hidden category-img-container" style={{ height: "200px" }}>
-                                <Link to="#" onClick={(e) => { e.preventDefault(); setSelectedCategoryId(cat.id); }}>
+                              <div
+                                className="position-relative overflow-hidden category-img-container d-flex align-items-center justify-content-center p-3"
+                                style={{ height: "240px", backgroundColor: "#f8f9fa" }}
+                              >
+                                <Link
+                                  to="#"
+                                  onClick={(e) => { e.preventDefault(); setSelectedCategoryId(cat.id); }}
+                                  className="w-100 h-100 d-flex align-items-center justify-content-center"
+                                >
                                   <img
                                     src={cat.imageUrl ? getImageUrl(cat.imageUrl) : getImageUrl("/media/site/category-atta-rice-dal.jpg")}
                                     alt={cat.name}
-                                    className="w-100 h-100 object-fit-cover"
+                                    style={{
+                                      maxHeight: "100%",
+                                      maxWidth: "100%",
+                                      objectFit: "contain",
+                                      transition: "transform 0.3s ease"
+                                    }}
+                                    className="img-fluid"
                                   />
                                 </Link>
-                                <span className="position-absolute top-0 start-0 m-3 badge bg-success opacity-85 fs-7 rounded-pill shadow-sm">
-                                  ID: {cat.id}
-                                </span>
                               </div>
                               {/* Category Content */}
                               <div className="card-body p-4 d-flex flex-column">
@@ -901,7 +619,8 @@ const Home = () => {
               </section>
             </>
             <>
-            <FAQ/>
+              <TestimonialsCarousel />
+              <FAQ />
             </>
 
 

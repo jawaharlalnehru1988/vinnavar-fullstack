@@ -208,4 +208,124 @@ export const verifyRazorpayPayment = async (verificationData) => {
     return res.json();
 };
 
+// Customer Authentication API Services
+export const customerRegister = async (registerData) => {
+    const res = await fetch(`${API_BASE_URL}/auth/customer/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(registerData)
+    });
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(data.message || "Failed to register. Please try again.");
+    }
+    return data;
+};
+
+export const customerLogin = async (loginData) => {
+    const res = await fetch(`${API_BASE_URL}/auth/customer/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(loginData)
+    });
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(data.message || "Failed to sign in. Please check your credentials.");
+    }
+    return data;
+};
+
+export const customerForgotPassword = async (resetData) => {
+    const res = await fetch(`${API_BASE_URL}/auth/customer/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(resetData)
+    });
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(data.message || "Failed to reset password. Please check your details.");
+    }
+    return data;
+};
+
+// Admin Customer Management API Services
+export const fetchAdminCustomers = async () => {
+    const res = await fetch(`${API_BASE_URL}/admin/customers`);
+    if (!res.ok) return [];
+    return res.json();
+};
+
+export const createAdminCustomer = async (customerData) => {
+    const res = await fetch(`${API_BASE_URL}/admin/customers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(customerData)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to create customer.");
+    return data;
+};
+
+export const updateAdminCustomer = async (id, customerData) => {
+    const res = await fetch(`${API_BASE_URL}/admin/customers/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(customerData)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to update customer.");
+    return data;
+};
+
+export const deleteAdminCustomer = async (id) => {
+    const res = await fetch(`${API_BASE_URL}/admin/customers/${id}`, {
+        method: "DELETE"
+    });
+    if (!res.ok) throw new Error("Failed to delete customer.");
+    return true;
+};
+
+// Testimonials API Services
+export const fetchTestimonials = async () => {
+    const res = await fetch(`${API_BASE_URL}/testimonials`);
+    if (!res.ok) return [];
+    return res.json();
+};
+
+export const fetchAdminTestimonials = async () => {
+    const res = await fetch(`${API_BASE_URL}/admin/testimonials`);
+    if (!res.ok) return [];
+    return res.json();
+};
+
+export const createAdminTestimonial = async (testimonialData) => {
+    const res = await fetch(`${API_BASE_URL}/admin/testimonials`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(testimonialData)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to create testimonial.");
+    return data;
+};
+
+export const updateAdminTestimonial = async (id, testimonialData) => {
+    const res = await fetch(`${API_BASE_URL}/admin/testimonials/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(testimonialData)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to update testimonial.");
+    return data;
+};
+
+export const deleteAdminTestimonial = async (id) => {
+    const res = await fetch(`${API_BASE_URL}/admin/testimonials/${id}`, {
+        method: "DELETE"
+    });
+    if (!res.ok) throw new Error("Failed to delete testimonial.");
+    return true;
+};
+
 

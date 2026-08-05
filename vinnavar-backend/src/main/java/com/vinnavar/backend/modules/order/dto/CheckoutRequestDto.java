@@ -15,5 +15,7 @@ public class CheckoutRequestDto {
     private String customerEmail;
     private String customerPhone;
     private ShippingAddress shippingAddress;
+    private ShippingAddress billingAddress;
+    private String gstin;
     private PaymentMethod paymentMethod = PaymentMethod.COD;
 }

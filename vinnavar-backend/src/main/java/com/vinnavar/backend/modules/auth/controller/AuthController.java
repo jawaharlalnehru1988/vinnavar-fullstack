@@ -17,4 +17,19 @@ public class AuthController {
     public ResponseEntity<AuthDto.AuthResponse> login(@RequestBody AuthDto.LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
+
+    @PostMapping("/customer/register")
+    public ResponseEntity<AuthDto.AuthResponse> customerRegister(@RequestBody AuthDto.CustomerRegisterRequest request) {
+        return ResponseEntity.ok(authService.customerRegister(request));
+    }
+
+    @PostMapping("/customer/login")
+    public ResponseEntity<AuthDto.AuthResponse> customerLogin(@RequestBody AuthDto.CustomerLoginRequest request) {
+        return ResponseEntity.ok(authService.customerLogin(request));
+    }
+
+    @PostMapping("/customer/forgot-password")
+    public ResponseEntity<AuthDto.AuthResponse> forgotPassword(@RequestBody AuthDto.ForgotPasswordRequest request) {
+        return ResponseEntity.ok(authService.forgotPassword(request));
+    }
 }

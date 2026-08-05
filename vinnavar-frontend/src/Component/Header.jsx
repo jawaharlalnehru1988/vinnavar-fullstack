@@ -1,6 +1,7 @@
-import { API_BASE_URL, fetchSettings, getImageUrl } from "../services/api";
+import { API_BASE_URL, fetchSettings, getImageUrl, customerLogin, customerRegister, customerForgotPassword } from "../services/api";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const Grocerylogo = getImageUrl("/media/site/Grocerylogo.png");
 
@@ -10,6 +11,180 @@ const Header = () => {
   const [cart, setCart] = useState(null);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [logoUrl, setLogoUrl] = useState(Grocerylogo);
+
+  // Authentication & User State
+  const [authMode, setAuthMode] = useState("SIGN_IN"); // "SIGN_IN" | "SIGN_UP" | "FORGOT_PASSWORD"
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem("vinnavar_customer");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const [loginMobile, setLoginMobile] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+
+  const [registerName, setRegisterName] = useState("");
+  const [registerMobile, setRegisterMobile] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+
+  const [forgotMobile, setForgotMobile] = useState("");
+  const [forgotNewPassword, setForgotNewPassword] = useState("");
+  const [forgotConfirmPassword, setForgotConfirmPassword] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+
+  // Password Visibility States
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showForgotNewPassword, setShowForgotNewPassword] = useState(false);
+  const [showForgotConfirmPassword, setShowForgotConfirmPassword] = useState(false);
+
+  const getUserInitials = (name) => {
+    if (!name || typeof name !== "string") return "VN";
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return "VN";
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    const single = parts[0];
+    return single.length >= 2 ? single.substring(0, 2).toUpperCase() : single.toUpperCase();
+  };
+
+  const closeModal = () => {
+    try {
+      const modalElement = document.getElementById("userModal");
+      if (modalElement) {
+        const closeBtn = modalElement.querySelector(".btn-close");
+        if (closeBtn && typeof closeBtn.click === "function") {
+          closeBtn.click();
+        } else {
+          modalElement.classList.remove("show");
+          modalElement.style.display = "none";
+        }
+      }
+    } catch (e) {
+      console.warn("Modal hide warning:", e);
+    } finally {
+      const backdrops = document.querySelectorAll(".modal-backdrop");
+      backdrops.forEach((b) => b.remove());
+      document.body.classList.remove("modal-open");
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+    }
+  };
+
+  const scrollToContact = (e) => {
+    e.preventDefault();
+    const contactElem = document.getElementById("corporate-contact") || document.querySelector("footer");
+    if (contactElem) {
+      contactElem.scrollIntoView({ behavior: "smooth" });
+    } else {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }
+  };
+
+  const handleCustomerLogin = async (e) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    try {
+      const res = await customerLogin({ mobileNumber: loginMobile, password: loginPassword });
+      localStorage.setItem("vinnavar_customer_token", res.token);
+      localStorage.setItem("vinnavar_customer", JSON.stringify(res));
+      setCurrentUser(res);
+      closeModal();
+      Swal.fire({
+        icon: "success",
+        title: `Welcome back, ${res.name || "Customer"}! 🎉`,
+        text: "You have signed in successfully.",
+        timer: 2000,
+        showConfirmButton: false
+      });
+      setLoginMobile("");
+      setLoginPassword("");
+    } catch (err) {
+      Swal.fire("Sign In Failed", err.message, "error");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleCustomerRegister = async (e) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    try {
+      const res = await customerRegister({
+        name: registerName,
+        mobileNumber: registerMobile,
+        email: registerEmail,
+        password: registerPassword
+      });
+      localStorage.setItem("vinnavar_customer_token", res.token);
+      localStorage.setItem("vinnavar_customer", JSON.stringify(res));
+      setCurrentUser(res);
+      closeModal();
+      Swal.fire({
+        icon: "success",
+        title: "Account Created! 🎉",
+        text: `Welcome to Vinnavar Organics, ${res.name}!`,
+        timer: 2500,
+        showConfirmButton: false
+      });
+      setRegisterName("");
+      setRegisterMobile("");
+      setRegisterEmail("");
+      setRegisterPassword("");
+    } catch (err) {
+      Swal.fire("Registration Failed", err.message, "error");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleCustomerForgotPassword = async (e) => {
+    e.preventDefault();
+    if (forgotNewPassword !== forgotConfirmPassword) {
+      Swal.fire("Password Mismatch", "New Password and Confirm Password do not match.", "warning");
+      return;
+    }
+    setAuthLoading(true);
+    try {
+      const res = await customerForgotPassword({
+        mobileNumber: forgotMobile,
+        newPassword: forgotNewPassword
+      });
+      localStorage.setItem("vinnavar_customer_token", res.token);
+      localStorage.setItem("vinnavar_customer", JSON.stringify(res));
+      setCurrentUser(res);
+      closeModal();
+      Swal.fire({
+        icon: "success",
+        title: "Password Reset Successful! 🎉",
+        text: "Your password has been updated and you are now signed in.",
+        timer: 2500,
+        showConfirmButton: false
+      });
+      setForgotMobile("");
+      setForgotNewPassword("");
+      setForgotConfirmPassword("");
+      setAuthMode("SIGN_IN");
+    } catch (err) {
+      Swal.fire("Reset Failed", err.message, "error");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("vinnavar_customer_token");
+    localStorage.removeItem("vinnavar_customer");
+    setCurrentUser(null);
+    Swal.fire({
+      icon: "info",
+      title: "Signed Out",
+      text: "You have logged out successfully.",
+      timer: 1500,
+      showConfirmButton: false
+    });
+  };
 
   const fetchCart = async () => {
     const cartId = localStorage.getItem("vinnavar_cart_id");
@@ -113,7 +288,8 @@ const Header = () => {
   };
 
   return (
-    <div>
+    <>
+      <header className="sticky-top bg-white shadow-sm" style={{ position: "sticky", top: 0, zIndex: 1040 }}>
       <div className="w-100 py-1" style={{ background: "#2b9348", fontSize: "13px", fontWeight: "600", letterSpacing: "0.5px", overflow: "hidden" }}>
         {/* eslint-disable-next-line jsx-a11y/no-distracting-elements */}
         <marquee behavior="scroll" direction="left" scrollamount="6" style={{ verticalAlign: "middle", margin: 0, color: "#fff" }}>
@@ -131,6 +307,16 @@ const Header = () => {
                 </div>
                 <div className="col-md-5 col-12 text-end d-flex justify-content-end align-items-center">
                   <div className="d-flex align-items-center gap-2">
+                    {/* Track Order Link */}
+                    <Link
+                      to="/TrackOrder"
+                      className="btn btn-sm btn-outline-success fw-bold d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm"
+                      title="Track Order"
+                    >
+                      <span style={{ fontSize: '16px', lineHeight: '1' }}>🚚</span>
+                      <span className="small">Track</span>
+                    </Link>
+
                     {/* Wishlist Link */}
                     <Link
                       to="/ShopWishList"
@@ -143,16 +329,79 @@ const Header = () => {
                     </Link>
 
                     {/* Account / Login Button */}
-                    <Link
-                      to="#!"
-                      className="btn btn-sm btn-success fw-bold d-flex align-items-center gap-1.5 px-3.5 py-1.5 text-white shadow rounded-pill"
-                      data-bs-toggle="modal"
-                      data-bs-target="#userModal"
-                      style={{ backgroundColor: '#2d6a4f', borderColor: '#2d6a4f' }}
-                    >
-                      <span style={{ fontSize: '16px', lineHeight: '1' }}>👤</span>
-                      <span className="small">Login</span>
-                    </Link>
+                    {currentUser ? (
+                      <div className="dropdown">
+                        <button
+                          className="btn btn-sm btn-success fw-bold dropdown-toggle d-flex align-items-center gap-2 px-3 py-1.5 rounded-pill shadow-sm"
+                          type="button"
+                          data-bs-toggle="dropdown"
+                          aria-expanded="false"
+                          style={{ backgroundColor: '#2d6a4f', borderColor: '#2d6a4f' }}
+                        >
+                          <span
+                            className="d-inline-flex align-items-center justify-content-center rounded-circle bg-white text-success fw-bold shadow-sm"
+                            style={{
+                              width: '26px',
+                              height: '26px',
+                              fontSize: '11px',
+                              letterSpacing: '0.5px',
+                              lineHeight: 1,
+                              color: '#2d6a4f'
+                            }}
+                          >
+                            {getUserInitials(currentUser.name)}
+                          </span>
+                          <span className="small">Hi, {currentUser.name ? currentUser.name.split(" ")[0] : "Account"}</span>
+                        </button>
+                        <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-1" style={{ fontSize: '14px', zIndex: 1060 }}>
+                          <li className="px-3 py-2 border-bottom bg-light d-flex align-items-center gap-2.5">
+                            <span
+                              className="d-inline-flex align-items-center justify-content-center rounded-circle text-white fw-bold shadow-sm me-2"
+                              style={{
+                                width: '36px',
+                                height: '36px',
+                                fontSize: '14px',
+                                backgroundColor: '#2d6a4f'
+                              }}
+                            >
+                              {getUserInitials(currentUser.name)}
+                            </span>
+                            <div>
+                              <div className="fw-bold text-dark">{currentUser.name}</div>
+                              <div className="text-muted small">📱 +91 {currentUser.mobileNumber}</div>
+                            </div>
+                          </li>
+                          <li>
+                            <Link className="dropdown-item fw-semibold py-2" to="/MyAccountOrder">
+                              📦 My Orders
+                            </Link>
+                          </li>
+                          <li>
+                            <Link className="dropdown-item fw-semibold py-2" to="/MyAccountSetting">
+                              ⚙️ Account Settings
+                            </Link>
+                          </li>
+                          <li><hr className="dropdown-divider my-1" /></li>
+                          <li>
+                            <button className="dropdown-item text-danger fw-bold py-2" onClick={handleLogout}>
+                              🚪 Sign Out
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    ) : (
+                      <Link
+                        to="#!"
+                        className="btn btn-sm btn-success fw-bold d-flex align-items-center gap-1.5 px-3.5 py-1.5 text-white shadow rounded-pill"
+                        data-bs-toggle="modal"
+                        data-bs-target="#userModal"
+                        onClick={() => setAuthMode("SIGN_IN")}
+                        style={{ backgroundColor: '#2d6a4f', borderColor: '#2d6a4f' }}
+                      >
+                        <span style={{ fontSize: '16px', lineHeight: '1' }}>👤</span>
+                        <span className="small">Login</span>
+                      </Link>
+                    )}
 
                     {/* Cart Button */}
                     <Link
@@ -201,6 +450,16 @@ const Header = () => {
             Location
           </button> */}
               <div className="d-flex align-items-center gap-2">
+                {/* Track Order Link */}
+                <Link
+                  to="/TrackOrder"
+                  className="btn btn-sm btn-outline-success fw-bold d-flex align-items-center gap-1.5 px-3 py-1.5 rounded-pill shadow-sm"
+                  title="Track Order"
+                >
+                  <span style={{ fontSize: '16px', lineHeight: '1' }}>🚚</span>
+                  <span className="small">Track</span>
+                </Link>
+
                 {/* Wishlist Link */}
                 <Link
                   to="/ShopWishList"
@@ -288,6 +547,11 @@ const Header = () => {
               Home
             </Link>
           </li>
+          <li className="nav-item">
+            <Link className="nav-link fw-semibold text-success" to="/TrackOrder">
+              🚚 Track Order
+            </Link>
+          </li>
           <li className="nav-item dmenu dropdown">
             <Link
               className="nav-link dropdown-toggle"
@@ -313,15 +577,9 @@ const Header = () => {
               <Link className="dropdown-item" to="/BlogCategory">
                 Blog Category
               </Link>
-              <Link className="dropdown-item" to="/AboutUs">
-                About us
-              </Link>
-              {/* <Link className="dropdown-item" to="pages/404error.html">
-                    404 Error
-                  </Link> */}
-              <Link className="dropdown-item" to="/Contact">
-                Contact
-              </Link>
+              <a className="dropdown-item" href="#corporate-contact" onClick={scrollToContact}>
+                Contact Corporate Admin
+              </a>
             </div>
           </li>
 
@@ -463,14 +721,10 @@ const Header = () => {
               </li> */}
         </ul>
       </div>
-      {/* <div className="col-md-2 col-xxl-1 text-end d-none d-lg-block">
-            
-          </div> */}
     </div>
-      </nav >
-  <>
-    <div>
-      {/* Modal */}
+  </nav>
+</header>
+      {/* Customer User Authentication Modal */}
       <div
         className="modal fade"
         id="userModal"
@@ -479,10 +733,12 @@ const Header = () => {
         aria-hidden="true"
       >
         <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content p-4">
-            <div className="modal-header border-0">
-              <h5 className="modal-title fs-3 fw-bold" id="userModalLabel">
-                Sign Up
+          <div className="modal-content p-4 shadow-lg border-0 rounded-4">
+            <div className="modal-header border-0 pb-0">
+              <h5 className="modal-title fs-3 fw-bold text-success" id="userModalLabel">
+                {authMode === "SIGN_IN" && "🔑 Sign In"}
+                {authMode === "SIGN_UP" && "✨ Create Account"}
+                {authMode === "FORGOT_PASSWORD" && "🔒 Password Recovery"}
               </h5>
               <button
                 type="button"
@@ -491,56 +747,261 @@ const Header = () => {
                 aria-label="Close"
               />
             </div>
-            <div className="modal-body">
-              <form>
-                <div className="mb-3">
-                  <label htmlFor="fullName" className="form-label">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="fullName"
-                    placeholder="Enter Your Name"
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="email" className="form-label">
-                    Email address
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    id="email"
-                    placeholder="Enter Email address"
-                    required
-                  />
-                </div>
-                <div className="mb-5">
-                  <label htmlFor="password" className="form-label">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    id="password"
-                    placeholder="Enter Password"
-                    required
-                  />
-                  <small className="form-text">
-                    By Signup, you agree to our{" "}
-                    <Link to="#!">Terms of Service</Link> &amp;{" "}
-                    <Link to="#!">Privacy Policy</Link>
-                  </small>
-                </div>
-                <button type="submit" className="btn btn-primary">
-                  Sign Up
-                </button>
-              </form>
+
+            <div className="modal-body pt-3">
+              {/* MODE 1: SIGN IN */}
+              {authMode === "SIGN_IN" && (
+                <form onSubmit={handleCustomerLogin}>
+                  <p className="text-muted small mb-4">
+                    Sign in with your registered mobile phone number &amp; password.
+                  </p>
+                  <div className="mb-3">
+                    <label className="form-label small fw-bold">Mobile Phone Number *</label>
+                    <div className="input-group">
+                      <span className="input-group-text bg-light fw-bold text-muted">+91</span>
+                      <input
+                        type="tel"
+                        className="form-control"
+                        placeholder="e.g. 9876543210"
+                        value={loginMobile}
+                        onChange={(e) => setLoginMobile(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <div className="d-flex justify-content-between align-items-center mb-1">
+                      <label className="form-label small fw-bold mb-0">Password *</label>
+                      <button
+                        type="button"
+                        className="btn btn-link p-0 text-success text-decoration-none fw-bold small"
+                        style={{ fontSize: "12px" }}
+                        onClick={() => setAuthMode("FORGOT_PASSWORD")}
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+                    <div className="input-group">
+                      <input
+                        type={showLoginPassword ? "text" : "password"}
+                        className="form-control"
+                        placeholder="Enter your password"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        required
+                      />
+                      <button
+                        className="btn btn-outline-secondary bg-white text-muted border-start-0"
+                        type="button"
+                        onClick={() => setShowLoginPassword(!showLoginPassword)}
+                        title={showLoginPassword ? "Hide password" : "Show password"}
+                        style={{ borderColor: "#ced4da" }}
+                      >
+                        {showLoginPassword ? "🙈" : "👁️"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn btn-success w-100 fw-bold py-2.5 mt-2 rounded-3 shadow-sm"
+                    style={{ backgroundColor: "#2d6a4f", borderColor: "#2d6a4f" }}
+                    disabled={authLoading}
+                  >
+                    {authLoading ? "Signing In..." : "Sign In"}
+                  </button>
+                </form>
+              )}
+
+              {/* MODE 2: SIGN UP */}
+              {authMode === "SIGN_UP" && (
+                <form onSubmit={handleCustomerRegister}>
+                  <p className="text-muted small mb-4">
+                    Join Vinnavar Organics for 100% natural, farm-fresh staples.
+                  </p>
+                  <div className="mb-3">
+                    <label className="form-label small fw-bold">Full Name *</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. Jawaharlal Nehru"
+                      value={registerName}
+                      onChange={(e) => setRegisterName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label small fw-bold">Mobile Phone Number *</label>
+                    <div className="input-group">
+                      <span className="input-group-text bg-light fw-bold text-muted">+91</span>
+                      <input
+                        type="tel"
+                        className="form-control"
+                        placeholder="e.g. 9876543210"
+                        value={registerMobile}
+                        onChange={(e) => setRegisterMobile(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label small fw-bold">Email Address (Optional)</label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      placeholder="you@example.com"
+                      value={registerEmail}
+                      onChange={(e) => setRegisterEmail(e.target.value)}
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="form-label small fw-bold">Password *</label>
+                    <div className="input-group">
+                      <input
+                        type={showRegisterPassword ? "text" : "password"}
+                        className="form-control"
+                        placeholder="Create a strong password"
+                        value={registerPassword}
+                        onChange={(e) => setRegisterPassword(e.target.value)}
+                        required
+                      />
+                      <button
+                        className="btn btn-outline-secondary bg-white text-muted border-start-0"
+                        type="button"
+                        onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                        title={showRegisterPassword ? "Hide password" : "Show password"}
+                        style={{ borderColor: "#ced4da" }}
+                      >
+                        {showRegisterPassword ? "🙈" : "👁️"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn btn-success w-100 fw-bold py-2.5 rounded-3 shadow-sm"
+                    style={{ backgroundColor: "#2d6a4f", borderColor: "#2d6a4f" }}
+                    disabled={authLoading}
+                  >
+                    {authLoading ? "Creating Account..." : "Create Account & Sign In"}
+                  </button>
+                </form>
+              )}
+
+              {/* MODE 3: FORGOT PASSWORD */}
+              {authMode === "FORGOT_PASSWORD" && (
+                <form onSubmit={handleCustomerForgotPassword}>
+                  <p className="text-muted small mb-4">
+                    Enter your registered mobile phone number to set a new password.
+                  </p>
+                  <div className="mb-3">
+                    <label className="form-label small fw-bold">Registered Mobile Phone Number *</label>
+                    <div className="input-group">
+                      <span className="input-group-text bg-light fw-bold text-muted">+91</span>
+                      <input
+                        type="tel"
+                        className="form-control"
+                        placeholder="e.g. 9876543210"
+                        value={forgotMobile}
+                        onChange={(e) => setForgotMobile(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label small fw-bold">New Password *</label>
+                    <div className="input-group">
+                      <input
+                        type={showForgotNewPassword ? "text" : "password"}
+                        className="form-control"
+                        placeholder="Enter new password"
+                        value={forgotNewPassword}
+                        onChange={(e) => setForgotNewPassword(e.target.value)}
+                        required
+                      />
+                      <button
+                        className="btn btn-outline-secondary bg-white text-muted border-start-0"
+                        type="button"
+                        onClick={() => setShowForgotNewPassword(!showForgotNewPassword)}
+                        title={showForgotNewPassword ? "Hide password" : "Show password"}
+                        style={{ borderColor: "#ced4da" }}
+                      >
+                        {showForgotNewPassword ? "🙈" : "👁️"}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mb-4">
+                    <label className="form-label small fw-bold">Confirm New Password *</label>
+                    <div className="input-group">
+                      <input
+                        type={showForgotConfirmPassword ? "text" : "password"}
+                        className="form-control"
+                        placeholder="Confirm new password"
+                        value={forgotConfirmPassword}
+                        onChange={(e) => setForgotConfirmPassword(e.target.value)}
+                        required
+                      />
+                      <button
+                        className="btn btn-outline-secondary bg-white text-muted border-start-0"
+                        type="button"
+                        onClick={() => setShowForgotConfirmPassword(!showForgotConfirmPassword)}
+                        title={showForgotConfirmPassword ? "Hide password" : "Show password"}
+                        style={{ borderColor: "#ced4da" }}
+                      >
+                        {showForgotConfirmPassword ? "🙈" : "👁️"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn btn-success w-100 fw-bold py-2.5 rounded-3 shadow-sm"
+                    style={{ backgroundColor: "#2d6a4f", borderColor: "#2d6a4f" }}
+                    disabled={authLoading}
+                  >
+                    {authLoading ? "Updating..." : "Reset Password & Sign In"}
+                  </button>
+                </form>
+              )}
             </div>
-            <div className="modal-footer border-0 justify-content-center">
-              Already have an account? <Link to="/MyAccountSignIn">Sign in</Link>
+
+            <div className="modal-footer border-0 justify-content-center pt-0">
+              {authMode === "SIGN_IN" && (
+                <div className="small text-muted">
+                  Don't have an account?{" "}
+                  <button
+                    type="button"
+                    className="btn btn-link text-success fw-bold p-0 ms-1 text-decoration-none"
+                    onClick={() => setAuthMode("SIGN_UP")}
+                  >
+                    Sign Up Now
+                  </button>
+                </div>
+              )}
+              {authMode === "SIGN_UP" && (
+                <div className="small text-muted">
+                  Already have an account?{" "}
+                  <button
+                    type="button"
+                    className="btn btn-link text-success fw-bold p-0 ms-1 text-decoration-none"
+                    onClick={() => setAuthMode("SIGN_IN")}
+                  >
+                    Sign In
+                  </button>
+                </div>
+              )}
+              {authMode === "FORGOT_PASSWORD" && (
+                <div className="small text-muted">
+                  Remembered your password?{" "}
+                  <button
+                    type="button"
+                    className="btn btn-link text-success fw-bold p-0 ms-1 text-decoration-none"
+                    onClick={() => setAuthMode("SIGN_IN")}
+                  >
+                    Back to Sign In
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -720,70 +1181,70 @@ const Header = () => {
                       className="list-group-item d-flex justify-content-between align-items-center px-2 py-3 list-group-item-action active"
                     >
                       <span>Alabama</span>
-                      <span>Min:$20</span>
+                      <span>Min:₹20</span>
                     </Link>
                     <Link
                       to="#"
                       className="list-group-item d-flex justify-content-between align-items-center px-2 py-3 list-group-item-action"
                     >
                       <span>Alaska</span>
-                      <span>Min:$30</span>
+                      <span>Min:₹30</span>
                     </Link>
                     <Link
                       to="#"
                       className="list-group-item d-flex justify-content-between align-items-center px-2 py-3 list-group-item-action"
                     >
                       <span>Arizona</span>
-                      <span>Min:$50</span>
+                      <span>Min:₹50</span>
                     </Link>
                     <Link
                       to="#"
                       className="list-group-item d-flex justify-content-between align-items-center px-2 py-3 list-group-item-action"
                     >
                       <span>California</span>
-                      <span>Min:$29</span>
+                      <span>Min:₹29</span>
                     </Link>
                     <Link
                       to="#"
                       className="list-group-item d-flex justify-content-between align-items-center px-2 py-3 list-group-item-action"
                     >
                       <span>Colorado</span>
-                      <span>Min:$80</span>
+                      <span>Min:₹80</span>
                     </Link>
                     <Link
                       to="#"
                       className="list-group-item d-flex justify-content-between align-items-center px-2 py-3 list-group-item-action"
                     >
                       <span>Florida</span>
-                      <span>Min:$90</span>
+                      <span>Min:₹90</span>
                     </Link>
                     <Link
                       to="#"
                       className="list-group-item d-flex justify-content-between align-items-center px-2 py-3 list-group-item-action"
                     >
                       <span>Arizona</span>
-                      <span>Min:$50</span>
+                      <span>Min:₹50</span>
                     </Link>
                     <Link
                       to="#"
                       className="list-group-item d-flex justify-content-between align-items-center px-2 py-3 list-group-item-action"
                     >
                       <span>California</span>
-                      <span>Min:$29</span>
+                      <span>Min:₹29</span>
                     </Link>
                     <Link
                       to="#"
                       className="list-group-item d-flex justify-content-between align-items-center px-2 py-3 list-group-item-action"
                     >
                       <span>Colorado</span>
-                      <span>Min:$80</span>
+                      <span>Min:₹80</span>
                     </Link>
                     <Link
                       to="#"
                       className="list-group-item d-flex justify-content-between align-items-center px-2 py-3 list-group-item-action"
                     >
                       <span>Florida</span>
-                      <span>Min:$90</span>
+                      <span>Min:₹90</span>
                     </Link>
                   </div>
                 </div>
@@ -792,9 +1253,7 @@ const Header = () => {
           </div>
         </div>
       </div>
-    </div>
-  </>
-    </div >
+    </>
   );
 };
 

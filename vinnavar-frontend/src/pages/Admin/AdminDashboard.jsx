@@ -5,6 +5,8 @@ import Swal from "sweetalert2";
 import AdminSidebar from "./AdminSidebar";
 import AdminSiteAssets from "./AdminSiteAssets";
 import AdminBlog from "./AdminBlog";
+import AdminCustomers from "./AdminCustomers";
+import AdminTestimonials from "./AdminTestimonials";
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -43,6 +45,7 @@ const AdminDashboard = () => {
     const [categories, setCategories] = useState([]);
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedOrderModal, setSelectedOrderModal] = useState(null);
 
     // Product Modal / Form State
     const [showProductModal, setShowProductModal] = useState(false);
@@ -598,6 +601,12 @@ const AdminDashboard = () => {
                 {/* BLOGS SECTION */}
                 {activeTab === "blogs" && <AdminBlog />}
 
+                {/* CUSTOMERS SECTION */}
+                {activeTab === "customers" && <AdminCustomers />}
+
+                {/* TESTIMONIALS SECTION */}
+                {activeTab === "testimonials" && <AdminTestimonials />}
+
                 {/* PRODUCTS SECTION */}
                 {activeTab === "products" && (
                     <div>
@@ -749,6 +758,7 @@ const AdminDashboard = () => {
                                         <th>Payment</th>
                                         <th>Status</th>
                                         <th>Update Status</th>
+                                        <th className="text-center">Full Details</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -787,10 +797,213 @@ const AdminDashboard = () => {
                                                     <option value="CANCELLED">CANCELLED</option>
                                                 </select>
                                             </td>
+                                            <td className="text-center">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-sm"
+                                                    onClick={() => setSelectedOrderModal(o)}
+                                                >
+                                                    👁️ View Details
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* MODAL: VIEW ORDER & CUSTOMER FULL DETAILS */}
+                {selectedOrderModal && (
+                    <div className="modal d-block bg-dark bg-opacity-50" tabIndex="-1" style={{ zIndex: 1055 }}>
+                        <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                                <div className="modal-header bg-success text-white py-3 px-4">
+                                    <div>
+                                        <h5 className="modal-title fw-bold mb-0 text-white d-flex align-items-center gap-2">
+                                            📄 Order Details: <span className="font-monospace text-warning">{selectedOrderModal.orderNumber}</span>
+                                        </h5>
+                                        <small className="opacity-75">
+                                            Placed on: {selectedOrderModal.createdAt ? new Date(selectedOrderModal.createdAt).toLocaleString("en-IN") : "N/A"}
+                                        </small>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="btn-close btn-close-white"
+                                        onClick={() => setSelectedOrderModal(null)}
+                                        aria-label="Close"
+                                    ></button>
+                                </div>
+                                <div className="modal-body p-4 bg-light">
+                                    {/* Order Status & Payment Banner */}
+                                    <div className="card border-0 shadow-sm mb-4 bg-white rounded-3">
+                                        <div className="card-body d-flex flex-wrap align-items-center justify-content-between gap-3 py-3">
+                                            <div>
+                                                <span className="text-muted small d-block">Order Status</span>
+                                                <span className={`badge fs-6 ${selectedOrderModal.orderStatus === 'DELIVERED' ? 'bg-success' : 'bg-primary'}`}>
+                                                    {selectedOrderModal.orderStatus}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="text-muted small d-block">Payment Method</span>
+                                                <span className="badge bg-info text-dark fs-6">{selectedOrderModal.paymentMethod}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-muted small d-block">Total Amount</span>
+                                                <span className="fw-bold fs-4 text-success">₹{selectedOrderModal.totalAmount}</span>
+                                            </div>
+                                            <div>
+                                                <label className="form-label small fw-bold text-muted mb-1">Update Status</label>
+                                                <select
+                                                    className="form-select form-select-sm fw-bold border-success"
+                                                    value={selectedOrderModal.orderStatus}
+                                                    onChange={(e) => {
+                                                        handleOrderStatusChange(selectedOrderModal.id, e.target.value);
+                                                        setSelectedOrderModal({ ...selectedOrderModal, orderStatus: e.target.value });
+                                                    }}
+                                                >
+                                                    <option value="CONFIRMED">CONFIRMED</option>
+                                                    <option value="PROCESSING">PROCESSING</option>
+                                                    <option value="SHIPPED">SHIPPED</option>
+                                                    <option value="DELIVERED">DELIVERED</option>
+                                                    <option value="CANCELLED">CANCELLED</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Customer Profile Information */}
+                                    <div className="card border-0 shadow-sm mb-4 bg-white rounded-3">
+                                        <div className="card-header bg-white border-0 fw-bold text-success fs-6 py-3">
+                                            👤 Customer Profile Details
+                                        </div>
+                                        <div className="card-body pt-0">
+                                            <div className="row g-3">
+                                                <div className="col-md-4">
+                                                    <span className="text-muted small d-block">Customer Name</span>
+                                                    <strong className="text-dark fs-6">{selectedOrderModal.customerName}</strong>
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <span className="text-muted small d-block">Mobile Phone</span>
+                                                    <strong className="text-dark">📞 {selectedOrderModal.customerPhone}</strong>
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <span className="text-muted small d-block">Email Address</span>
+                                                    <strong className="text-dark">✉️ {selectedOrderModal.customerEmail || "N/A"}</strong>
+                                                </div>
+                                                {selectedOrderModal.gstin && (
+                                                    <div className="col-md-12 mt-2">
+                                                        <span className="text-muted small d-block">GSTIN Number</span>
+                                                        <span className="font-monospace fw-bold text-dark bg-light px-2.5 py-1 border rounded d-inline-block">
+                                                            🏢 {selectedOrderModal.gstin}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Addresses (Shipping & Billing) */}
+                                    <div className="row g-3 mb-4">
+                                        {/* Shipping Address */}
+                                        <div className="col-md-6">
+                                            <div className="card border-0 shadow-sm bg-white rounded-3 h-100">
+                                                <div className="card-header bg-white border-0 fw-bold text-success fs-6 py-3">
+                                                    🚚 Shipping Address
+                                                </div>
+                                                <div className="card-body pt-0 small">
+                                                    {selectedOrderModal.shippingAddress ? (
+                                                        <div>
+                                                            <div className="fw-bold text-dark fs-6 mb-1">{selectedOrderModal.shippingAddress.fullName || selectedOrderModal.customerName}</div>
+                                                            <div className="text-secondary mb-1">{selectedOrderModal.shippingAddress.streetAddress}</div>
+                                                            <div className="text-secondary mb-1">{selectedOrderModal.shippingAddress.city}, {selectedOrderModal.shippingAddress.state} - {selectedOrderModal.shippingAddress.pincode}</div>
+                                                            <div className="text-muted">📞 {selectedOrderModal.shippingAddress.phone || selectedOrderModal.customerPhone}</div>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-muted">No shipping address recorded.</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Billing Address */}
+                                        <div className="col-md-6">
+                                            <div className="card border-0 shadow-sm bg-white rounded-3 h-100">
+                                                <div className="card-header bg-white border-0 fw-bold text-success fs-6 py-3">
+                                                    💳 Billing Address
+                                                </div>
+                                                <div className="card-body pt-0 small">
+                                                    {selectedOrderModal.billingAddress ? (
+                                                        <div>
+                                                            <div className="fw-bold text-dark fs-6 mb-1">{selectedOrderModal.billingAddress.fullName || selectedOrderModal.customerName}</div>
+                                                            <div className="text-secondary mb-1">{selectedOrderModal.billingAddress.streetAddress}</div>
+                                                            <div className="text-secondary mb-1">{selectedOrderModal.billingAddress.city}, {selectedOrderModal.billingAddress.state} - {selectedOrderModal.billingAddress.pincode}</div>
+                                                            <div className="text-muted">📞 {selectedOrderModal.billingAddress.phone || selectedOrderModal.customerPhone}</div>
+                                                        </div>
+                                                    ) : (
+                                                        selectedOrderModal.shippingAddress ? (
+                                                            <div>
+                                                                <div className="fw-bold text-dark fs-6 mb-1">{selectedOrderModal.shippingAddress.fullName || selectedOrderModal.customerName}</div>
+                                                                <div className="text-secondary mb-1">{selectedOrderModal.shippingAddress.streetAddress}</div>
+                                                                <div className="text-secondary mb-1">{selectedOrderModal.shippingAddress.city}, {selectedOrderModal.shippingAddress.state} - {selectedOrderModal.shippingAddress.pincode}</div>
+                                                                <div className="text-muted">📞 {selectedOrderModal.shippingAddress.phone || selectedOrderModal.customerPhone}</div>
+                                                                <span className="badge bg-light text-muted mt-2">(Same as Shipping Address)</span>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-muted">No billing address recorded.</span>
+                                                        )
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Order Items Table */}
+                                    <div className="card border-0 shadow-sm bg-white rounded-3">
+                                        <div className="card-header bg-white border-0 fw-bold text-success fs-6 py-3">
+                                            🌾 Ordered Products Breakdown
+                                        </div>
+                                        <div className="card-body pt-0 p-0">
+                                            <div className="table-responsive">
+                                                <table className="table align-middle m-0">
+                                                    <thead className="table-light">
+                                                        <tr>
+                                                            <th>Product Name</th>
+                                                            <th>Variant</th>
+                                                            <th>Unit Price</th>
+                                                            <th>Qty</th>
+                                                            <th className="text-end">Line Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {selectedOrderModal.items?.map((item, idx) => (
+                                                            <tr key={idx}>
+                                                                <td className="fw-bold text-dark">{item.productName}</td>
+                                                                <td><span className="badge bg-light text-dark border">{item.variantName}</span></td>
+                                                                <td>₹{item.unitPrice}</td>
+                                                                <td className="fw-bold">x{item.quantity}</td>
+                                                                <td className="text-end fw-bold text-success">₹{item.totalPrice}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                    <tfoot className="table-light">
+                                                        <tr>
+                                                            <td colSpan="4" className="text-end fw-bold">Grand Total:</td>
+                                                            <td className="text-end fw-bold text-success fs-5">₹{selectedOrderModal.totalAmount}</td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="modal-footer bg-light border-0 py-3 px-4">
+                                    <button type="button" className="btn btn-secondary rounded-pill px-4 fw-bold" onClick={() => setSelectedOrderModal(null)}>
+                                        Close Details
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}

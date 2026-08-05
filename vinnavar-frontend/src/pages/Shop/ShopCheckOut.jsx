@@ -30,6 +30,19 @@ const ShopCheckOut = () => {
         name: "",
         email: "",
         phone: "",
+        gstin: "",
+        street: "",
+        city: "",
+        state: "Tamil Nadu",
+        pincode: ""
+    });
+
+    const [sameAsShipping, setSameAsShipping] = useState(true);
+
+    const [billingForm, setBillingForm] = useState({
+        name: "",
+        email: "",
+        phone: "",
         street: "",
         city: "",
         state: "Tamil Nadu",
@@ -60,9 +73,36 @@ const ShopCheckOut = () => {
         fetchCart();
     }, []);
 
-    const handleInputChange = (e) => {
+    const handleShippingChange = (e) => {
         const { name, value } = e.target;
-        setShippingForm((prev) => ({ ...prev, [name]: value }));
+        setShippingForm((prev) => {
+            const updated = { ...prev, [name]: value };
+            if (sameAsShipping && name !== "gstin") {
+                setBillingForm((bPrev) => ({ ...bPrev, [name]: value }));
+            }
+            return updated;
+        });
+    };
+
+    const handleBillingChange = (e) => {
+        const { name, value } = e.target;
+        setBillingForm((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleSameAsShippingToggle = (e) => {
+        const checked = e.target.checked;
+        setSameAsShipping(checked);
+        if (checked) {
+            setBillingForm({
+                name: shippingForm.name,
+                email: shippingForm.email,
+                phone: shippingForm.phone,
+                street: shippingForm.street,
+                city: shippingForm.city,
+                state: shippingForm.state,
+                pincode: shippingForm.pincode
+            });
+        }
     };
 
     const handlePlaceOrder = async (e) => {
@@ -74,21 +114,40 @@ const ShopCheckOut = () => {
         }
 
         if (!shippingForm.name || !shippingForm.phone || !shippingForm.street || !shippingForm.pincode) {
-            Swal.fire("Missing Information", "Please fill in your Full Name, Mobile Phone, Delivery Address, and Pincode.", "warning");
+            Swal.fire("Missing Shipping Information", "Please fill in your Full Name, Mobile Phone, Shipping Address, and Pincode.", "warning");
             return;
         }
+
+        if (!sameAsShipping && (!billingForm.name || !billingForm.street || !billingForm.pincode)) {
+            Swal.fire("Missing Billing Information", "Please fill in all required Billing Address fields.", "warning");
+            return;
+        }
+
+        const activeBilling = sameAsShipping ? {
+            street: shippingForm.street,
+            city: shippingForm.city,
+            state: shippingForm.state,
+            pincode: shippingForm.pincode
+        } : {
+            street: billingForm.street,
+            city: billingForm.city,
+            state: billingForm.state,
+            pincode: billingForm.pincode
+        };
 
         const checkoutData = {
             cartId,
             customerName: shippingForm.name,
             customerEmail: shippingForm.email || "customer@vinnavar.com",
             customerPhone: shippingForm.phone,
+            userGstin: shippingForm.gstin || "",
             shippingAddress: {
                 street: shippingForm.street,
                 city: shippingForm.city,
                 state: shippingForm.state,
                 pincode: shippingForm.pincode
             },
+            billingAddress: activeBilling,
             paymentMethod
         };
 
@@ -239,7 +298,7 @@ const ShopCheckOut = () => {
                                                             name="name"
                                                             placeholder="e.g. Lokesh Rajan"
                                                             value={shippingForm.name}
-                                                            onChange={handleInputChange}
+                                                            onChange={handleShippingChange}
                                                             required
                                                         />
                                                     </div>
@@ -251,11 +310,11 @@ const ShopCheckOut = () => {
                                                             name="phone"
                                                             placeholder="+91 9876543210"
                                                             value={shippingForm.phone}
-                                                            onChange={handleInputChange}
+                                                            onChange={handleShippingChange}
                                                             required
                                                         />
                                                     </div>
-                                                    <div className="col-12">
+                                                    <div className="col-12 col-md-6">
                                                         <label className="form-label small fw-bold">Email Address (Optional)</label>
                                                         <input
                                                             type="email"
@@ -263,8 +322,20 @@ const ShopCheckOut = () => {
                                                             name="email"
                                                             placeholder="you@example.com"
                                                             value={shippingForm.email}
-                                                            onChange={handleInputChange}
+                                                            onChange={handleShippingChange}
                                                         />
+                                                    </div>
+                                                    <div className="col-12 col-md-6">
+                                                        <label className="form-label small fw-bold">User GSTIN (Optional)</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control text-uppercase"
+                                                            name="gstin"
+                                                            placeholder="e.g. 33AAAAA0000A1Z5"
+                                                            value={shippingForm.gstin}
+                                                            onChange={handleShippingChange}
+                                                        />
+                                                        <div className="form-text text-muted" style={{ fontSize: "11px" }}>Optional to fill for tax invoice</div>
                                                     </div>
                                                     <div className="col-12">
                                                         <label className="form-label small fw-bold">House / Flat / Street Address *</label>
@@ -274,7 +345,7 @@ const ShopCheckOut = () => {
                                                             rows="2"
                                                             placeholder="#16, MS Nagar Phase 2, Kurumanthangal Road"
                                                             value={shippingForm.street}
-                                                            onChange={handleInputChange}
+                                                            onChange={handleShippingChange}
                                                             required
                                                         ></textarea>
                                                     </div>
@@ -286,7 +357,7 @@ const ShopCheckOut = () => {
                                                             name="city"
                                                             placeholder="Arani"
                                                             value={shippingForm.city}
-                                                            onChange={handleInputChange}
+                                                            onChange={handleShippingChange}
                                                         />
                                                     </div>
                                                     <div className="col-12 col-md-4">
@@ -296,7 +367,7 @@ const ShopCheckOut = () => {
                                                             className="form-control"
                                                             name="state"
                                                             value={shippingForm.state}
-                                                            onChange={handleInputChange}
+                                                            onChange={handleShippingChange}
                                                         />
                                                     </div>
                                                     <div className="col-12 col-md-4">
@@ -307,7 +378,7 @@ const ShopCheckOut = () => {
                                                             name="pincode"
                                                             placeholder="632314"
                                                             value={shippingForm.pincode}
-                                                            onChange={handleInputChange}
+                                                            onChange={handleShippingChange}
                                                             required
                                                         />
                                                     </div>
@@ -315,10 +386,156 @@ const ShopCheckOut = () => {
                                             </div>
                                         </div>
 
-                                        {/* Card 2: Payment Method */}
+                                        {/* Card 2: Billing Address */}
+                                        <div className="card shadow-sm border-0 mb-4 rounded-3">
+                                            <div className="card-header bg-success text-white fw-bold py-3 d-flex justify-content-between align-items-center">
+                                                <span>💳 2. Billing Address</span>
+                                                <span className="badge bg-white text-success px-2 py-1" style={{ fontSize: "11px" }}>Tax & Invoice</span>
+                                            </div>
+                                            <div className="card-body p-4">
+                                                <div className="p-3 bg-light rounded border mb-3">
+                                                    <label
+                                                        htmlFor="sameAsShippingCheck"
+                                                        className="d-inline-flex align-items-center gap-3 fw-bold text-dark cursor-pointer m-0 user-select-none"
+                                                        style={{ cursor: "pointer" }}
+                                                    >
+                                                        <span className="position-relative d-inline-block flex-shrink-0" style={{ width: "48px", height: "26px" }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                id="sameAsShippingCheck"
+                                                                checked={sameAsShipping}
+                                                                onChange={handleSameAsShippingToggle}
+                                                                className="opacity-0 position-absolute w-100 h-100 top-0 start-0 m-0"
+                                                                style={{ cursor: "pointer", zIndex: 2 }}
+                                                            />
+                                                            <span
+                                                                className="position-absolute top-0 start-0 w-100 h-100 rounded-pill"
+                                                                style={{
+                                                                    backgroundColor: sameAsShipping ? "#198754" : "#ced4da",
+                                                                    transition: "background-color 0.2s ease"
+                                                                }}
+                                                            />
+                                                            <span
+                                                                className="position-absolute rounded-circle bg-white shadow-sm"
+                                                                style={{
+                                                                    top: "3px",
+                                                                    left: sameAsShipping ? "25px" : "3px",
+                                                                    width: "20px",
+                                                                    height: "20px",
+                                                                    transition: "left 0.2s ease"
+                                                                }}
+                                                            />
+                                                        </span>
+                                                        <span className="fs-6 fw-bold text-dark ms-2">
+                                                            Billing Address is same as Shipping Address
+                                                        </span>
+                                                    </label>
+                                                </div>
+
+                                                <div className="row g-3">
+                                                    <div className="col-12 col-md-6">
+                                                        <label className="form-label small fw-bold">
+                                                            Billing Full Name * {sameAsShipping && <span className="text-muted fw-normal ms-1" style={{ fontSize: "11px" }}>(Auto-synced)</span>}
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            name="name"
+                                                            placeholder="e.g. Lokesh Rajan"
+                                                            value={sameAsShipping ? shippingForm.name : billingForm.name}
+                                                            onChange={sameAsShipping ? undefined : handleBillingChange}
+                                                            readOnly={sameAsShipping}
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="col-12 col-md-6">
+                                                        <label className="form-label small fw-bold">
+                                                            Billing Phone Number * {sameAsShipping && <span className="text-muted fw-normal ms-1" style={{ fontSize: "11px" }}>(Auto-synced)</span>}
+                                                        </label>
+                                                        <input
+                                                            type="tel"
+                                                            className="form-control"
+                                                            name="phone"
+                                                            placeholder="+91 9876543210"
+                                                            value={sameAsShipping ? shippingForm.phone : billingForm.phone}
+                                                            onChange={sameAsShipping ? undefined : handleBillingChange}
+                                                            readOnly={sameAsShipping}
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="col-12">
+                                                        <label className="form-label small fw-bold">
+                                                            Billing Email (Optional) {sameAsShipping && <span className="text-muted fw-normal ms-1" style={{ fontSize: "11px" }}>(Auto-synced)</span>}
+                                                        </label>
+                                                        <input
+                                                            type="email"
+                                                            className="form-control"
+                                                            name="email"
+                                                            placeholder="you@example.com"
+                                                            value={sameAsShipping ? shippingForm.email : billingForm.email}
+                                                            onChange={sameAsShipping ? undefined : handleBillingChange}
+                                                            readOnly={sameAsShipping}
+                                                        />
+                                                    </div>
+                                                    <div className="col-12">
+                                                        <label className="form-label small fw-bold">
+                                                            Billing House / Flat / Street Address * {sameAsShipping && <span className="text-muted fw-normal ms-1" style={{ fontSize: "11px" }}>(Auto-synced)</span>}
+                                                        </label>
+                                                        <textarea
+                                                            className="form-control"
+                                                            name="street"
+                                                            rows="2"
+                                                            placeholder="#16, MS Nagar Phase 2, Kurumanthangal Road"
+                                                            value={sameAsShipping ? shippingForm.street : billingForm.street}
+                                                            onChange={sameAsShipping ? undefined : handleBillingChange}
+                                                            readOnly={sameAsShipping}
+                                                            required
+                                                        ></textarea>
+                                                    </div>
+                                                    <div className="col-12 col-md-4">
+                                                        <label className="form-label small fw-bold">Billing City / Town</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            name="city"
+                                                            placeholder="Arani"
+                                                            value={sameAsShipping ? shippingForm.city : billingForm.city}
+                                                            onChange={sameAsShipping ? undefined : handleBillingChange}
+                                                            readOnly={sameAsShipping}
+                                                        />
+                                                    </div>
+                                                    <div className="col-12 col-md-4">
+                                                        <label className="form-label small fw-bold">Billing State</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            name="state"
+                                                            value={sameAsShipping ? shippingForm.state : billingForm.state}
+                                                            onChange={sameAsShipping ? undefined : handleBillingChange}
+                                                            readOnly={sameAsShipping}
+                                                        />
+                                                    </div>
+                                                    <div className="col-12 col-md-4">
+                                                        <label className="form-label small fw-bold">Billing Pincode *</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            name="pincode"
+                                                            placeholder="632314"
+                                                            value={sameAsShipping ? shippingForm.pincode : billingForm.pincode}
+                                                            onChange={sameAsShipping ? undefined : handleBillingChange}
+                                                            readOnly={sameAsShipping}
+                                                            required
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Card 3: Payment Method */}
                                         <div className="card shadow-sm border-0 mb-4 rounded-3">
                                             <div className="card-header bg-success text-white fw-bold py-3">
-                                                💳 2. Payment Method
+                                                💳 3. Payment Method
                                             </div>
                                             <div className="card-body p-4">
                                                 {/* Razorpay Online Payment Option */}
