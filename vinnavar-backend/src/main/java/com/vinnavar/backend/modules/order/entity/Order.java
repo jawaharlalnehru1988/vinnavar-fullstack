@@ -67,6 +67,38 @@ public class Order {
     @Column(nullable = false)
     private BigDecimal totalAmount;
 
+    @Getter(AccessLevel.NONE)
+    private BigDecimal subtotal;
+
+    @Getter(AccessLevel.NONE)
+    private BigDecimal shippingFee;
+
+    @Getter(AccessLevel.NONE)
+    private BigDecimal gstTax;
+
+    private Double totalWeightKg;
+
+    public BigDecimal getSubtotal() {
+        if (subtotal != null) return subtotal;
+        if (items != null && !items.isEmpty()) {
+            return items.stream()
+                    .map(item -> item.getTotalPrice() != null ? item.getTotalPrice() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
+        if (totalAmount != null) return totalAmount;
+        return BigDecimal.ZERO;
+    }
+
+    public BigDecimal getShippingFee() {
+        if (shippingFee != null) return shippingFee;
+        return new BigDecimal("48.00");
+    }
+
+    public BigDecimal getGstTax() {
+        if (gstTax != null) return gstTax;
+        return getSubtotal().multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);
+    }
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default

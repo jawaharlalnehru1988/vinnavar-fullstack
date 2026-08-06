@@ -193,4 +193,45 @@ public class AuthService {
         }
         customerUserRepository.deleteById(id);
     }
+
+    @Transactional
+    public AuthDto.AuthResponse updateCustomerProfile(AuthDto.UpdateCustomerProfileRequest request) {
+        if (request.getMobileNumber() == null || request.getMobileNumber().trim().isEmpty()) {
+            throw new IllegalArgumentException("Mobile number is required");
+        }
+
+        String cleanMobile = request.getMobileNumber().replaceAll("[^0-9]", "");
+        if (cleanMobile.length() > 10) {
+            cleanMobile = cleanMobile.substring(cleanMobile.length() - 10);
+        }
+
+        CustomerUser customer = customerUserRepository.findByMobileNumber(cleanMobile)
+                .orElseThrow(() -> new IllegalArgumentException("Customer account not found"));
+
+        if (request.getName() != null && !request.getName().trim().isEmpty()) {
+            customer.setName(request.getName().trim());
+        }
+        if (request.getEmail() != null) {
+            customer.setEmail(request.getEmail().trim());
+        }
+        if (request.getNewPassword() != null && !request.getNewPassword().trim().isEmpty()) {
+            if (request.getCurrentPassword() != null && !request.getCurrentPassword().equals(customer.getPassword())) {
+                throw new IllegalArgumentException("Current password is incorrect");
+            }
+            customer.setPassword(request.getNewPassword().trim());
+        }
+
+        customerUserRepository.save(customer);
+
+        String token = jwtUtil.generateToken(customer.getMobileNumber(), customer.getRole());
+
+        return AuthDto.AuthResponse.builder()
+                .token(token)
+                .username(customer.getMobileNumber())
+                .name(customer.getName())
+                .mobileNumber(customer.getMobileNumber())
+                .email(customer.getEmail())
+                .role(customer.getRole())
+                .build();
+    }
 }

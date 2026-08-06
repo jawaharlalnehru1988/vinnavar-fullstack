@@ -7,6 +7,7 @@ import AdminSiteAssets from "./AdminSiteAssets";
 import AdminBlog from "./AdminBlog";
 import AdminCustomers from "./AdminCustomers";
 import AdminTestimonials from "./AdminTestimonials";
+import AdminComplaints from "./AdminComplaints";
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -336,10 +337,11 @@ const AdminDashboard = () => {
                 resetProductForm();
                 loadData();
             } else {
-                Swal.fire({ icon: "error", title: "Save Failed" });
+                const errData = await res.json().catch(() => ({}));
+                Swal.fire({ icon: "error", title: "Save Failed", text: errData.message || errData.error || "Failed to save product" });
             }
         } catch (err) {
-            Swal.fire({ icon: "error", title: "Server Error" });
+            Swal.fire({ icon: "error", title: "Server Error", text: err.message || "Could not connect to backend server" });
         }
     };
 
@@ -561,13 +563,93 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleDownloadBill = async (orderNumber) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/orders/${orderNumber}/pdf`);
+            if (!res.ok) {
+                Swal.fire("Error", "Failed to generate PDF invoice", "error");
+                return;
+            }
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Bill-${orderNumber}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Error downloading bill PDF", err);
+            Swal.fire("Error", "Failed to download bill PDF", "error");
+        }
+    };
+
+    // Address Edit States
+    const [isEditingAddress, setIsEditingAddress] = useState(false);
+    const [sameAsShippingEdit, setSameAsShippingEdit] = useState(true);
+    const [editShippingAddress, setEditShippingAddress] = useState({ fullName: "", phone: "", streetAddress: "", city: "", state: "Tamil Nadu", pincode: "" });
+    const [editBillingAddress, setEditBillingAddress] = useState({ fullName: "", phone: "", streetAddress: "", city: "", state: "Tamil Nadu", pincode: "" });
+    const [editGstin, setEditGstin] = useState("");
+
+    const openAddressEdit = (order) => {
+        const ship = order.shippingAddress || {};
+        const bill = order.billingAddress || {};
+        setEditShippingAddress({
+            fullName: ship.fullName || order.customerName || "",
+            phone: ship.phone || order.customerPhone || "",
+            streetAddress: ship.streetAddress || "",
+            city: ship.city || "",
+            state: ship.state || "Tamil Nadu",
+            pincode: ship.pincode || ""
+        });
+        setEditBillingAddress({
+            fullName: bill.fullName || ship.fullName || order.customerName || "",
+            phone: bill.phone || ship.phone || order.customerPhone || "",
+            streetAddress: bill.streetAddress || ship.streetAddress || "",
+            city: bill.city || ship.city || "",
+            state: bill.state || ship.state || "Tamil Nadu",
+            pincode: bill.pincode || ship.pincode || ""
+        });
+        setEditGstin(order.gstin || "");
+        setSameAsShippingEdit(true);
+        setIsEditingAddress(true);
+    };
+
+    const handleSaveOrderAddress = async () => {
+        if (!selectedOrderModal) return;
+        const activeBilling = sameAsShippingEdit ? editShippingAddress : editBillingAddress;
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/orders/${selectedOrderModal.id}/address`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    shippingAddress: editShippingAddress,
+                    billingAddress: activeBilling,
+                    gstin: editGstin
+                })
+            });
+            if (res.ok) {
+                const updatedOrder = await res.json();
+                setSelectedOrderModal(updatedOrder);
+                setIsEditingAddress(false);
+                Swal.fire({ icon: "success", title: "Address Details Saved 🎉", timer: 1500, showConfirmButton: false });
+                loadData();
+            } else {
+                Swal.fire("Error", "Failed to save address details", "error");
+            }
+        } catch (err) {
+            Swal.fire("Error", "Failed to update address", "error");
+        }
+    };
+
     if (loading) return <div className="text-center my-5 fs-4">Loading Admin Dashboard...</div>;
 
     const totalRevenue = orders.reduce((acc, o) => acc + (o.totalAmount || 0), 0);
 
     return (
-        <div className="d-flex min-vh-100 bg-light">
-            {/* Left Sidebar */}
+        <div className="min-vh-100 bg-light">
+            {/* Top Navigation Bar with Tabs */}
             <AdminSidebar
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
@@ -578,7 +660,7 @@ const AdminDashboard = () => {
             />
 
             {/* Main Content Area */}
-            <div className="flex-grow-1 p-4" style={{ overflowY: "auto" }}>
+            <div className="p-4">
 
                 {/* OVERVIEW SECTION */}
                 {activeTab === "overview" && (
@@ -628,6 +710,9 @@ const AdminDashboard = () => {
 
                 {/* CUSTOMERS SECTION */}
                 {activeTab === "customers" && <AdminCustomers />}
+
+                {/* COMPLAINTS SECTION */}
+                {activeTab === "complaints" && <AdminComplaints />}
 
                 {/* TESTIMONIALS SECTION */}
                 {activeTab === "testimonials" && <AdminTestimonials />}
@@ -838,13 +923,23 @@ const AdminDashboard = () => {
                                                 </select>
                                             </td>
                                             <td className="text-center">
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-sm"
-                                                    onClick={() => setSelectedOrderModal(o)}
-                                                >
-                                                    👁️ View Details
-                                                </button>
+                                                <div className="d-flex justify-content-center gap-1">
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-sm"
+                                                        onClick={() => setSelectedOrderModal(o)}
+                                                    >
+                                                        👁️ View Details
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm btn-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-sm"
+                                                        onClick={() => handleDownloadBill(o.orderNumber)}
+                                                        title="Download Invoice PDF"
+                                                    >
+                                                        📄 Bill PDF
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -997,57 +1092,251 @@ const AdminDashboard = () => {
                                     </div>
 
                                     {/* Addresses (Shipping & Billing) */}
-                                    <div className="row g-3 mb-4">
-                                        {/* Shipping Address */}
-                                        <div className="col-md-6">
-                                            <div className="card border-0 shadow-sm bg-white rounded-3 h-100">
-                                                <div className="card-header bg-white border-0 fw-bold text-success fs-6 py-3">
-                                                    🚚 Shipping Address
-                                                </div>
-                                                <div className="card-body pt-0 small">
-                                                    {selectedOrderModal.shippingAddress ? (
-                                                        <div>
-                                                            <div className="fw-bold text-dark fs-6 mb-1">{selectedOrderModal.shippingAddress.fullName || selectedOrderModal.customerName}</div>
-                                                            <div className="text-secondary mb-1">{selectedOrderModal.shippingAddress.streetAddress}</div>
-                                                            <div className="text-secondary mb-1">{selectedOrderModal.shippingAddress.city}, {selectedOrderModal.shippingAddress.state} - {selectedOrderModal.shippingAddress.pincode}</div>
-                                                            <div className="text-muted">📞 {selectedOrderModal.shippingAddress.phone || selectedOrderModal.customerPhone}</div>
-                                                        </div>
-                                                    ) : (
-                                                        <span className="text-muted">No shipping address recorded.</span>
-                                                    )}
-                                                </div>
-                                            </div>
+                                    <div className="card border-0 shadow-sm mb-4 bg-white rounded-3">
+                                        <div className="card-header bg-white border-0 fw-bold text-success fs-6 py-3 d-flex justify-content-between align-items-center">
+                                            <span>📍 Order Shipping &amp; Billing Addresses</span>
+                                            {!isEditingAddress ? (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-sm btn-outline-success rounded-pill font-bold px-3 shadow-xs"
+                                                    onClick={() => openAddressEdit(selectedOrderModal)}
+                                                >
+                                                    ✏️ Edit / Enter Addresses
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-sm btn-outline-secondary rounded-pill font-bold px-3"
+                                                    onClick={() => setIsEditingAddress(false)}
+                                                >
+                                                    ❌ Cancel Edit
+                                                </button>
+                                            )}
                                         </div>
 
-                                        {/* Billing Address */}
-                                        <div className="col-md-6">
-                                            <div className="card border-0 shadow-sm bg-white rounded-3 h-100">
-                                                <div className="card-header bg-white border-0 fw-bold text-success fs-6 py-3">
-                                                    💳 Billing Address
-                                                </div>
-                                                <div className="card-body pt-0 small">
-                                                    {selectedOrderModal.billingAddress ? (
-                                                        <div>
-                                                            <div className="fw-bold text-dark fs-6 mb-1">{selectedOrderModal.billingAddress.fullName || selectedOrderModal.customerName}</div>
-                                                            <div className="text-secondary mb-1">{selectedOrderModal.billingAddress.streetAddress}</div>
-                                                            <div className="text-secondary mb-1">{selectedOrderModal.billingAddress.city}, {selectedOrderModal.billingAddress.state} - {selectedOrderModal.billingAddress.pincode}</div>
-                                                            <div className="text-muted">📞 {selectedOrderModal.billingAddress.phone || selectedOrderModal.customerPhone}</div>
-                                                        </div>
-                                                    ) : (
-                                                        selectedOrderModal.shippingAddress ? (
-                                                            <div>
-                                                                <div className="fw-bold text-dark fs-6 mb-1">{selectedOrderModal.shippingAddress.fullName || selectedOrderModal.customerName}</div>
-                                                                <div className="text-secondary mb-1">{selectedOrderModal.shippingAddress.streetAddress}</div>
-                                                                <div className="text-secondary mb-1">{selectedOrderModal.shippingAddress.city}, {selectedOrderModal.shippingAddress.state} - {selectedOrderModal.shippingAddress.pincode}</div>
-                                                                <div className="text-muted">📞 {selectedOrderModal.shippingAddress.phone || selectedOrderModal.customerPhone}</div>
-                                                                <span className="badge bg-light text-muted mt-2">(Same as Shipping Address)</span>
+                                        <div className="card-body pt-0">
+                                            {isEditingAddress ? (
+                                                <form onSubmit={(e) => { e.preventDefault(); handleSaveOrderAddress(); }}>
+                                                    <div className="p-3 bg-light rounded-3 border mb-3">
+                                                        <h6 className="fw-bold text-success mb-3">🚚 Shipping Address</h6>
+                                                        <div className="row g-2">
+                                                            <div className="col-md-6">
+                                                                <label className="form-label small fw-bold text-muted mb-1">Recipient Name *</label>
+                                                                <input
+                                                                    type="text" className="form-control form-control-sm" required
+                                                                    value={editShippingAddress.fullName}
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value;
+                                                                        setEditShippingAddress(prev => ({ ...prev, fullName: val }));
+                                                                        if (sameAsShippingEdit) setEditBillingAddress(prev => ({ ...prev, fullName: val }));
+                                                                    }}
+                                                                />
                                                             </div>
-                                                        ) : (
-                                                            <span className="text-muted">No billing address recorded.</span>
-                                                        )
+                                                            <div className="col-md-6">
+                                                                <label className="form-label small fw-bold text-muted mb-1">Phone Number *</label>
+                                                                <input
+                                                                    type="text" className="form-control form-control-sm" required
+                                                                    value={editShippingAddress.phone}
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value;
+                                                                        setEditShippingAddress(prev => ({ ...prev, phone: val }));
+                                                                        if (sameAsShippingEdit) setEditBillingAddress(prev => ({ ...prev, phone: val }));
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <div className="col-12">
+                                                                <label className="form-label small fw-bold text-muted mb-1">Street Address *</label>
+                                                                <textarea
+                                                                    className="form-control form-control-sm" rows="2" required
+                                                                    value={editShippingAddress.streetAddress}
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value;
+                                                                        setEditShippingAddress(prev => ({ ...prev, streetAddress: val }));
+                                                                        if (sameAsShippingEdit) setEditBillingAddress(prev => ({ ...prev, streetAddress: val }));
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <div className="col-md-4">
+                                                                <label className="form-label small fw-bold text-muted mb-1">City *</label>
+                                                                <input
+                                                                    type="text" className="form-control form-control-sm" required
+                                                                    value={editShippingAddress.city}
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value;
+                                                                        setEditShippingAddress(prev => ({ ...prev, city: val }));
+                                                                        if (sameAsShippingEdit) setEditBillingAddress(prev => ({ ...prev, city: val }));
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <div className="col-md-4">
+                                                                <label className="form-label small fw-bold text-muted mb-1">State *</label>
+                                                                <input
+                                                                    type="text" className="form-control form-control-sm" required
+                                                                    value={editShippingAddress.state}
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value;
+                                                                        setEditShippingAddress(prev => ({ ...prev, state: val }));
+                                                                        if (sameAsShippingEdit) setEditBillingAddress(prev => ({ ...prev, state: val }));
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <div className="col-md-4">
+                                                                <label className="form-label small fw-bold text-muted mb-1">Pincode *</label>
+                                                                <input
+                                                                    type="text" className="form-control form-control-sm" required
+                                                                    value={editShippingAddress.pincode}
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value;
+                                                                        setEditShippingAddress(prev => ({ ...prev, pincode: val }));
+                                                                        if (sameAsShippingEdit) setEditBillingAddress(prev => ({ ...prev, pincode: val }));
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Toggle Checkbox: Billing Same As Shipping */}
+                                                    <div className="form-check form-switch mb-3 p-2 bg-emerald-50 rounded border border-emerald-200">
+                                                        <input
+                                                            className="form-check-input ms-0 me-2"
+                                                            type="checkbox"
+                                                            id="sameAsShippingSwitch"
+                                                            checked={sameAsShippingEdit}
+                                                            onChange={(e) => {
+                                                                const checked = e.target.checked;
+                                                                setSameAsShippingEdit(checked);
+                                                                if (checked) {
+                                                                    setEditBillingAddress({ ...editShippingAddress });
+                                                                }
+                                                            }}
+                                                        />
+                                                        <label className="form-check-label fw-bold text-emerald-900 small" htmlFor="sameAsShippingSwitch">
+                                                            ☑️ Billing address is same as shipping address (Autofilled)
+                                                        </label>
+                                                    </div>
+
+                                                    {!sameAsShippingEdit && (
+                                                        <div className="p-3 bg-light rounded-3 border mb-3">
+                                                            <h6 className="fw-bold text-success mb-3">💳 Billing Address</h6>
+                                                            <div className="row g-2">
+                                                                <div className="col-md-6">
+                                                                    <label className="form-label small fw-bold text-muted mb-1">Billing Name *</label>
+                                                                    <input
+                                                                        type="text" className="form-control form-control-sm" required
+                                                                        value={editBillingAddress.fullName}
+                                                                        onChange={(e) => setEditBillingAddress(prev => ({ ...prev, fullName: e.target.value }))}
+                                                                    />
+                                                                </div>
+                                                                <div className="col-md-6">
+                                                                    <label className="form-label small fw-bold text-muted mb-1">Billing Phone *</label>
+                                                                    <input
+                                                                        type="text" className="form-control form-control-sm" required
+                                                                        value={editBillingAddress.phone}
+                                                                        onChange={(e) => setEditBillingAddress(prev => ({ ...prev, phone: e.target.value }))}
+                                                                    />
+                                                                </div>
+                                                                <div className="col-12">
+                                                                    <label className="form-label small fw-bold text-muted mb-1">Billing Address *</label>
+                                                                    <textarea
+                                                                        className="form-control form-control-sm" rows="2" required
+                                                                        value={editBillingAddress.streetAddress}
+                                                                        onChange={(e) => setEditBillingAddress(prev => ({ ...prev, streetAddress: e.target.value }))}
+                                                                    />
+                                                                </div>
+                                                                <div className="col-md-4">
+                                                                    <label className="form-label small fw-bold text-muted mb-1">City *</label>
+                                                                    <input
+                                                                        type="text" className="form-control form-control-sm" required
+                                                                        value={editBillingAddress.city}
+                                                                        onChange={(e) => setEditBillingAddress(prev => ({ ...prev, city: e.target.value }))}
+                                                                    />
+                                                                </div>
+                                                                <div className="col-md-4">
+                                                                    <label className="form-label small fw-bold text-muted mb-1">State *</label>
+                                                                    <input
+                                                                        type="text" className="form-control form-control-sm" required
+                                                                        value={editBillingAddress.state}
+                                                                        onChange={(e) => setEditBillingAddress(prev => ({ ...prev, state: e.target.value }))}
+                                                                    />
+                                                                </div>
+                                                                <div className="col-md-4">
+                                                                    <label className="form-label small fw-bold text-muted mb-1">Pincode *</label>
+                                                                    <input
+                                                                        type="text" className="form-control form-control-sm" required
+                                                                        value={editBillingAddress.pincode}
+                                                                        onChange={(e) => setEditBillingAddress(prev => ({ ...prev, pincode: e.target.value }))}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     )}
+
+                                                    {/* GSTIN optional field */}
+                                                    <div className="mb-3">
+                                                        <label className="form-label small fw-bold text-muted mb-1">GSTIN Number (Optional)</label>
+                                                        <input
+                                                            type="text" className="form-control form-control-sm font-monospace" placeholder="e.g. 33AAAAA0000A1Z5"
+                                                            value={editGstin}
+                                                            onChange={(e) => setEditGstin(e.target.value)}
+                                                        />
+                                                    </div>
+
+                                                    <div className="d-flex justify-content-end gap-2 pt-2">
+                                                        <button type="button" className="btn btn-sm btn-light border rounded-pill px-3" onClick={() => setIsEditingAddress(false)}>
+                                                            Cancel
+                                                        </button>
+                                                        <button type="submit" className="btn btn-sm btn-success rounded-pill px-4 font-bold shadow-sm">
+                                                            💾 Save Address Details
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            ) : (
+                                                <div className="row g-3">
+                                                    {/* Shipping Address */}
+                                                    <div className="col-md-6">
+                                                        <div className="p-3 bg-light rounded-3 border h-100">
+                                                            <div className="fw-bold text-success small mb-2">🚚 Shipping Address</div>
+                                                            {selectedOrderModal.shippingAddress && selectedOrderModal.shippingAddress.streetAddress ? (
+                                                                <div className="small">
+                                                                    <div className="fw-bold text-dark mb-1">{selectedOrderModal.shippingAddress.fullName || selectedOrderModal.customerName}</div>
+                                                                    <div className="text-secondary mb-1">{selectedOrderModal.shippingAddress.streetAddress}</div>
+                                                                    <div className="text-secondary mb-1">{selectedOrderModal.shippingAddress.city}, {selectedOrderModal.shippingAddress.state} - {selectedOrderModal.shippingAddress.pincode}</div>
+                                                                    <div className="text-muted">📞 {selectedOrderModal.shippingAddress.phone || selectedOrderModal.customerPhone}</div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="text-muted small py-2">
+                                                                    No shipping address recorded.<br />
+                                                                    <button type="button" className="btn btn-sm btn-link p-0 text-success font-bold" onClick={() => openAddressEdit(selectedOrderModal)}>
+                                                                        + Enter Shipping Address
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Billing Address */}
+                                                    <div className="col-md-6">
+                                                        <div className="p-3 bg-light rounded-3 border h-100">
+                                                            <div className="fw-bold text-success small mb-2">💳 Billing Address</div>
+                                                            {selectedOrderModal.billingAddress && selectedOrderModal.billingAddress.streetAddress ? (
+                                                                <div className="small">
+                                                                    <div className="fw-bold text-dark mb-1">{selectedOrderModal.billingAddress.fullName || selectedOrderModal.customerName}</div>
+                                                                    <div className="text-secondary mb-1">{selectedOrderModal.billingAddress.streetAddress}</div>
+                                                                    <div className="text-secondary mb-1">{selectedOrderModal.billingAddress.city}, {selectedOrderModal.billingAddress.state} - {selectedOrderModal.billingAddress.pincode}</div>
+                                                                    <div className="text-muted">📞 {selectedOrderModal.billingAddress.phone || selectedOrderModal.customerPhone}</div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="text-muted small py-2">
+                                                                    Same as Shipping Address or Not Recorded.<br />
+                                                                    <button type="button" className="btn btn-sm btn-link p-0 text-success font-bold" onClick={() => openAddressEdit(selectedOrderModal)}>
+                                                                        + Enter Billing Address
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -1090,7 +1379,14 @@ const AdminDashboard = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="modal-footer bg-light border-0 py-3 px-4">
+                                <div className="modal-footer bg-light border-0 py-3 px-4 justify-content-between">
+                                    <button
+                                        type="button"
+                                        className="btn btn-success font-bold rounded-pill px-4 shadow-sm"
+                                        onClick={() => handleDownloadBill(selectedOrderModal.orderNumber)}
+                                    >
+                                        📄 Download Official PDF Bill
+                                    </button>
                                     <button type="button" className="btn btn-secondary rounded-pill px-4 fw-bold" onClick={() => setSelectedOrderModal(null)}>
                                         Close Details
                                     </button>

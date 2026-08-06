@@ -144,18 +144,26 @@ public class ProductService {
         product.setFeatured(dto.isFeatured());
         product.setActive(dto.isActive());
 
-        if (dto.getVariants() != null) {
-            product.getVariants().clear();
-            for (ProductRequestDto.VariantDto vDto : dto.getVariants()) {
-                ProductVariant variant = ProductVariant.builder()
-                        .product(product)
-                        .variantName(vDto.getVariantName())
-                        .price(vDto.getPrice())
-                        .discountPrice(vDto.getDiscountPrice())
-                        .stockQuantity(vDto.getStockQuantity() != null ? vDto.getStockQuantity() : 100)
-                        .isDefault(vDto.isDefault())
-                        .build();
-                product.getVariants().add(variant);
+        if (dto.getVariants() != null && !dto.getVariants().isEmpty()) {
+            if (product.getVariants() != null && !product.getVariants().isEmpty()) {
+                // Update existing variant in-place to avoid deleting referenced FK records
+                ProductVariant existingVar = product.getVariants().get(0);
+                ProductRequestDto.VariantDto newVarDto = dto.getVariants().get(0);
+                if (newVarDto.getVariantName() != null) existingVar.setVariantName(newVarDto.getVariantName());
+                if (newVarDto.getPrice() != null) existingVar.setPrice(newVarDto.getPrice());
+                if (newVarDto.getDiscountPrice() != null) existingVar.setDiscountPrice(newVarDto.getDiscountPrice());
+            } else {
+                for (ProductRequestDto.VariantDto vDto : dto.getVariants()) {
+                    ProductVariant variant = ProductVariant.builder()
+                            .product(product)
+                            .variantName(vDto.getVariantName())
+                            .price(vDto.getPrice())
+                            .discountPrice(vDto.getDiscountPrice())
+                            .stockQuantity(vDto.getStockQuantity() != null ? vDto.getStockQuantity() : 100)
+                            .isDefault(vDto.isDefault())
+                            .build();
+                    product.getVariants().add(variant);
+                }
             }
         }
 

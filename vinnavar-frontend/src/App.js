@@ -18,6 +18,8 @@ import MyAccountSetting from "./pages/Accounts/MyAcconutSetting";
 import MyAcconutNotification from "./pages/Accounts/MyAcconutNotification";
 import MyAcconutPaymentMethod from "./pages/Accounts/MyAcconutPaymentMethod";
 import MyAccountAddress from "./pages/Accounts/MyAccountAddress";
+import MyAccountComplaint from "./pages/Accounts/MyAccountComplaint";
+import MyAccountReview from "./pages/Accounts/MyAccountReview";
 import FAQ from "./pages/FooterElements/Faq";
 import Coupons from "./pages/FooterElements/Coupons";
 import Careers from "./pages/FooterElements/Careers";
@@ -80,6 +82,8 @@ const AppContent = () => {
         <Route path="/MyAcconutNotification" element={<MyAcconutNotification />} />
         <Route path="/MyAcconutPaymentMethod" element={<MyAcconutPaymentMethod />} />
         <Route path="/MyAccountAddress" element={<MyAccountAddress />} />
+        <Route path="/MyAccountComplaint" element={<MyAccountComplaint />} />
+        <Route path="/MyAccountReview" element={<MyAccountReview />} />
         <Route path="/MyAccountForgetPassword" element={<Navigate to="/" replace />} />
         <Route path="/MyAccountSignIn" element={<Navigate to="/" replace />} />
         <Route path="/MyAccountSignUp" element={<Navigate to="/" replace />} />

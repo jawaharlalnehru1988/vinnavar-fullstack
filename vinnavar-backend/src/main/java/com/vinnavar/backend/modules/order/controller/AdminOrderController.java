@@ -39,4 +39,13 @@ public class AdminOrderController {
         Order updated = orderService.updateOrderTracking(id, courierName, trackingNumber);
         return ResponseEntity.ok(updated);
     }
+
+    @PutMapping("/{id}/address")
+    public ResponseEntity<Order> updateOrderAddress(
+            @PathVariable Long id,
+            @RequestBody com.vinnavar.backend.modules.order.dto.UpdateOrderAddressDto request
+    ) {
+        Order updated = orderService.updateOrderAddress(id, request);
+        return ResponseEntity.ok(updated);
+    }
 }

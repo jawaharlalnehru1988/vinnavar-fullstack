@@ -73,6 +73,12 @@
             <artifactId>razorpay-java</artifactId>
             <version>1.4.7</version>
         </dependency>
+        <!-- OpenPDF for Bill & Invoice Generation -->
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>1.3.39</version>
+        </dependency>
     </dependencies>
 
     <build>

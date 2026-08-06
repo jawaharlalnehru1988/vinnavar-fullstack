@@ -34,12 +34,60 @@ public class CartService {
                 .mapToInt(CartItem::getQuantity)
                 .sum();
 
+        double totalWeightKg = items.stream()
+                .mapToDouble(item -> {
+                    String vName = item.getVariant() != null ? item.getVariant().getVariantName() : "";
+                    return item.getQuantity() * parseWeightInKg(vName);
+                })
+                .sum();
+
+        BigDecimal shippingFee = BigDecimal.ZERO;
+        BigDecimal gstTax = BigDecimal.ZERO;
+        BigDecimal totalAmount = BigDecimal.ZERO;
+
+        if (totalCount > 0) {
+            // Weight based shipping: ₹48 per 5 kg block (min ₹48)
+            int blocksOf5Kg = (int) Math.ceil(totalWeightKg <= 0 ? 1 : totalWeightKg / 5.0);
+            if (blocksOf5Kg < 1) blocksOf5Kg = 1;
+            shippingFee = BigDecimal.valueOf(blocksOf5Kg * 48L).setScale(2, java.math.RoundingMode.HALF_UP);
+
+            // 5% GST Tax on Subtotal
+            gstTax = subtotal.multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);
+
+            totalAmount = subtotal.add(shippingFee).add(gstTax).setScale(2, java.math.RoundingMode.HALF_UP);
+        }
+
         return CartResponseDto.builder()
                 .cartId(cartId)
                 .items(items)
                 .totalItemCount(totalCount)
                 .subtotal(subtotal)
+                .shippingFee(shippingFee)
+                .gstTax(gstTax)
+                .totalAmount(totalAmount)
+                .totalWeightKg(totalWeightKg)
                 .build();
+    }
+
+    public static double parseWeightInKg(String variantName) {
+        if (variantName == null || variantName.isBlank()) return 1.0;
+        String name = variantName.trim().toLowerCase();
+        try {
+            if (name.contains("kg")) {
+                String val = name.replaceAll("[^0-9.]", "");
+                return val.isEmpty() ? 1.0 : Double.parseDouble(val);
+            } else if (name.contains("gm") || name.contains("g")) {
+                String val = name.replaceAll("[^0-9.]", "");
+                return val.isEmpty() ? 0.5 : Double.parseDouble(val) / 1000.0;
+            } else if (name.contains("liter") || name.contains("l")) {
+                String val = name.replaceAll("[^0-9.]", "");
+                return val.isEmpty() ? 1.0 : Double.parseDouble(val);
+            } else if (name.contains("ml")) {
+                String val = name.replaceAll("[^0-9.]", "");
+                return val.isEmpty() ? 0.5 : Double.parseDouble(val) / 1000.0;
+            }
+        } catch (Exception ignored) {}
+        return 1.0;
     }
 
     @Transactional

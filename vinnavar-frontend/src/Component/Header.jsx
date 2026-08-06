@@ -12,6 +12,20 @@ const Header = () => {
   const [cart, setCart] = useState(null);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [logoUrl, setLogoUrl] = useState(Grocerylogo);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = React.useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const isActive = (path) => {
     if (path === "/" && location.pathname === "/") return true;
@@ -33,6 +47,33 @@ const Header = () => {
   const [registerMobile, setRegisterMobile] = useState("");
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [policyModalHeader, setPolicyModalHeader] = useState(null); // { title, content }
+
+  const openPolicyHeader = async (type) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/settings`);
+      const map = res.ok ? await res.json() : {};
+      if (type === "TERMS") {
+        setPolicyModalHeader({
+          title: "📋 Terms & Conditions",
+          content: map.terms_conditions || "Terms & Conditions loading..."
+        });
+      } else if (type === "PRIVACY") {
+        setPolicyModalHeader({
+          title: "🔒 Privacy Policy",
+          content: map.privacy_policy || "Privacy Policy loading..."
+        });
+      } else if (type === "REFUND") {
+        setPolicyModalHeader({
+          title: "📜 Refund & Cancellation Policy",
+          content: map.refund_policy || "Refund Policy loading..."
+        });
+      }
+    } catch (e) {
+      console.error("Error loading policy", e);
+    }
+  };
 
   const [forgotMobile, setForgotMobile] = useState("");
   const [forgotNewPassword, setForgotNewPassword] = useState("");
@@ -116,6 +157,10 @@ const Header = () => {
 
   const handleCustomerRegister = async (e) => {
     e.preventDefault();
+    if (!agreeTerms) {
+      Swal.fire("Terms Required", "You must accept the Terms & Conditions and Privacy Policy to create an account.", "warning");
+      return;
+    }
     setAuthLoading(true);
     try {
       const res = await customerRegister({
@@ -305,34 +350,106 @@ const Header = () => {
           </marquee>
         </div>
 
-        {/* Main Header Utilities */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-between gap-4">
+        {/* Main Header Single Row Bar */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+          <div className="flex items-center justify-between gap-3 flex-wrap lg:flex-nowrap">
             
-            {/* Logo */}
-            <Link to="/" className="flex items-center flex-shrink-0 group">
-              <img
-                src={logoUrl}
-                className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105"
-                alt="Vinnavar Logo"
-              />
-            </Link>
+            {/* Left: Enlarged 1x1 inch Logo & Nav Links */}
+            <div className="flex items-center gap-6">
+              <Link to="/" className="flex items-center flex-shrink-0 group">
+                <img
+                  src={logoUrl}
+                  style={{ height: "96px", width: "96px", objectFit: "contain" }}
+                  className="transition-transform group-hover:scale-105"
+                  alt="Vinnavar Logo"
+                />
+              </Link>
 
-            {/* Search Input */}
-            <div className="hidden md:flex flex-1 max-w-md mx-4">
+              {/* Primary Navigation Links (Single Row) */}
+              <nav className="hidden md:flex items-center gap-6 text-xs font-bold tracking-wide uppercase">
+                {/* Home */}
+                <Link
+                  to="/"
+                  className={`transition-colors py-1 ${
+                    isActive("/") ? "text-emerald-700 font-black border-b-2 border-emerald-600" : "text-slate-700 hover:text-emerald-600 font-semibold"
+                  }`}
+                >
+                  Home
+                </Link>
+
+                {/* Shop Dropdown */}
+                <div className="group relative py-1">
+                  <Link
+                    to="/Shop"
+                    className={`inline-flex items-center gap-1 transition-colors ${
+                      isActive("/Shop") ? "text-emerald-700 font-black border-b-2 border-emerald-600" : "text-slate-700 hover:text-emerald-600 font-semibold"
+                    }`}
+                  >
+                    <span>Shop</span>
+                    <span className="text-[10px]">▼</span>
+                  </Link>
+                  <div className="absolute left-0 top-full hidden group-hover:block w-48 bg-white border border-slate-100 shadow-xl rounded-2xl p-2 z-50 normal-case">
+                    <Link to="/Shop" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                      🛍️ Shop Catalog
+                    </Link>
+                    <Link to="/ShopWishList" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                      ❤️ Wishlist ({wishlistCount})
+                    </Link>
+                    <Link to="/ShopCart" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                      🛒 Shopping Cart
+                    </Link>
+                    <Link to="/ShopCheckOut" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                      💳 Checkout
+                    </Link>
+                  </div>
+                </div>
+
+                {/* About Dropdown */}
+                <div className="group relative py-1">
+                  <span
+                    className={`inline-flex items-center gap-1 cursor-pointer transition-colors ${
+                      isActive("/Blog") || isActive("/BlogCategory")
+                        ? "text-emerald-700 font-black border-b-2 border-emerald-600"
+                        : "text-slate-700 hover:text-emerald-600 font-semibold"
+                    }`}
+                  >
+                    <span>About</span>
+                    <span className="text-[10px]">▼</span>
+                  </span>
+                  <div className="absolute left-0 top-full hidden group-hover:block w-52 bg-white border border-slate-100 shadow-xl rounded-2xl p-2 z-50 normal-case">
+                    <Link to="/Blog" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                      📝 Blog &amp; Articles
+                    </Link>
+                    <Link to="/BlogCategory" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                      📚 Blog Categories
+                    </Link>
+                    <a
+                      href="#corporate-contact"
+                      onClick={scrollToContact}
+                      className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl"
+                    >
+                      📞 Contact Admin Desk
+                    </a>
+                  </div>
+                </div>
+              </nav>
+            </div>
+
+            {/* Middle: Search Input */}
+            <div className="hidden lg:flex flex-1 max-w-sm mx-2">
               <div className="relative w-full">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
                 <input
                   type="text"
-                  className="w-full pl-10 pr-4 py-2 bg-slate-100/80 hover:bg-slate-100 border border-slate-200 rounded-full text-slate-900 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none transition-all placeholder:text-slate-400"
-                  placeholder="Search organic rice, cold-pressed oils, spices..."
+                  className="w-full pl-10 pr-4 py-2 bg-slate-100/80 hover:bg-slate-100 border border-slate-200 rounded-full text-slate-900 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none transition-all placeholder:text-slate-400"
+                  placeholder="Search organic rice, oils, spices..."
                   onClick={() => navigate("/Shop")}
                 />
               </div>
             </div>
 
-            {/* Right Action Icons */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            {/* Right: Action Buttons */}
+            <div className="flex items-center gap-2 sm:gap-2.5">
               {/* Track Order */}
               <Link
                 to="/TrackOrder"
@@ -358,45 +475,109 @@ const Header = () => {
 
               {/* Account / User Menu */}
               {currentUser ? (
-                <div className="dropdown relative">
+                <div className="relative" ref={userMenuRef}>
                   <button
-                    className="btn btn-sm btn-success fw-bold dropdown-toggle inline-flex items-center gap-2 px-3 py-1.5 rounded-full shadow-xs bg-emerald-700 hover:bg-emerald-800 border-none text-white text-xs"
+                    className="btn btn-sm btn-success fw-bold inline-flex items-center gap-1.5 p-1 rounded-full shadow-xs bg-emerald-700 hover:bg-emerald-800 border-none text-white text-xs cursor-pointer"
                     type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
+                    onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                    title={currentUser.name}
                   >
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-emerald-800 font-extrabold text-[10px]">
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white text-emerald-800 font-black text-xs shadow-xs">
                       {getUserInitials(currentUser.name)}
                     </span>
-                    <span className="hidden sm:inline">Hi, {currentUser.name ? currentUser.name.split(" ")[0] : "Account"}</span>
+                    <span className="text-[10px] me-1">▼</span>
                   </button>
-                  <ul className="dropdown-menu dropdown-menu-end shadow-xl border border-slate-100 rounded-2xl p-2 mt-2 font-sans text-xs">
-                    <li className="px-3 py-2.5 border-b border-slate-100 bg-slate-50 rounded-xl mb-1 flex items-center gap-2.5">
-                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-700 text-white font-extrabold text-xs">
-                        {getUserInitials(currentUser.name)}
-                      </span>
-                      <div>
-                        <div className="font-bold text-slate-900 text-xs">{currentUser.name}</div>
-                        <div className="text-slate-500 text-[11px]">📱 +91 {currentUser.mobileNumber}</div>
-                      </div>
-                    </li>
-                    <li>
-                      <Link className="dropdown-item rounded-lg py-2 font-medium hover:bg-emerald-50 hover:text-emerald-700" to="/MyAccountOrder">
-                        📦 My Orders
-                      </Link>
-                    </li>
-                    <li>
-                      <Link className="dropdown-item rounded-lg py-2 font-medium hover:bg-emerald-50 hover:text-emerald-700" to="/MyAccountSetting">
-                        ⚙️ Account Settings
-                      </Link>
-                    </li>
-                    <li><hr className="dropdown-divider my-1" /></li>
-                    <li>
-                      <button className="dropdown-item rounded-lg py-2 font-bold text-red-600 hover:bg-red-50" onClick={handleLogout}>
-                        🚪 Sign Out
-                      </button>
-                    </li>
-                  </ul>
+                  {isUserMenuOpen && (
+                    <ul
+                      className="dropdown-menu shadow-2xl border border-slate-100 rounded-2xl p-2 mt-2 font-sans text-xs w-56 d-block show"
+                      style={{ position: "absolute", right: 0, top: "100%", zIndex: 1000 }}
+                    >
+                      <li className="px-3 py-2.5 border-b border-slate-100 bg-slate-50 rounded-xl mb-1 flex items-center gap-2.5">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-700 text-white font-extrabold text-xs">
+                          {getUserInitials(currentUser.name)}
+                        </span>
+                        <div>
+                          <div className="font-bold text-slate-900 text-xs">{currentUser.name}</div>
+                          <div className="text-slate-500 text-[11px]">📱 +91 {currentUser.mobileNumber}</div>
+                        </div>
+                      </li>
+                      <li>
+                        <Link
+                          className="dropdown-item rounded-lg py-2 font-medium hover:bg-emerald-50 hover:text-emerald-700 d-flex align-items-center gap-2"
+                          to="/MyAccountOrder"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <span>📦</span> <span>My Orders</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          className="dropdown-item rounded-lg py-2 font-medium hover:bg-emerald-50 hover:text-emerald-700 d-flex align-items-center gap-2"
+                          to="/MyAccountSetting"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <span>⚙️</span> <span>Account Settings</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          className="dropdown-item rounded-lg py-2 font-medium hover:bg-emerald-50 hover:text-emerald-700 d-flex align-items-center gap-2"
+                          to="/MyAccountAddress"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <span>📍</span> <span>Saved Addresses</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          className="dropdown-item rounded-lg py-2 font-medium hover:bg-emerald-50 hover:text-emerald-700 d-flex align-items-center gap-2"
+                          to="/MyAcconutPaymentMethod"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <span>💳</span> <span>Payment Methods</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          className="dropdown-item rounded-lg py-2 font-medium hover:bg-emerald-50 hover:text-emerald-700 d-flex align-items-center gap-2"
+                          to="/MyAccountComplaint"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <span>📢</span> <span>Complaints &amp; Support</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          className="dropdown-item rounded-lg py-2 font-medium hover:bg-emerald-50 hover:text-emerald-700 d-flex align-items-center gap-2"
+                          to="/MyAccountReview"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <span>⭐</span> <span>Reviews &amp; Feedback</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          className="dropdown-item rounded-lg py-2 font-medium hover:bg-emerald-50 hover:text-emerald-700 d-flex align-items-center gap-2"
+                          to="/MyAcconutNotification"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <span>🔔</span> <span>Notifications</span>
+                        </Link>
+                      </li>
+                      <li><hr className="dropdown-divider my-1" /></li>
+                      <li>
+                        <button
+                          className="dropdown-item rounded-lg py-2 font-bold text-red-600 hover:bg-red-50 d-flex align-items-center gap-2 w-100 border-0 bg-transparent text-start"
+                          onClick={() => {
+                            setIsUserMenuOpen(false);
+                            handleLogout();
+                          }}
+                        >
+                          <span>🚪</span> <span>Sign Out</span>
+                        </button>
+                      </li>
+                    </ul>
+                  )}
                 </div>
               ) : (
                 <button
@@ -437,144 +618,6 @@ const Header = () => {
                 <span className="text-xl">☰</span>
               </button>
             </div>
-          </div>
-        </div>
-
-        {/* Secondary Navigation Bar with Submenus & Active Page Highlighting */}
-        <div className="border-t border-slate-100 bg-slate-50/50 hidden md:block">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <ul className="flex items-center gap-8 py-2.5 text-xs font-bold tracking-wide uppercase">
-              {/* Home */}
-              <li>
-                <Link
-                  to="/"
-                  className={`transition-colors py-1 ${
-                    isActive("/") ? "text-emerald-700 font-black border-b-2 border-emerald-600" : "text-slate-700 hover:text-emerald-600 font-semibold"
-                  }`}
-                >
-                  Home
-                </Link>
-              </li>
-
-              {/* Shop Dropdown */}
-              <li className="group relative py-1">
-                <Link
-                  to="/Shop"
-                  className={`inline-flex items-center gap-1 transition-colors ${
-                    isActive("/Shop") ? "text-emerald-700 font-black border-b-2 border-emerald-600" : "text-slate-700 hover:text-emerald-600 font-semibold"
-                  }`}
-                >
-                  <span>Shop</span>
-                  <span className="text-[10px]">▼</span>
-                </Link>
-                <div className="absolute left-0 top-full hidden group-hover:block w-48 bg-white border border-slate-100 shadow-xl rounded-2xl p-2 z-50 normal-case">
-                  <Link to="/Shop" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                    🛍️ Shop Catalog
-                  </Link>
-                  <Link to="/ShopWishList" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                    ❤️ Wishlist ({wishlistCount})
-                  </Link>
-                  <Link to="/ShopCart" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                    🛒 Shopping Cart
-                  </Link>
-                  <Link to="/ShopCheckOut" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                    💳 Checkout
-                  </Link>
-                </div>
-              </li>
-
-              {/* Track Shipment */}
-              <li>
-                <Link
-                  to="/TrackOrder"
-                  className={`flex items-center gap-1 transition-colors py-1 ${
-                    isActive("/TrackOrder") || isActive("/track")
-                      ? "text-emerald-700 font-black border-b-2 border-emerald-600"
-                      : "text-slate-700 hover:text-emerald-600 font-semibold"
-                  }`}
-                >
-                  <span>🚚</span>
-                  <span>Track Shipment</span>
-                </Link>
-              </li>
-
-              {/* About Dropdown */}
-              <li className="group relative py-1">
-                <span
-                  className={`inline-flex items-center gap-1 cursor-pointer transition-colors ${
-                    isActive("/Blog") || isActive("/BlogCategory")
-                      ? "text-emerald-700 font-black border-b-2 border-emerald-600"
-                      : "text-slate-700 hover:text-emerald-600 font-semibold"
-                  }`}
-                >
-                  <span>About</span>
-                  <span className="text-[10px]">▼</span>
-                </span>
-                <div className="absolute left-0 top-full hidden group-hover:block w-52 bg-white border border-slate-100 shadow-xl rounded-2xl p-2 z-50 normal-case">
-                  <Link to="/Blog" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                    📝 Blog &amp; Articles
-                  </Link>
-                  <Link to="/BlogCategory" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                    📚 Blog Categories
-                  </Link>
-                  <a
-                    href="#corporate-contact"
-                    onClick={scrollToContact}
-                    className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl"
-                  >
-                    📞 Contact Admin Desk
-                  </a>
-                </div>
-              </li>
-
-              {/* Account Dropdown */}
-              <li className="group relative py-1">
-                {currentUser ? (
-                  <>
-                    <span
-                      className={`inline-flex items-center gap-1 cursor-pointer transition-colors ${
-                        isActive("/MyAccount")
-                          ? "text-emerald-700 font-black border-b-2 border-emerald-600"
-                          : "text-slate-700 hover:text-emerald-600 font-semibold"
-                      }`}
-                    >
-                      <span>Account</span>
-                      <span className="text-[10px]">▼</span>
-                    </span>
-                    <div className="absolute left-0 top-full hidden group-hover:block w-56 bg-white border border-slate-100 shadow-xl rounded-2xl p-2 z-50 normal-case">
-                      <Link to="/MyAccountOrder" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                        📦 My Orders
-                      </Link>
-                      <Link to="/MyAccountSetting" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                        ⚙️ Account Settings
-                      </Link>
-                      <Link to="/MyAccountAddress" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                        📍 Saved Addresses
-                      </Link>
-                      <Link to="/MyAcconutPaymentMethod" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                        💳 Payment Methods
-                      </Link>
-                      <Link to="/MyAcconutNotification" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                        🔔 Notifications
-                      </Link>
-                      <button className="block w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl mt-1 border-t border-slate-100" onClick={handleLogout}>
-                        🚪 Sign Out
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-1 cursor-pointer transition-colors text-slate-700 hover:text-emerald-600 font-semibold border-none bg-transparent"
-                    data-bs-toggle="modal"
-                    data-bs-target="#userModal"
-                    onClick={() => setAuthMode("SIGN_IN")}
-                  >
-                    <span>Account</span>
-                  </button>
-                )}
-              </li>
-            </ul>
           </div>
         </div>
 
@@ -741,6 +784,27 @@ const Header = () => {
                         {showRegisterPassword ? "🙈" : "👁️"}
                       </button>
                     </div>
+                  </div>
+
+                  <div className="mb-4 form-check">
+                    <input
+                      type="checkbox"
+                      className="form-check-input cursor-pointer"
+                      id="agreeTermsCheck"
+                      checked={agreeTerms}
+                      onChange={(e) => setAgreeTerms(e.target.checked)}
+                      required
+                    />
+                    <label className="form-check-label small text-muted font-medium" htmlFor="agreeTermsCheck">
+                      I agree to the{" "}
+                      <span className="text-emerald-700 font-bold cursor-pointer underline" onClick={() => openPolicyHeader("TERMS")}>
+                        Terms &amp; Conditions
+                      </span>{" "}
+                      and{" "}
+                      <span className="text-emerald-700 font-bold cursor-pointer underline" onClick={() => openPolicyHeader("PRIVACY")}>
+                        Privacy Policy
+                      </span>.
+                    </label>
                   </div>
 
                   <button
@@ -993,6 +1057,24 @@ const Header = () => {
               </div>
             </div>
           )}
+
+          {/* Customer Support & Policy Links */}
+          <div className="border-top pt-3 mt-4 text-center">
+            <div className="small text-muted fw-semibold mb-2">Store Guarantees &amp; Policies</div>
+            <div className="d-flex justify-content-center gap-2 small font-semibold">
+              <button type="button" className="btn btn-link text-success text-decoration-none fw-bold p-0 border-0" onClick={() => openPolicyHeader("REFUND")}>
+                Refund Policy
+              </button>
+              <span className="text-muted">•</span>
+              <button type="button" className="btn btn-link text-success text-decoration-none fw-bold p-0 border-0" onClick={() => openPolicyHeader("PRIVACY")}>
+                Privacy Policy
+              </button>
+              <span className="text-muted">•</span>
+              <button type="button" className="btn btn-link text-success text-decoration-none fw-bold p-0 border-0" onClick={() => openPolicyHeader("TERMS")}>
+                Terms &amp; Conditions
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       {/* Modal */}
@@ -1119,6 +1201,28 @@ const Header = () => {
           </div>
         </div>
       </div>
+
+      {/* Policy Modal in Header */}
+      {policyModalHeader && (
+        <div className="modal show d-block bg-dark bg-opacity-50" tabIndex={-1} style={{ zIndex: 2000 }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
+              <div className="modal-header bg-emerald-700 text-white py-3 px-4">
+                <h5 className="modal-title font-bold text-white mb-0">{policyModalHeader.title}</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setPolicyModalHeader(null)} />
+              </div>
+              <div className="modal-body p-4 text-slate-700 text-sm leading-relaxed whitespace-pre-wrap font-sans max-h-96 overflow-y-auto">
+                {policyModalHeader.content}
+              </div>
+              <div className="modal-footer border-0 pt-0">
+                <button type="button" className="btn btn-sm btn-success font-bold rounded-pill px-4" onClick={() => setPolicyModalHeader(null)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

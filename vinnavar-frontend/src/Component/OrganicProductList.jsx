@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import { API_BASE_URL, fetchProducts, getImageUrl, toggleWishlist } from "../services/api";
+import { ProductSkeleton } from "./Skeleton";
 
 const OrganicProductList = ({ categoryId, limit = 8 }) => {
     const [products, setProducts] = useState([]);
@@ -101,10 +102,15 @@ const OrganicProductList = ({ categoryId, limit = 8 }) => {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center py-16 text-slate-500 font-medium">
-                <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-3"></div>
-                <span>Loading Pure Organic Products...</span>
-            </div>
+            <section className="py-12 bg-white">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="mb-6">
+                        <div className="w-48 h-8 bg-slate-200/80 rounded-full animate-pulse mb-2"></div>
+                        <div className="w-72 h-4 bg-slate-200/80 rounded-full animate-pulse"></div>
+                    </div>
+                    <ProductSkeleton count={limit || 4} />
+                </div>
+            </section>
         );
     }
 

@@ -18,4 +18,8 @@ public class CartResponseDto {
     private List<CartItem> items;
     private int totalItemCount;
     private BigDecimal subtotal;
+    private BigDecimal shippingFee;
+    private BigDecimal gstTax;
+    private BigDecimal totalAmount;
+    private double totalWeightKg;
 }

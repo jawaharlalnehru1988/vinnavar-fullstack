@@ -46,7 +46,7 @@ const Footer = () => {
                     <Link to="/">
                       <img
                         src={logoUrl}
-                        style={{ maxHeight: 60, width: "auto", objectFit: "contain" }}
+                        style={{ height: "96px", width: "96px", objectFit: "contain" }}
                         alt="Vinnavar Logo"
                         className="mb-3"
                       />

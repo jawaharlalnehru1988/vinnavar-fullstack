@@ -8,6 +8,7 @@ import Swal from "sweetalert2";
 import FAQ from "./FooterElements/Faq";
 import OrganicProductList from "../Component/OrganicProductList";
 import TestimonialsCarousel from "../Component/TestimonialsCarousel";
+import { ProductSkeleton, CategorySkeleton, OfferProductSkeleton } from "../Component/Skeleton";
 
 const bannerdeal = getImageUrl("/media/site/banner-deal1.jpg");
 const product11 = getImageUrl("/media/products/product-img-11.jpg");
@@ -427,9 +428,7 @@ const Home = () => {
                               );
                             })
                           ) : (
-                            <div className="text-center py-4 text-muted">
-                              Loading offer products...
-                            </div>
+                            <OfferProductSkeleton count={3} />
                           )}
                         </Slider>
                       </div>
@@ -459,15 +458,15 @@ const Home = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="row g-4 justify-content-center">
-                      {categories.filter(cat => offerProducts.some(p => p.category?.id === cat.id)).slice(0, 4).map((cat) => (
-                        <div key={cat.id} className="col-lg-3 col-md-6 col-12 fade-zoom">
-                          <Zoom>
-                            <div className="card h-100 category-card border-0 shadow-sm rounded-3 overflow-hidden">
+                    <div className="row g-4 justify-content-center align-items-stretch">
+                      {categories.length > 0 ? (
+                        categories.map((cat) => (
+                          <div key={cat.id} className="col-lg-3 col-md-6 col-12 d-flex">
+                            <div className="card h-100 w-100 category-card border-0 shadow-sm rounded-4 overflow-hidden d-flex flex-column">
                               {/* Category Image */}
                               <div
-                                className="position-relative overflow-hidden category-img-container d-flex align-items-center justify-content-center p-3"
-                                style={{ height: "240px", backgroundColor: "#f8f9fa" }}
+                                className="position-relative overflow-hidden category-img-container d-flex align-items-center justify-content-center p-3 bg-light"
+                                style={{ height: "200px" }}
                               >
                                 <Link
                                   to="#"
@@ -478,9 +477,10 @@ const Home = () => {
                                     src={cat.imageUrl ? getImageUrl(cat.imageUrl) : getImageUrl("/media/site/category-atta-rice-dal.jpg")}
                                     alt={cat.name}
                                     style={{
-                                      maxHeight: "100%",
-                                      maxWidth: "100%",
-                                      objectFit: "contain",
+                                      height: "100%",
+                                      width: "100%",
+                                      objectFit: "cover",
+                                      borderRadius: "12px",
                                       transition: "transform 0.3s ease"
                                     }}
                                     className="img-fluid"
@@ -488,27 +488,51 @@ const Home = () => {
                                 </Link>
                               </div>
                               {/* Category Content */}
-                              <div className="card-body p-4 d-flex flex-column">
-                                <h4 className="fs-5 fw-bold mb-2">
+                              <div className="card-body p-4 d-flex flex-column flex-grow-1">
+                                <h4
+                                  className="fs-6 fw-bold mb-2 text-dark"
+                                  style={{
+                                    display: "-webkit-box",
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: "vertical",
+                                    overflow: "hidden",
+                                    height: "44px"
+                                  }}
+                                  title={cat.name}
+                                >
                                   <Link to="#" className="text-dark text-decoration-none" onClick={(e) => { e.preventDefault(); setSelectedCategoryId(cat.id); }}>
                                     {cat.name}
                                   </Link>
                                 </h4>
-                                <p className="text-muted small mb-4 flex-grow-1" style={{ minHeight: "40px" }}>
+                                <p
+                                  className="text-muted small mb-4 flex-grow-1"
+                                  style={{
+                                    display: "-webkit-box",
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: "vertical",
+                                    overflow: "hidden",
+                                    height: "40px"
+                                  }}
+                                  title={cat.description}
+                                >
                                   {cat.description || "Premium quality organically grown products."}
                                 </p>
                                 <Link
                                   to="#"
                                   onClick={(e) => { e.preventDefault(); setSelectedCategoryId(cat.id); }}
-                                  className="btn btn-success btn-sm rounded-pill mt-auto fw-semibold py-2 w-100 shadow-sm"
+                                  className="btn btn-success btn-sm rounded-pill mt-auto fw-bold py-2 w-100 shadow-sm"
                                 >
                                   Browse Products
                                 </Link>
                               </div>
                             </div>
-                          </Zoom>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="col-12">
+                          <CategorySkeleton count={4} />
                         </div>
-                      ))}
+                      )}
                     </div>
                   </div>
                 </div>

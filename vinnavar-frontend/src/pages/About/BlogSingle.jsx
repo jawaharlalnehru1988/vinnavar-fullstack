@@ -163,9 +163,10 @@ const BlogSingle = () => {
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       {loading ? (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 font-medium">
-          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <span>Loading Article Details...</span>
+        <div className="max-w-4xl mx-auto space-y-6 animate-pulse">
+          <div className="w-1/3 h-4 bg-slate-200/80 rounded-full"></div>
+          <div className="w-3/4 h-10 bg-slate-200/80 rounded-full"></div>
+          <div className="w-full h-80 bg-slate-200/80 rounded-3xl"></div>
         </div>
       ) : !blog ? (
         <div className="max-w-md mx-auto text-center py-16 space-y-4 bg-white rounded-3xl border border-slate-100 p-8">

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { getImageUrl } from "../../services/api";
 
 const formatGroupLabel = (group) => {
@@ -10,6 +10,7 @@ const formatGroupLabel = (group) => {
     if (group === "LABELS") return "Labels & Banners";
     if (group === "LOGO") return "Store Logos";
     if (group === "FOOTER") return "Footer & Contact";
+    if (group === "POLICIES") return "Store Policies";
     return group
         .split("_")
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
@@ -32,6 +33,8 @@ const getGroupIcon = (group) => {
             return "🎨";
         case "FOOTER":
             return "📞";
+        case "POLICIES":
+            return "📜";
         default:
             return "📁";
     }
@@ -42,139 +45,111 @@ const AdminSidebar = ({
     setActiveTab,
     selectedAssetGroup = "ALL",
     setSelectedAssetGroup,
-    assetGroups = ["GENERAL", "HERO_SLIDER", "PROMO_BANNER", "LABELS", "LOGO", "FOOTER"],
+    assetGroups = ["GENERAL", "HERO_SLIDER", "PROMO_BANNER", "LABELS", "LOGO", "FOOTER", "POLICIES"],
     onLogout
 }) => {
-    const [assetsSubmenuOpen, setAssetsSubmenuOpen] = useState(true);
-
     const navItems = [
-        { id: "overview", label: "📊 Overview", desc: "Store statistics & metrics" },
-        { id: "products", label: "📦 Product Catalog", desc: "Add, edit, delete products & images" },
-        { id: "categories", label: "🗂️ Categories", desc: "Manage product categories" },
-        { id: "customers", label: "👥 Registered Customers", desc: "Manage customer profiles & CRUD" },
-        { id: "testimonials", label: "💬 Customer Testimonials", desc: "Manage moving carousel reviews" },
-        { id: "assets", label: "🖼️ Site Assets & Images", desc: "Manage store logo, hero sliders & banners", isDropdown: true },
-        { id: "blogs", label: "📝 Blog Articles", desc: "Manage blog posts & recipes" },
-        { id: "orders", label: "🚚 Customer Orders", desc: "View orders & update order statuses" }
+        { id: "overview", label: "📊 Overview", desc: "Store stats" },
+        { id: "products", label: "📦 Products", desc: "Manage catalog" },
+        { id: "categories", label: "🗂️ Categories", desc: "Product categories" },
+        { id: "customers", label: "👥 Customers", desc: "Customer profiles" },
+        { id: "testimonials", label: "💬 Testimonials", desc: "Customer reviews" },
+        { id: "assets", label: "🖼️ Site Assets", desc: "Banners & sliders", isDropdown: true },
+        { id: "complaints", label: "📢 Complaints", desc: "Support tickets" },
+        { id: "blogs", label: "📝 Blog Articles", desc: "Posts & recipes" },
+        { id: "orders", label: "🚚 Customer Orders", desc: "View & track orders" }
     ];
 
     const allGroupsList = ["ALL", ...assetGroups.filter((g) => g !== "ALL")];
 
     return (
-        <div className="d-flex flex-column bg-dark text-white p-3 min-vh-100 shadow" style={{ width: "290px", minWidth: "290px" }}>
-            {/* Header Brand */}
-            <div className="d-flex align-items-center mb-4 px-2 pb-3 border-bottom border-secondary">
-                <img
-                    src={getImageUrl("/media/site/vinnavar_logo.png")}
-                    alt="Vinnavar Logo"
-                    style={{ width: "45px", height: "45px", objectFit: "contain", borderRadius: "50%", backgroundColor: "#fff", padding: "2px" }}
-                    className="me-2 shadow-sm"
-                />
-                <div>
-                    <h5 className="m-0 fw-bold text-success">Vinnavar Admin</h5>
-                    <small className="text-muted">E-Commerce Management</small>
+        <div className="bg-dark text-white shadow-sm border-bottom border-secondary">
+            {/* Top Header Bar */}
+            <div className="container-fluid px-4 py-3 border-bottom border-secondary border-opacity-50 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div className="d-flex align-items-center gap-3">
+                    <img
+                        src={getImageUrl("/media/site/vinnavar_logo.png")}
+                        alt="Vinnavar Logo"
+                        style={{ width: "42px", height: "42px", objectFit: "contain", borderRadius: "50%", backgroundColor: "#fff", padding: "2px" }}
+                        className="shadow-sm"
+                    />
+                    <div>
+                        <h5 className="m-0 fw-bold text-success d-flex align-items-center gap-2">
+                            Vinnavar Admin <span className="badge bg-success-subtle text-success fs-6 border border-success">Dashboard</span>
+                        </h5>
+                        <small className="text-white-50">Organic E-Commerce Management Platform</small>
+                    </div>
+                </div>
+
+                <div className="d-flex align-items-center gap-3">
+                    <div className="text-end d-none d-sm-block">
+                        <div className="fw-bold text-light">vinnavar_admin</div>
+                        <small className="text-success">● Active Administrator</small>
+                    </div>
+                    <button
+                        className="btn btn-outline-danger btn-sm rounded-pill px-3 py-1.5 fw-bold d-flex align-items-center gap-1 shadow-sm"
+                        onClick={onLogout}
+                    >
+                        🚪 Logout
+                    </button>
                 </div>
             </div>
 
-            {/* Navigation Links */}
-            <nav className="nav nav-pills flex-column mb-auto gap-2">
-                {navItems.map((item) => {
-                    const isAssetsTab = item.id === "assets";
-                    const isTabActive = activeTab === item.id;
-
-                    if (isAssetsTab) {
+            {/* Horizontal Top Navigation Tabs Bar */}
+            <div className="container-fluid px-4 bg-dark bg-opacity-75 overflow-x-auto">
+                <ul className="nav nav-tabs border-0 flex-nowrap py-2 gap-2">
+                    {navItems.map((item) => {
+                        const isTabActive = activeTab === item.id;
                         return (
-                            <div key={item.id} className="rounded-3 border border-secondary border-opacity-25 overflow-hidden">
-                                {/* Collapsible Header for Site Assets */}
+                            <li key={item.id} className="nav-item">
                                 <button
-                                    className={`nav-link text-start w-100 py-3 px-3 fw-bold border-0 d-flex justify-content-between align-items-center ${
-                                        isTabActive ? "bg-success text-white shadow-sm" : "text-light hover-bg-secondary"
+                                    type="button"
+                                    className={`nav-link text-nowrap rounded-3 py-2 px-3 fw-bold border-0 transition-all ${
+                                        isTabActive
+                                            ? "bg-success text-white shadow-sm"
+                                            : "text-light hover-bg-secondary bg-transparent"
+                                    }`}
+                                    onClick={() => setActiveTab(item.id)}
+                                    style={{ fontSize: "14px" }}
+                                >
+                                    <div className="d-flex align-items-center gap-2">
+                                        <span>{item.label}</span>
+                                    </div>
+                                    <div className="small fw-normal opacity-75 text-start" style={{ fontSize: "10px" }}>
+                                        {item.desc}
+                                    </div>
+                                </button>
+                            </li>
+                        );
+                    })}
+                </ul>
+
+                {/* Sub-menu bar for Site Assets group filtering if active */}
+                {activeTab === "assets" && (
+                    <div className="py-2 border-top border-secondary border-opacity-50 d-flex flex-wrap align-items-center gap-2">
+                        <span className="small fw-bold text-success font-monospace me-2">Asset Group Filter:</span>
+                        {allGroupsList.map((group) => {
+                            const isGroupActive = selectedAssetGroup === group;
+                            return (
+                                <button
+                                    key={group}
+                                    type="button"
+                                    className={`btn btn-sm rounded-pill px-3 py-1 fw-bold transition-all ${
+                                        isGroupActive
+                                            ? "bg-warning text-dark shadow-sm"
+                                            : "btn-outline-secondary text-light"
                                     }`}
                                     onClick={() => {
-                                        if (activeTab !== "assets") {
-                                            setActiveTab("assets");
-                                            setAssetsSubmenuOpen(true);
-                                        } else {
-                                            setAssetsSubmenuOpen(!assetsSubmenuOpen);
-                                        }
+                                        if (setSelectedAssetGroup) setSelectedAssetGroup(group);
                                     }}
-                                    style={{ transition: "all 0.2s" }}
+                                    style={{ fontSize: "12px" }}
                                 >
-                                    <div>
-                                        <div className="fs-6">{item.label}</div>
-                                        <div className="small fw-normal text-white-50" style={{ fontSize: "11px" }}>
-                                            {item.desc}
-                                        </div>
-                                    </div>
-                                    <span className="fs-5 fw-bold ms-2">{assetsSubmenuOpen ? "—" : "+"}</span>
+                                    {getGroupIcon(group)} {formatGroupLabel(group)}
                                 </button>
-
-                                {/* Nested Categories Sub-Menu as in Image 2 */}
-                                {assetsSubmenuOpen && (
-                                    <div className="bg-secondary bg-opacity-25 py-2 px-2 border-top border-secondary border-opacity-25">
-                                        <div className="px-2 py-1 small fw-bold text-uppercase text-success font-monospace" style={{ fontSize: "10px", letterSpacing: "1px" }}>
-                                            Asset Categories
-                                        </div>
-                                        {allGroupsList.map((group) => {
-                                            const isGroupActive = isTabActive && selectedAssetGroup === group;
-                                            return (
-                                                <button
-                                                    key={group}
-                                                    className={`btn btn-sm text-start w-100 py-2 px-3 my-1 rounded border-0 d-flex align-items-center justify-content-between ${
-                                                        isGroupActive
-                                                            ? "bg-warning text-dark fw-bold shadow-sm"
-                                                            : "text-light hover-bg-secondary"
-                                                    }`}
-                                                    onClick={() => {
-                                                        setActiveTab("assets");
-                                                        if (setSelectedAssetGroup) {
-                                                            setSelectedAssetGroup(group);
-                                                        }
-                                                    }}
-                                                    style={{
-                                                        transition: "all 0.15s",
-                                                        fontSize: "13px",
-                                                        backgroundColor: isGroupActive ? "#ffecb3" : "transparent"
-                                                    }}
-                                                >
-                                                    <span className="d-flex align-items-center gap-2">
-                                                        <span>{getGroupIcon(group)}</span>
-                                                        <span>{formatGroupLabel(group)}</span>
-                                                    </span>
-                                                    {isGroupActive && <span className="badge bg-dark text-white rounded-pill ms-2" style={{ fontSize: "10px" }}>Active</span>}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    }
-
-                    return (
-                        <button
-                            key={item.id}
-                            className={`nav-link text-start py-3 px-3 rounded-3 fw-bold border-0 ${
-                                isTabActive ? "bg-success text-white shadow-sm" : "text-light hover-bg-secondary"
-                            }`}
-                            onClick={() => setActiveTab(item.id)}
-                            style={{ transition: "all 0.2s" }}
-                        >
-                            <div className="fs-6">{item.label}</div>
-                            <div className="small fw-normal text-muted" style={{ fontSize: "11px" }}>
-                                {item.desc}
-                            </div>
-                        </button>
-                    );
-                })}
-            </nav>
-
-            {/* Logout section */}
-            <div className="pt-3 border-top border-secondary">
-                <div className="small text-muted mb-2 px-2">User: vinnavar (Admin)</div>
-                <button className="btn btn-outline-danger w-100 fw-bold py-2" onClick={onLogout}>
-                    🚪 Logout
-                </button>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         </div>
     );

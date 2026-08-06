@@ -4,6 +4,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import Swal from "sweetalert2";
 import ScrollToTop from "../ScrollToTop";
 import { API_BASE_URL, getImageUrl, fetchWishlist, removeFromWishlist, clearWishlist } from "../../services/api";
+import { CartSkeleton } from "../../Component/Skeleton";
 
 const ShopWishList = () => {
   const [loaderStatus, setLoaderStatus] = useState(true);
@@ -163,9 +164,9 @@ const ShopWishList = () => {
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <ScrollToTop />
       {loaderStatus ? (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 font-medium">
-          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <span>Loading Your Wishlist...</span>
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="w-48 h-8 bg-slate-200/80 rounded-full animate-pulse"></div>
+          <CartSkeleton count={3} />
         </div>
       ) : (
         <div className="max-w-7xl mx-auto space-y-8">

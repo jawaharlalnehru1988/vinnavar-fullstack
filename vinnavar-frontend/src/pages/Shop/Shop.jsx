@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import ScrollToTop from "../ScrollToTop";
 import { API_BASE_URL, fetchCategories, fetchProducts, getImageUrl, toggleWishlist } from "../../services/api";
+import { ProductSkeleton } from "../../Component/Skeleton";
 
 const assortment = getImageUrl("/media/site/assortment-citrus-fruits.png");
 
@@ -141,9 +142,9 @@ const Shop = () => {
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <ScrollToTop />
       {loading ? (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 font-medium">
-          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <span>Loading Organic Product Catalog...</span>
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div className="w-48 h-8 bg-slate-200/80 rounded-full animate-pulse"></div>
+          <ProductSkeleton count={6} />
         </div>
       ) : (
         <div className="max-w-7xl mx-auto space-y-8">

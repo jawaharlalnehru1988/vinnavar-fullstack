@@ -32,4 +32,9 @@ public class AuthController {
     public ResponseEntity<AuthDto.AuthResponse> forgotPassword(@RequestBody AuthDto.ForgotPasswordRequest request) {
         return ResponseEntity.ok(authService.forgotPassword(request));
     }
+
+    @PutMapping("/customer/profile")
+    public ResponseEntity<AuthDto.AuthResponse> updateCustomerProfile(@RequestBody AuthDto.UpdateCustomerProfileRequest request) {
+        return ResponseEntity.ok(authService.updateCustomerProfile(request));
+    }
 }

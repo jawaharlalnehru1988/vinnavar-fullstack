@@ -4,11 +4,27 @@ import { Link, useNavigate } from "react-router-dom";
 import ScrollToTop from "../ScrollToTop";
 import Swal from "sweetalert2";
 
+import { CartSkeleton } from "../../Component/Skeleton";
+
 const ShopCart = () => {
   const navigate = useNavigate();
   const [loaderStatus, setLoaderStatus] = useState(true);
   const [cart, setCart] = useState(null);
   const [updatingItemId, setUpdatingItemId] = useState(null);
+  const [settingsMap, setSettingsMap] = useState({});
+  const [policyModal, setPolicyModal] = useState(null); // { title, content }
+
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/settings`);
+      if (res.ok) {
+        const data = await res.json();
+        setSettingsMap(data || {});
+      }
+    } catch (err) {
+      console.error("Error fetching store settings", err);
+    }
+  };
 
   const fetchCart = async () => {
     const cartId = localStorage.getItem("vinnavar_cart_id");
@@ -35,7 +51,27 @@ const ShopCart = () => {
 
   useEffect(() => {
     fetchCart();
+    fetchSettings();
   }, []);
+
+  const openPolicy = (type) => {
+    if (type === "REFUND") {
+      setPolicyModal({
+        title: "📜 Refund & Cancellation Policy",
+        content: settingsMap.refund_policy || "Refund Policy details loading..."
+      });
+    } else if (type === "PRIVACY") {
+      setPolicyModal({
+        title: "🔒 Privacy Policy",
+        content: settingsMap.privacy_policy || "Privacy Policy details loading..."
+      });
+    } else if (type === "TERMS") {
+      setPolicyModal({
+        title: "📋 Terms & Conditions",
+        content: settingsMap.terms_conditions || "Terms & Conditions details loading..."
+      });
+    }
+  };
 
   const handleQuantityChange = async (itemId, newQuantity) => {
     if (newQuantity < 1) {
@@ -119,9 +155,9 @@ const ShopCart = () => {
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <ScrollToTop />
       {loaderStatus ? (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 font-medium">
-          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <span>Loading Your Shopping Cart...</span>
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="w-48 h-8 bg-slate-200/80 rounded-full animate-pulse"></div>
+          <CartSkeleton count={3} />
         </div>
       ) : (
         <div className="max-w-7xl mx-auto space-y-8">
@@ -280,26 +316,58 @@ const ShopCart = () => {
               {/* Right Column: Order Summary Card */}
               <div className="lg:col-span-1">
                 <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-6 sticky top-24">
-                  <h2 className="font-black text-slate-900 text-lg border-b border-slate-100 pb-3">
-                    Order Summary
+                  <h2 className="font-black text-slate-900 text-center text-lg border-b border-slate-100 pb-3 uppercase tracking-wider">
+                    YOUR ORDER
                   </h2>
 
+                  {/* Itemized List in Summary */}
+                  <div className="space-y-3 pb-3 border-b border-slate-100">
+                    <div className="flex justify-between text-xs font-bold text-slate-900 uppercase pb-1 border-b border-slate-100">
+                      <span>PRODUCT</span>
+                      <span>SUBTOTAL</span>
+                    </div>
+                    {items.map((item, idx) => {
+                      const p = item.product || {};
+                      const v = item.variant || {};
+                      const lineTotal = item.unitPrice ? item.unitPrice * item.quantity : 0;
+                      return (
+                        <div key={idx} className="flex justify-between items-start text-xs gap-3">
+                          <span className="text-slate-600 font-medium leading-tight">
+                            {p.name} {v.variantName ? `- ${v.variantName}` : ''}<br />
+                            <strong className="text-slate-900">× {item.quantity}</strong>
+                          </span>
+                          <span className="font-semibold text-slate-800 whitespace-nowrap">
+                            ₹{lineTotal.toFixed(2)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
                   <div className="space-y-3 text-xs font-medium">
-                    <div className="flex justify-between text-slate-600">
-                      <span>Item Subtotal ({cart?.totalItemCount || items.length} items)</span>
-                      <span className="font-bold text-slate-900">₹{subtotal.toLocaleString("en-IN")}</span>
+                    <div className="flex justify-between text-slate-700">
+                      <span className="font-bold text-slate-900">Subtotal</span>
+                      <span className="font-black text-emerald-700">₹{subtotal.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-slate-600">
-                      <span>Shipping &amp; Delivery</span>
-                      <span className="font-bold text-emerald-600">FREE</span>
+
+                    <div className="flex justify-between items-center text-slate-700">
+                      <span className="font-bold text-slate-900">Shipment</span>
+                      <span className="text-right">
+                        <span className="text-[11px] text-slate-500 block">Weight Based Shipping:</span>
+                        <span className="font-black text-emerald-700">₹{(cart?.shippingFee ?? 48).toFixed(2)}</span>
+                      </span>
                     </div>
-                    <div className="flex justify-between text-slate-600">
-                      <span>GST Taxes</span>
-                      <span className="font-bold text-emerald-600">Inclusive</span>
+
+                    <div className="flex justify-between text-slate-700">
+                      <span className="font-bold text-slate-900">Tax (GST 5%)</span>
+                      <span className="font-black text-emerald-700">₹{(cart?.gstTax ?? (subtotal * 0.05)).toFixed(2)}</span>
                     </div>
+
                     <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-sm font-black text-slate-900">
-                      <span>Total Amount</span>
-                      <span className="text-xl text-emerald-700">₹{subtotal.toLocaleString("en-IN")}</span>
+                      <span>Total</span>
+                      <span className="text-2xl text-emerald-700">
+                        ₹{(cart?.totalAmount ?? (subtotal + (cart?.shippingFee ?? 48) + (subtotal * 0.05))).toFixed(2)}
+                      </span>
                     </div>
                   </div>
 
@@ -309,13 +377,20 @@ const ShopCart = () => {
                     onClick={() => navigate("/ShopCheckOut")}
                   >
                     <span>Proceed to Checkout</span>
-                    <span>₹{subtotal.toLocaleString("en-IN")} ➔</span>
+                    <span>₹{(cart?.totalAmount ?? (subtotal + (cart?.shippingFee ?? 48) + (subtotal * 0.05))).toFixed(2)} ➔</span>
                   </button>
 
-                  <div className="text-center pt-2">
+                  <div className="text-center pt-3 border-t border-slate-100 space-y-2">
                     <p className="text-[11px] text-slate-400 font-semibold">
                       🔒 Safe &amp; Secure Checkout • 100% Organic Guarantee
                     </p>
+                    <div className="flex flex-wrap justify-center gap-2 text-[11px] font-bold text-emerald-700">
+                      <button type="button" onClick={() => openPolicy("REFUND")} className="hover:underline cursor-pointer border-0 bg-transparent text-emerald-700 p-0 font-bold">Refund Policy</button>
+                      <span>•</span>
+                      <button type="button" onClick={() => openPolicy("PRIVACY")} className="hover:underline cursor-pointer border-0 bg-transparent text-emerald-700 p-0 font-bold">Privacy Policy</button>
+                      <span>•</span>
+                      <button type="button" onClick={() => openPolicy("TERMS")} className="hover:underline cursor-pointer border-0 bg-transparent text-emerald-700 p-0 font-bold">Terms &amp; Conditions</button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -323,6 +398,28 @@ const ShopCart = () => {
             </div>
           )}
 
+        </div>
+      )}
+
+      {/* Dynamic Policy Modal */}
+      {policyModal && (
+        <div className="modal show d-block bg-dark bg-opacity-50" tabIndex={-1} style={{ zIndex: 1050 }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
+              <div className="modal-header bg-emerald-700 text-white py-3 px-4">
+                <h5 className="modal-title font-bold text-white mb-0">{policyModal.title}</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setPolicyModal(null)} />
+              </div>
+              <div className="modal-body p-4 text-slate-700 text-sm leading-relaxed whitespace-pre-wrap font-sans max-h-96 overflow-y-auto">
+                {policyModal.content}
+              </div>
+              <div className="modal-footer border-0 pt-0">
+                <button type="button" className="btn btn-sm btn-success font-bold rounded-pill px-4" onClick={() => setPolicyModal(null)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

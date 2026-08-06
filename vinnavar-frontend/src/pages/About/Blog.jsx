@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ScrollToTop from "../ScrollToTop";
 import { fetchBlogs, fetchBlogCategories, getImageUrl } from "../../services/api";
+import { BlogSkeleton } from "../../Component/Skeleton";
 
 const Blog = () => {
   const [loaderStatus, setLoaderStatus] = useState(true);
@@ -41,9 +42,9 @@ const Blog = () => {
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <ScrollToTop />
       {loaderStatus ? (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 font-medium">
-          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <span>Loading Organic Blog &amp; Articles...</span>
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="w-48 h-8 bg-slate-200/80 rounded-full animate-pulse"></div>
+          <BlogSkeleton count={3} />
         </div>
       ) : (
         <div className="max-w-7xl mx-auto space-y-8">

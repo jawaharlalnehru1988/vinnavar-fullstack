@@ -11,6 +11,7 @@ const formatGroupLabel = (group) => {
     if (group === "LABELS") return "Labels & Banners";
     if (group === "LOGO") return "Store Logos";
     if (group === "FOOTER") return "Footer & Contact";
+    if (group === "POLICIES") return "Store Policies";
     return group
         .split("_")
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())

@@ -33,9 +33,22 @@ public class OrderService {
             throw new IllegalStateException("Cannot checkout: Cart is empty.");
         }
 
-        BigDecimal totalAmount = cartItems.stream()
+        BigDecimal subtotal = cartItems.stream()
                 .map(CartItem::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        double totalWeightKg = cartItems.stream()
+                .mapToDouble(item -> {
+                    String vName = item.getVariant() != null ? item.getVariant().getVariantName() : "";
+                    return item.getQuantity() * com.vinnavar.backend.modules.cart.service.CartService.parseWeightInKg(vName);
+                })
+                .sum();
+
+        int blocksOf5Kg = (int) Math.ceil(totalWeightKg <= 0 ? 1 : totalWeightKg / 5.0);
+        if (blocksOf5Kg < 1) blocksOf5Kg = 1;
+        BigDecimal shippingFee = BigDecimal.valueOf(blocksOf5Kg * 48L).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal gstTax = subtotal.multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal totalAmount = subtotal.add(shippingFee).add(gstTax).setScale(2, java.math.RoundingMode.HALF_UP);
 
         String datePrefix = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String randomSuffix = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
@@ -50,6 +63,10 @@ public class OrderService {
                 .shippingAddress(request.getShippingAddress())
                 .billingAddress(request.getBillingAddress() != null ? request.getBillingAddress() : request.getShippingAddress())
                 .gstin(request.getGstin())
+                .subtotal(subtotal)
+                .shippingFee(shippingFee)
+                .gstTax(gstTax)
+                .totalWeightKg(totalWeightKg)
                 .totalAmount(totalAmount)
                 .paymentMethod(request.getPaymentMethod() != null ? request.getPaymentMethod() : PaymentMethod.COD)
                 .paymentStatus("PENDING_COD")
@@ -85,7 +102,7 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+        return orderRepository.findAllByOrderByCreatedAtDesc();
     }
 
     @Transactional
@@ -105,6 +122,22 @@ public class OrderService {
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
         order.setCourierName(courierName);
         order.setTrackingNumber(trackingNumber);
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public Order updateOrderAddress(Long orderId, com.vinnavar.backend.modules.order.dto.UpdateOrderAddressDto request) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        if (request.getShippingAddress() != null) {
+            order.setShippingAddress(request.getShippingAddress());
+        }
+        if (request.getBillingAddress() != null) {
+            order.setBillingAddress(request.getBillingAddress());
+        }
+        if (request.getGstin() != null) {
+            order.setGstin(request.getGstin());
+        }
         return orderRepository.save(order);
     }
 }

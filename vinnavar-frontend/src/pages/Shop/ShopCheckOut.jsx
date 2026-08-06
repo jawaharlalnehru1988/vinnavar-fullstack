@@ -70,6 +70,56 @@ const ShopCheckOut = () => {
 
     useEffect(() => {
         fetchCart();
+
+        const savedCustomer = localStorage.getItem("vinnavar_customer");
+        if (savedCustomer) {
+            try {
+                const customer = JSON.parse(savedCustomer);
+                setShippingForm(prev => ({
+                    ...prev,
+                    name: customer.name || prev.name,
+                    email: customer.email || prev.email,
+                    phone: customer.mobileNumber || prev.phone
+                }));
+
+                if (customer.mobileNumber) {
+                    fetch(`${API_BASE_URL}/customer/addresses?mobile=${customer.mobileNumber}`)
+                        .then(r => r.ok ? r.json() : [])
+                        .then(addresses => {
+                            if (Array.isArray(addresses) && addresses.length > 0) {
+                                const defDelivery = addresses.find(a => a.addressType === "DELIVERY" && a.isDefault) || addresses.find(a => a.addressType === "DELIVERY");
+                                if (defDelivery) {
+                                    setShippingForm(prev => ({
+                                        ...prev,
+                                        name: defDelivery.fullName || prev.name,
+                                        phone: defDelivery.phone || prev.phone,
+                                        street: defDelivery.streetAddress || prev.street,
+                                        city: defDelivery.city || prev.city,
+                                        state: defDelivery.state || prev.state,
+                                        pincode: defDelivery.pincode || prev.pincode
+                                    }));
+                                }
+
+                                const defBilling = addresses.find(a => a.addressType === "BILLING" && a.isDefault) || addresses.find(a => a.addressType === "BILLING");
+                                if (defBilling) {
+                                    setBillingForm(prev => ({
+                                        ...prev,
+                                        name: defBilling.fullName || prev.name,
+                                        phone: defBilling.phone || prev.phone,
+                                        street: defBilling.streetAddress || prev.street,
+                                        city: defBilling.city || prev.city,
+                                        state: defBilling.state || prev.state,
+                                        pincode: defBilling.pincode || prev.pincode
+                                    }));
+                                }
+                            }
+                        })
+                        .catch(err => console.error("Error fetching saved addresses for checkout", err));
+                }
+            } catch (e) {
+                console.error("Error parsing customer details for checkout", e);
+            }
+        }
     }, []);
 
     const handleShippingChange = (e) => {
@@ -570,17 +620,26 @@ const ShopCheckOut = () => {
                                             </div>
 
                                             <div className="space-y-2 text-xs font-medium pt-4 border-t border-slate-100">
-                                                <div className="flex justify-between text-slate-600">
-                                                    <span>Items Subtotal</span>
-                                                    <span className="font-bold text-slate-900">₹{(cart.subtotal || 0).toLocaleString("en-IN")}</span>
+                                                <div className="flex justify-between text-slate-700">
+                                                    <span className="font-bold text-slate-900">Base Price (Subtotal)</span>
+                                                    <span className="font-black text-slate-900">₹{(cart.subtotal || 0).toFixed(2)}</span>
                                                 </div>
-                                                <div className="flex justify-between text-slate-600">
-                                                    <span>Shipping &amp; GST</span>
-                                                    <span className="font-bold text-emerald-600">FREE</span>
+                                                <div className="flex justify-between items-center text-slate-700">
+                                                    <span className="font-bold text-slate-900">Shipment</span>
+                                                    <span className="text-right">
+                                                        <span className="text-[10px] text-slate-500 block">Weight Based:</span>
+                                                        <span className="font-black text-emerald-700">₹{(cart.shippingFee ?? 48).toFixed(2)}</span>
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between text-slate-700">
+                                                    <span className="font-bold text-slate-900">GST Tax (5%)</span>
+                                                    <span className="font-black text-emerald-700">₹{(cart.gstTax ?? ((cart.subtotal || 0) * 0.05)).toFixed(2)}</span>
                                                 </div>
                                                 <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-sm font-black text-slate-900">
                                                     <span>Total Payable</span>
-                                                    <span className="text-xl text-emerald-700">₹{(cart.subtotal || 0).toLocaleString("en-IN")}</span>
+                                                    <span className="text-xl text-emerald-700">
+                                                        ₹{(cart.totalAmount ?? ((cart.subtotal || 0) + (cart.shippingFee ?? 48) + ((cart.subtotal || 0) * 0.05))).toFixed(2)}
+                                                    </span>
                                                 </div>
                                             </div>
 
@@ -592,7 +651,7 @@ const ShopCheckOut = () => {
                                                 {isProcessing ? (
                                                     "Processing Secure Payment..."
                                                 ) : (
-                                                    `🔒 Pay ₹${(cart.subtotal || 0).toLocaleString("en-IN")} via Razorpay`
+                                                    `🔒 Pay ₹${(cart.totalAmount ?? ((cart.subtotal || 0) + (cart.shippingFee ?? 48) + ((cart.subtotal || 0) * 0.05))).toFixed(2)} via Razorpay`
                                                 )}
                                             </button>
 
