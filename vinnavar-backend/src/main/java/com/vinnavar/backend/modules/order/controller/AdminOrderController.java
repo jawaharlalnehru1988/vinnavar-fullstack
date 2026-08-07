@@ -48,4 +48,28 @@ public class AdminOrderController {
         Order updated = orderService.updateOrderAddress(id, request);
         return ResponseEntity.ok(updated);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Order> updateOrderDetails(
+            @PathVariable Long id,
+            @RequestBody com.vinnavar.backend.modules.order.dto.UpdateOrderDto request
+    ) {
+        Order updated = orderService.updateOrderDetails(id, request);
+        return ResponseEntity.ok(updated);
+    }
+
+    @PutMapping("/{id}/shipping-fee")
+    public ResponseEntity<Order> updateOrderShippingFee(
+            @PathVariable Long id,
+            @RequestParam java.math.BigDecimal shippingFee
+    ) {
+        Order updated = orderService.updateOrderShippingFee(id, shippingFee);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
+        orderService.deleteOrder(id);
+        return ResponseEntity.noContent().build();
+    }
 }

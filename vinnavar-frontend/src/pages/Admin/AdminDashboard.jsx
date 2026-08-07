@@ -9,6 +9,43 @@ import AdminCustomers from "./AdminCustomers";
 import AdminTestimonials from "./AdminTestimonials";
 import AdminComplaints from "./AdminComplaints";
 
+const getOrderStatusBadge = (status) => {
+    switch (status) {
+        case "PENDING":
+            return <span className="badge bg-warning text-dark fw-bold px-2 py-1 shadow-sm">⏳ PENDING</span>;
+        case "CONFIRMED":
+            return <span className="badge bg-primary text-white fw-bold px-2 py-1 shadow-sm">✅ CONFIRMED</span>;
+        case "PROCESSING":
+            return <span className="badge bg-info text-dark fw-bold px-2 py-1 shadow-sm">⚙️ PROCESSING</span>;
+        case "SHIPPED":
+            return <span className="badge text-white fw-bold px-2 py-1 shadow-sm" style={{ backgroundColor: "#8b5cf6" }}>🚚 SHIPPED</span>;
+        case "OUT_FOR_DELIVERY":
+            return <span className="badge text-white fw-bold px-2 py-1 shadow-sm" style={{ backgroundColor: "#f97316" }}>🛵 OUT FOR DELIVERY</span>;
+        case "DELIVERED":
+            return <span className="badge bg-success text-white fw-bold px-2 py-1 shadow-sm">🎉 DELIVERED</span>;
+        case "CANCELLED":
+        case "FAILED":
+            return <span className="badge bg-danger text-white fw-bold px-2 py-1 shadow-sm">❌ CANCELLED</span>;
+        default:
+            return <span className="badge bg-secondary text-white fw-bold px-2 py-1 shadow-sm">{status}</span>;
+    }
+};
+
+const getPaymentBadge = (method) => {
+    switch (method) {
+        case "ONLINE":
+        case "CARD":
+        case "NETBANKING":
+            return <span className="badge bg-primary text-white font-monospace px-2 py-1 shadow-sm">💳 ONLINE</span>;
+        case "COD":
+            return <span className="badge bg-warning text-dark font-monospace px-2 py-1 shadow-sm">💵 COD</span>;
+        case "UPI":
+            return <span className="badge bg-success text-white font-monospace px-2 py-1 shadow-sm">📱 UPI</span>;
+        default:
+            return <span className="badge bg-secondary text-white font-monospace px-2 py-1 shadow-sm">{method || "ONLINE"}</span>;
+    }
+};
+
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -47,6 +84,25 @@ const AdminDashboard = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedOrderModal, setSelectedOrderModal] = useState(null);
+    const [editOrderModal, setEditOrderModal] = useState(null);
+    const [editOrderForm, setEditOrderForm] = useState({
+        orderStatus: "CONFIRMED",
+        paymentMethod: "COD",
+        paymentStatus: "PENDING",
+        courierName: "",
+        trackingNumber: "",
+        customerName: "",
+        customerPhone: "",
+        customerEmail: "",
+        totalAmount: "",
+        shippingFee: "",
+        streetAddress: "",
+        city: "",
+        state: "",
+        pincode: "",
+        gstin: ""
+    });
+    const [shippingFeeInputs, setShippingFeeInputs] = useState({});
 
     // Product Modal / Form State
     const [showProductModal, setShowProductModal] = useState(false);
@@ -66,15 +122,25 @@ const AdminDashboard = () => {
         videoUrl: "",
         featured: false,
         active: true,
-        variantName: "1 Liter",
-        price: "",
-        discountPrice: ""
+        variants: [
+            { variantName: "500g", price: "", discountPrice: "" },
+            { variantName: "2kg", price: "", discountPrice: "" },
+            { variantName: "5kg", price: "", discountPrice: "" }
+        ]
     });
 
-    // Category Form State
+    // Category Form & View State
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [editingCategoryId, setEditingCategoryId] = useState(null);
     const [categoryForm, setCategoryForm] = useState({ name: "", description: "", imageUrl: "" });
+    const [categoryViewMode, setCategoryViewMode] = useState("list");
+    const [categoryCurrentPage, setCategoryCurrentPage] = useState(1);
+
+    // Offers & Discounts View State
+    const [offerViewMode, setOfferViewMode] = useState("card");
+    const [offerFilter, setOfferFilter] = useState("on_offer");
+    const [offerSearch, setOfferSearch] = useState("");
+    const [offerCurrentPage, setOfferCurrentPage] = useState(1);
 
     const checkAuth = () => {
         const token = localStorage.getItem("vinnavar_admin_token");
@@ -286,6 +352,79 @@ const AdminDashboard = () => {
         }
     };
 
+    // Quick Discount Update Handler for Offers & Discounts Tab
+    const handleQuickDiscountUpdate = async (product) => {
+        const defaultVar = product.variants?.[0] || {};
+        const currentDiscount = defaultVar.discountPrice || "";
+        const currentPrice = defaultVar.price || 0;
+
+        const { value: formValues } = await Swal.fire({
+            title: `Set Offer Price for "${product.name}"`,
+            html: `
+                <div className="text-start mb-3">
+                    <label className="form-label fw-bold">Original Price (₹):</label>
+                    <input id="swal-price" type="number" class="form-control" value="${currentPrice}" readonly disabled />
+                </div>
+                <div className="text-start mb-2">
+                    <label className="form-label fw-bold">Discount / Offer Price (₹):</label>
+                    <input id="swal-discount" type="number" step="0.01" class="form-control" placeholder="Enter discount price or leave empty to clear offer" value="${currentDiscount}" />
+                    <small className="text-muted">Must be less than original price ₹${currentPrice}</small>
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: "Save Offer Price",
+            confirmButtonColor: "#198754",
+            preConfirm: () => {
+                const discountInput = document.getElementById("swal-discount").value;
+                if (discountInput !== "" && parseFloat(discountInput) >= currentPrice) {
+                    Swal.showValidationMessage(`Offer price must be less than regular price (₹${currentPrice})`);
+                    return false;
+                }
+                return discountInput;
+            }
+        });
+
+        if (formValues !== undefined) {
+            const newDiscount = formValues !== "" && parseFloat(formValues) > 0 ? parseFloat(formValues) : null;
+            const updatedVariants = (product.variants && product.variants.length > 0)
+                ? product.variants.map((v, idx) => idx === 0 ? { ...v, discountPrice: newDiscount } : v)
+                : [{ variantName: "Standard", price: currentPrice, discountPrice: newDiscount, isDefault: true }];
+
+            const payload = {
+                name: product.name,
+                slug: product.slug,
+                categoryId: product.category?.id || null,
+                shortDescription: product.shortDescription,
+                fullDescription: product.fullDescription,
+                benefits: product.benefits,
+                imageUrl: product.imageUrl,
+                imageUrls: product.imageUrls || [],
+                videoUrl: product.videoUrl || "",
+                featured: product.featured,
+                active: product.active,
+                variants: updatedVariants
+            };
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/admin/products/${product.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    Swal.fire({ icon: "success", title: "Offer Price Updated!", timer: 1200, showConfirmButton: false });
+                    loadData();
+                } else {
+                    Swal.fire({ icon: "error", title: "Update Failed", text: "Could not update offer price." });
+                }
+            } catch (err) {
+                Swal.fire({ icon: "error", title: "Server Error", text: "Could not connect to backend server." });
+            }
+        }
+    };
+
     // Product CRUD Actions
     const handleSaveProduct = async (e) => {
         e.preventDefault();
@@ -303,14 +442,14 @@ const AdminDashboard = () => {
             videoUrl: productForm.videoUrl || "",
             featured: productForm.featured,
             active: productForm.active,
-            variants: [
-                {
-                    variantName: productForm.variantName || "Standard",
-                    price: parseFloat(productForm.price || "0"),
-                    discountPrice: productForm.discountPrice ? parseFloat(productForm.discountPrice) : null,
-                    isDefault: true
-                }
-            ]
+            variants: (productForm.variants || [])
+                .map((v, idx) => ({
+                    variantName: v.variantName?.trim() || "",
+                    price: v.price ? parseFloat(v.price) : null,
+                    discountPrice: v.discountPrice ? parseFloat(v.discountPrice) : null,
+                    isDefault: idx === 0
+                }))
+                .filter((v, idx) => idx === 0 || (v.variantName !== "" || v.price !== null))
         };
 
         const url = editingProductId
@@ -347,10 +486,28 @@ const AdminDashboard = () => {
 
     const handleEditProduct = (prod) => {
         setEditingProductId(prod.id);
-        const defaultVar = prod.variants?.[0] || {};
         const initialImages = (Array.isArray(prod.imageUrls) && prod.imageUrls.length > 0)
             ? prod.imageUrls
             : (prod.imageUrl ? [prod.imageUrl] : []);
+
+        const rawVariants = Array.isArray(prod.variants) && prod.variants.length > 0
+            ? prod.variants.map((v) => ({
+                variantName: v.variantName || "",
+                price: v.price != null ? v.price.toString() : "",
+                discountPrice: v.discountPrice != null ? v.discountPrice.toString() : ""
+            }))
+            : [];
+
+        const defaultNames = ["500g", "2kg", "5kg"];
+        while (rawVariants.length < 3) {
+            const existingNames = rawVariants.map((v) => (v.variantName || "").toLowerCase().replace(/\s+/g, ""));
+            const unusedDefault = defaultNames.find((d) => !existingNames.includes(d.toLowerCase().replace(/\s+/g, ""))) || defaultNames[rawVariants.length] || "";
+            rawVariants.push({
+                variantName: unusedDefault,
+                price: "",
+                discountPrice: ""
+            });
+        }
 
         setProductForm({
             name: prod.name || "",
@@ -364,11 +521,30 @@ const AdminDashboard = () => {
             videoUrl: prod.videoUrl || "",
             featured: prod.featured || false,
             active: prod.active || true,
-            variantName: defaultVar.variantName || "1 Liter",
-            price: defaultVar.price || "",
-            discountPrice: defaultVar.discountPrice || ""
+            variants: rawVariants
         });
         setShowProductModal(true);
+    };
+
+    const handleAddVariant = () => {
+        setProductForm((prev) => ({
+            ...prev,
+            variants: [
+                ...(prev.variants || []),
+                { variantName: "", price: "", discountPrice: "" }
+            ]
+        }));
+    };
+
+    const handleRemoveVariant = (index) => {
+        if ((productForm.variants || []).length <= 1) {
+            Swal.fire({ icon: "info", title: "Minimum 1 Variant Required", text: "A product must have at least one variant size/price." });
+            return;
+        }
+        setProductForm((prev) => ({
+            ...prev,
+            variants: (prev.variants || []).filter((_, i) => i !== index)
+        }));
     };
 
     const handleDeleteProduct = async (id) => {
@@ -407,9 +583,11 @@ const AdminDashboard = () => {
             videoUrl: "",
             featured: false,
             active: true,
-            variantName: "1 Liter",
-            price: "",
-            discountPrice: ""
+            variants: [
+                { variantName: "500g", price: "", discountPrice: "" },
+                { variantName: "2kg", price: "", discountPrice: "" },
+                { variantName: "5kg", price: "", discountPrice: "" }
+            ]
         });
     };
 
@@ -563,6 +741,90 @@ const AdminDashboard = () => {
         }
     };
 
+    // Order Shipping Fee Update
+    const handleOrderShippingFeeUpdate = async (orderId, feeVal) => {
+        if (feeVal === undefined || feeVal === null || feeVal === "") return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/orders/${orderId}/shipping-fee?shippingFee=${feeVal}`, {
+                method: "PUT"
+            });
+            if (res.ok) {
+                Swal.fire({ icon: "success", title: "Shipping Charges Saved 🚚", timer: 1500, showConfirmButton: false });
+                loadData();
+            } else {
+                Swal.fire("Error", "Failed to save shipping charges", "error");
+            }
+        } catch (err) {
+            Swal.fire("Error", "Failed to connect to backend", "error");
+        }
+    };
+
+    const handleOpenEditOrder = (order) => {
+        setEditOrderModal(order);
+        setEditOrderForm({
+            orderStatus: order.orderStatus || "CONFIRMED",
+            paymentMethod: order.paymentMethod || "COD",
+            paymentStatus: order.paymentStatus || "PENDING",
+            courierName: order.courierName || "",
+            trackingNumber: order.trackingNumber || "",
+            customerName: order.customerName || "",
+            customerPhone: order.customerPhone || "",
+            customerEmail: order.customerEmail || "",
+            totalAmount: order.totalAmount || "",
+            shippingFee: order.shippingFee != null ? order.shippingFee : "",
+            streetAddress: order.shippingAddress?.streetAddress || "",
+            city: order.shippingAddress?.city || "",
+            state: order.shippingAddress?.state || "",
+            pincode: order.shippingAddress?.pincode || "",
+            gstin: order.gstin || ""
+        });
+    };
+
+    const handleSaveOrderEdits = async (e) => {
+        e.preventDefault();
+        if (!editOrderModal) return;
+
+        const payload = {
+            orderStatus: editOrderForm.orderStatus,
+            paymentMethod: editOrderForm.paymentMethod,
+            paymentStatus: editOrderForm.paymentStatus,
+            courierName: editOrderForm.courierName,
+            trackingNumber: editOrderForm.trackingNumber,
+            customerName: editOrderForm.customerName,
+            customerPhone: editOrderForm.customerPhone,
+            customerEmail: editOrderForm.customerEmail,
+            totalAmount: editOrderForm.totalAmount ? parseFloat(editOrderForm.totalAmount) : null,
+            shippingFee: editOrderForm.shippingFee ? parseFloat(editOrderForm.shippingFee) : null,
+            shippingAddress: {
+                fullName: editOrderForm.customerName,
+                phone: editOrderForm.customerPhone,
+                streetAddress: editOrderForm.streetAddress,
+                city: editOrderForm.city,
+                state: editOrderForm.state,
+                pincode: editOrderForm.pincode
+            },
+            gstin: editOrderForm.gstin
+        };
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/orders/${editOrderModal.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                Swal.fire({ icon: "success", title: "Order Details Updated!", timer: 1500, showConfirmButton: false });
+                setEditOrderModal(null);
+                loadData();
+            } else {
+                Swal.fire({ icon: "error", title: "Update Failed", text: "Could not update order details." });
+            }
+        } catch (err) {
+            Swal.fire({ icon: "error", title: "Server Error", text: "Failed to connect to server." });
+        }
+    };
+
     const handleDownloadBill = async (orderNumber) => {
         try {
             const res = await fetch(`${API_BASE_URL}/orders/${orderNumber}/pdf`);
@@ -582,6 +844,35 @@ const AdminDashboard = () => {
         } catch (err) {
             console.error("Error downloading bill PDF", err);
             Swal.fire("Error", "Failed to download bill PDF", "error");
+        }
+    };
+
+    const handleDeleteOrder = async (orderId, orderNumber) => {
+        const result = await Swal.fire({
+            title: `Delete Order ${orderNumber}?`,
+            text: "Are you sure you want to delete this order? This action cannot be undone.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!"
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const res = await fetch(`${API_BASE_URL}/admin/orders/${orderId}`, {
+                    method: "DELETE"
+                });
+                if (res.ok) {
+                    Swal.fire("Deleted!", `Order ${orderNumber} has been deleted.`, "success");
+                    loadData();
+                } else {
+                    Swal.fire("Error", "Failed to delete order.", "error");
+                }
+            } catch (err) {
+                console.error("Error deleting order:", err);
+                Swal.fire("Error", "Failed to connect to server.", "error");
+            }
         }
     };
 
@@ -648,8 +939,8 @@ const AdminDashboard = () => {
     const totalRevenue = orders.reduce((acc, o) => acc + (o.totalAmount || 0), 0);
 
     return (
-        <div className="min-vh-100 bg-light">
-            {/* Top Navigation Bar with Tabs */}
+        <div className="min-vh-100 bg-light d-flex flex-column flex-md-row">
+            {/* Left Sidebar Navigation */}
             <AdminSidebar
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
@@ -660,7 +951,7 @@ const AdminDashboard = () => {
             />
 
             {/* Main Content Area */}
-            <div className="p-4">
+            <div className="flex-grow-1 p-4" style={{ minWidth: 0 }}>
 
                 {/* OVERVIEW SECTION */}
                 {activeTab === "overview" && (
@@ -790,54 +1081,525 @@ const AdminDashboard = () => {
                     </div>
                 )}
 
-                {/* CATEGORIES SECTION */}
-                {activeTab === "categories" && (
-                    <div>
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h3 className="fw-bold text-success m-0">🗂️ Category Management</h3>
-                            <button className="btn btn-success fw-bold" onClick={() => { setEditingCategoryId(null); setCategoryForm({ name: "", description: "", imageUrl: "" }); setShowCategoryModal(true); }}>
-                                + Add New Category
-                            </button>
-                        </div>
+                {/* OFFERS & DISCOUNTS SECTION */}
+                {activeTab === "offers" && (() => {
+                    const allOfferProducts = products.filter((p) => {
+                        const defaultVar = p.variants?.find((v) => v.default) || p.variants?.[0] || {};
+                        const hasDiscount = defaultVar.discountPrice && defaultVar.discountPrice < defaultVar.price;
+                        if (offerFilter === "on_offer") return hasDiscount;
+                        return true;
+                    }).filter((p) => {
+                        if (!offerSearch.trim()) return true;
+                        return p.name.toLowerCase().includes(offerSearch.toLowerCase()) ||
+                            (p.category?.name && p.category.name.toLowerCase().includes(offerSearch.toLowerCase()));
+                    });
 
-                        <div className="row g-3">
-                            {categories.map((c) => {
-                                const catImgUrl = c.imageUrl ? getImageUrl(c.imageUrl) : null;
-                                return (
-                                    <div key={c.id} className="col-md-4">
-                                        <div className="card shadow-sm border-0 h-100">
-                                            {catImgUrl && (
-                                                <div className="text-center bg-light p-2 border-bottom" style={{ height: "130px", overflow: "hidden" }}>
-                                                    <img src={catImgUrl} alt={c.name} style={{ maxHeight: "115px", maxWidth: "100%", objectFit: "contain" }} className="rounded" />
+                    const activeDealsCount = products.filter((p) => {
+                        const defaultVar = p.variants?.find((v) => v.default) || p.variants?.[0] || {};
+                        return defaultVar.discountPrice && defaultVar.discountPrice < defaultVar.price;
+                    }).length;
+
+                    const offersPerPage = 9;
+                    const totalOfferPages = Math.ceil(allOfferProducts.length / offersPerPage) || 1;
+                    const safeCurrentPage = Math.min(offerCurrentPage, totalOfferPages);
+                    const indexOfLastOffer = safeCurrentPage * offersPerPage;
+                    const indexOfFirstOffer = indexOfLastOffer - offersPerPage;
+                    const currentOfferProducts = allOfferProducts.slice(indexOfFirstOffer, indexOfLastOffer);
+
+                    return (
+                        <div>
+                            {/* Header bar with Count, Filter, Search, and View Toggle */}
+                            <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                                <div className="d-flex align-items-center gap-3">
+                                    <h3 className="fw-bold text-success m-0">🏷️ Offers & Discounts</h3>
+                                    <span className="badge bg-danger-subtle text-danger fs-6 border border-danger px-3 py-2 rounded-pill">
+                                        Active Deals: {activeDealsCount}
+                                    </span>
+                                </div>
+
+                                <div className="d-flex flex-wrap align-items-center gap-3">
+                                    {/* Search input */}
+                                    <input
+                                        type="text"
+                                        className="form-control form-control-sm"
+                                        placeholder="Search offer products..."
+                                        style={{ width: "200px" }}
+                                        value={offerSearch}
+                                        onChange={(e) => {
+                                            setOfferSearch(e.target.value);
+                                            setOfferCurrentPage(1);
+                                        }}
+                                    />
+
+                                    {/* Filter dropdown */}
+                                    <select
+                                        className="form-select form-select-sm fw-bold border-secondary"
+                                        style={{ width: "160px" }}
+                                        value={offerFilter}
+                                        onChange={(e) => {
+                                            setOfferFilter(e.target.value);
+                                            setOfferCurrentPage(1);
+                                        }}
+                                    >
+                                        <option value="on_offer">🔥 On Offer Only</option>
+                                        <option value="all">📦 All Products</option>
+                                    </select>
+
+                                    {/* View Toggle */}
+                                    <div className="btn-group shadow-sm" role="group" aria-label="Offer view toggle">
+                                        <button
+                                            type="button"
+                                            className={`btn btn-sm fw-bold px-3 py-1.5 ${offerViewMode === "card" ? "btn-success text-white" : "btn-outline-secondary bg-white text-dark"}`}
+                                            onClick={() => setOfferViewMode("card")}
+                                        >
+                                            🎴 Card View
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`btn btn-sm fw-bold px-3 py-1.5 ${offerViewMode === "list" ? "btn-success text-white" : "btn-outline-secondary bg-white text-dark"}`}
+                                            onClick={() => setOfferViewMode("list")}
+                                        >
+                                            📋 List View
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* CARD VIEW */}
+                            {offerViewMode === "card" ? (
+                                <div className="row row-cols-1 row-cols-md-3 g-4">
+                                    {currentOfferProducts.length === 0 ? (
+                                        <div className="col-12 text-center py-5 bg-white rounded shadow-sm border">
+                                            <h5 className="text-muted mb-2">No items found matching filter</h5>
+                                            <small className="text-muted">Select 'All Products' to set new discounts.</small>
+                                        </div>
+                                    ) : (
+                                        currentOfferProducts.map((p) => {
+                                            const defaultVar = p.variants?.find((v) => v.default) || p.variants?.[0] || {};
+                                            const originalPrice = defaultVar.price || 0;
+                                            const discountPrice = defaultVar.discountPrice;
+                                            const hasDiscount = discountPrice && discountPrice < originalPrice;
+                                            const discountPercent = hasDiscount
+                                                ? Math.round(((originalPrice - discountPrice) / originalPrice) * 100)
+                                                : 0;
+                                            const prodImg = p.imageUrl ? getImageUrl(p.imageUrl) : null;
+
+                                            return (
+                                                <div key={p.id} className="col">
+                                                    <div className="card shadow-sm border-0 rounded-3 h-100 position-relative">
+                                                        {hasDiscount && (
+                                                            <div className="position-absolute top-0 start-0 m-2 z-1 d-flex gap-1">
+                                                                <span className="badge bg-danger rounded-pill px-2 py-1 shadow-sm">
+                                                                    OFFER
+                                                                </span>
+                                                                <span className="badge bg-warning text-dark rounded-pill px-2 py-1 shadow-sm">
+                                                                    {discountPercent}% OFF
+                                                                </span>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="text-center bg-light p-3 border-bottom rounded-top" style={{ height: "160px", overflow: "hidden" }}>
+                                                            {prodImg ? (
+                                                                <img
+                                                                    src={prodImg}
+                                                                    alt={p.name}
+                                                                    style={{ maxHeight: "135px", maxWidth: "100%", objectFit: "contain" }}
+                                                                    className="rounded"
+                                                                />
+                                                            ) : (
+                                                                <div className="h-100 d-flex align-items-center justify-content-center text-muted fs-1">
+                                                                    📦
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="card-body d-flex flex-column justify-content-between">
+                                                            <div>
+                                                                <small className="text-muted text-uppercase font-monospace" style={{ fontSize: "11px" }}>
+                                                                    {p.category?.name || "General"}
+                                                                </small>
+                                                                <h6 className="fw-bold text-dark mt-1 mb-2 text-truncate" title={p.name}>
+                                                                    {p.name}
+                                                                </h6>
+                                                                <div className="d-flex align-items-baseline gap-2 mb-3">
+                                                                    {hasDiscount ? (
+                                                                        <>
+                                                                            <span className="fs-5 fw-bold text-success">
+                                                                                ₹{discountPrice}
+                                                                            </span>
+                                                                            <span className="text-muted text-decoration-line-through small">
+                                                                                ₹{originalPrice}
+                                                                            </span>
+                                                                        </>
+                                                                    ) : (
+                                                                        <span className="fs-5 fw-bold text-dark">
+                                                                            ₹{originalPrice}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="d-flex gap-2 pt-2 border-top">
+                                                                <button
+                                                                    className="btn btn-outline-success btn-sm w-100 fw-bold d-flex align-items-center justify-content-center gap-1"
+                                                                    onClick={() => handleQuickDiscountUpdate(p)}
+                                                                >
+                                                                    🏷️ {hasDiscount ? "Edit Discount" : "Add Discount"}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            ) : (
+                                /* LIST VIEW */
+                                <div className="table-responsive shadow-sm rounded border bg-white">
+                                    <table className="table table-hover align-middle m-0">
+                                        <thead className="table-success text-dark">
+                                            <tr>
+                                                <th style={{ width: "50px" }}>#</th>
+                                                <th style={{ width: "70px" }}>Image</th>
+                                                <th>Product Name</th>
+                                                <th>Category</th>
+                                                <th className="text-end">Original Price</th>
+                                                <th className="text-end">Offer Price</th>
+                                                <th className="text-center">Savings</th>
+                                                <th className="text-center">Status</th>
+                                                <th className="text-end" style={{ width: "200px" }}>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {currentOfferProducts.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan="9" className="text-center py-4 text-muted">
+                                                        No offer products found matching your filter.
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                currentOfferProducts.map((p, idx) => {
+                                                    const defaultVar = p.variants?.find((v) => v.default) || p.variants?.[0] || {};
+                                                    const originalPrice = defaultVar.price || 0;
+                                                    const discountPrice = defaultVar.discountPrice;
+                                                    const hasDiscount = discountPrice && discountPrice < originalPrice;
+                                                    const discountPercent = hasDiscount
+                                                        ? Math.round(((originalPrice - discountPrice) / originalPrice) * 100)
+                                                        : 0;
+                                                    const prodImg = p.imageUrl ? getImageUrl(p.imageUrl) : null;
+
+                                                    return (
+                                                        <tr key={p.id}>
+                                                            <td className="fw-bold text-muted">{indexOfFirstOffer + idx + 1}</td>
+                                                            <td>
+                                                                {prodImg ? (
+                                                                    <img
+                                                                        src={prodImg}
+                                                                        alt={p.name}
+                                                                        style={{ width: "40px", height: "40px", objectFit: "cover" }}
+                                                                        className="rounded border"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="bg-light rounded border d-flex align-items-center justify-content-center text-muted" style={{ width: "40px", height: "40px" }}>
+                                                                        📦
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                            <td className="fw-bold text-dark">{p.name}</td>
+                                                            <td className="text-muted small">{p.category?.name || "Uncategorized"}</td>
+                                                            <td className="text-end fw-semibold text-muted">₹{originalPrice}</td>
+                                                            <td className="text-end fw-bold text-success">
+                                                                {hasDiscount ? `₹${discountPrice}` : "-"}
+                                                            </td>
+                                                            <td className="text-center">
+                                                                {hasDiscount ? (
+                                                                    <span className="badge bg-warning text-dark border">
+                                                                        {discountPercent}% OFF (Save ₹{(originalPrice - discountPrice).toFixed(2)})
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="text-muted small">No Discount</span>
+                                                                )}
+                                                            </td>
+                                                            <td className="text-center">
+                                                                {hasDiscount ? (
+                                                                    <span className="badge bg-danger rounded-pill px-2 py-1">OFFER</span>
+                                                                ) : (
+                                                                    <span className="badge bg-secondary-subtle text-secondary border">Regular</span>
+                                                                )}
+                                                            </td>
+                                                            <td className="text-end">
+                                                                <button
+                                                                    className="btn btn-outline-success btn-sm fw-bold"
+                                                                    onClick={() => handleQuickDiscountUpdate(p)}
+                                                                >
+                                                                    🏷️ Set Offer
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
                                             )}
-                                            <div className="card-body d-flex flex-column justify-content-between">
-                                                <div>
-                                                    <h5 className="fw-bold text-success mb-1">{c.name}</h5>
-                                                    <p className="text-muted small mb-3">{c.description || "No description provided."}</p>
-                                                </div>
-                                                <div className="d-flex justify-content-between align-items-center pt-2 border-top">
-                                                    <label className="btn btn-sm btn-outline-secondary p-1 small text-decoration-none" style={{ fontSize: "11px" }}>
-                                                        🖼️ Image
-                                                        <input type="file" accept="image/*" className="d-none" onChange={(e) => handleQuickCategoryImageUpload(c.id, e.target.files[0])} />
-                                                    </label>
-                                                    <div className="d-flex gap-1">
-                                                        <button className="btn btn-outline-primary btn-sm" onClick={() => handleEditCategory(c)}>
-                                                            ✏️ Edit
-                                                        </button>
-                                                        <button className="btn btn-outline-danger btn-sm" onClick={() => handleDeleteCategory(c.id)}>
-                                                            🗑️ Delete
-                                                        </button>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+                            {/* PAGINATION CONTROLS */}
+                            {totalOfferPages > 1 && (
+                                <div className="d-flex flex-wrap justify-content-between align-items-center mt-4 pt-3 border-top">
+                                    <div className="text-muted small fw-medium">
+                                        Showing {indexOfFirstOffer + 1} to {Math.min(indexOfLastOffer, allOfferProducts.length)} of {allOfferProducts.length} items
+                                    </div>
+                                    <nav aria-label="Offer pagination">
+                                        <ul className="pagination pagination-sm m-0 gap-1">
+                                            <li className={`page-item ${safeCurrentPage === 1 ? "disabled" : ""}`}>
+                                                <button
+                                                    className="page-link rounded"
+                                                    onClick={() => setOfferCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                                    disabled={safeCurrentPage === 1}
+                                                >
+                                                    &laquo; Previous
+                                                </button>
+                                            </li>
+                                            {Array.from({ length: totalOfferPages }, (_, i) => i + 1).map((page) => (
+                                                <li key={page} className={`page-item ${safeCurrentPage === page ? "active" : ""}`}>
+                                                    <button
+                                                        className={`page-link rounded ${safeCurrentPage === page ? "bg-success border-success text-white" : ""}`}
+                                                        onClick={() => setOfferCurrentPage(page)}
+                                                    >
+                                                        {page}
+                                                    </button>
+                                                </li>
+                                            ))}
+                                            <li className={`page-item ${safeCurrentPage === totalOfferPages ? "disabled" : ""}`}>
+                                                <button
+                                                    className="page-link rounded"
+                                                    onClick={() => setOfferCurrentPage((prev) => Math.min(prev + 1, totalOfferPages))}
+                                                    disabled={safeCurrentPage === totalOfferPages}
+                                                >
+                                                    Next &raquo;
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            )}
+                        </div>
+                    );
+                })()}
+
+                {/* CATEGORIES SECTION */}
+                {activeTab === "categories" && (() => {
+                    const categoriesPerPage = 10;
+                    const totalCatPages = Math.ceil(categories.length / categoriesPerPage) || 1;
+                    const safeCurrentPage = Math.min(categoryCurrentPage, totalCatPages);
+                    const indexOfLastCat = safeCurrentPage * categoriesPerPage;
+                    const indexOfFirstCat = indexOfLastCat - categoriesPerPage;
+                    const currentCategories = categories.slice(indexOfFirstCat, indexOfLastCat);
+
+                    return (
+                        <div>
+                            {/* Header bar with Count, View Toggle, and Add button */}
+                            <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                                <div className="d-flex align-items-center gap-3">
+                                    <h3 className="fw-bold text-success m-0">🗂️ Category Management</h3>
+                                    <span className="badge bg-success-subtle text-success fs-6 border border-success px-3 py-2 rounded-pill">
+                                        Total Categories: {categories.length}
+                                    </span>
+                                </div>
+
+                                <div className="d-flex align-items-center gap-3">
+                                    <div className="btn-group shadow-sm" role="group" aria-label="Category view toggle">
+                                        <button
+                                            type="button"
+                                            className={`btn btn-sm fw-bold px-3 py-1.5 ${categoryViewMode === "list" ? "btn-success text-white" : "btn-outline-secondary bg-white text-dark"}`}
+                                            onClick={() => setCategoryViewMode("list")}
+                                        >
+                                            📋 List View
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`btn btn-sm fw-bold px-3 py-1.5 ${categoryViewMode === "card" ? "btn-success text-white" : "btn-outline-secondary bg-white text-dark"}`}
+                                            onClick={() => setCategoryViewMode("card")}
+                                        >
+                                            🎴 Card View
+                                        </button>
+                                    </div>
+
+                                    <button
+                                        className="btn btn-success fw-bold d-flex align-items-center gap-1 shadow-sm px-3 py-1.5"
+                                        onClick={() => {
+                                            setEditingCategoryId(null);
+                                            setCategoryForm({ name: "", description: "", imageUrl: "" });
+                                            setShowCategoryModal(true);
+                                        }}
+                                    >
+                                        + Add New Category
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* LIST VIEW (Default) */}
+                            {categoryViewMode === "list" ? (
+                                <div className="table-responsive shadow-sm rounded border bg-white">
+                                    <table className="table table-hover align-middle m-0">
+                                        <thead className="table-success text-dark">
+                                            <tr>
+                                                <th style={{ width: "50px" }}>#</th>
+                                                <th style={{ width: "80px" }}>Image</th>
+                                                <th>Category Name</th>
+                                                <th>Description</th>
+                                                <th className="text-center" style={{ width: "130px" }}>Products</th>
+                                                <th className="text-end" style={{ width: "240px" }}>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {currentCategories.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan="6" className="text-center py-4 text-muted">
+                                                        No categories found.
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                currentCategories.map((c, idx) => {
+                                                    const catImgUrl = c.imageUrl ? getImageUrl(c.imageUrl) : null;
+                                                    const productCount = products.filter(
+                                                        (p) => p.categoryId === c.id || (p.category && p.category.id === c.id)
+                                                    ).length;
+                                                    return (
+                                                        <tr key={c.id}>
+                                                            <td className="fw-bold text-muted">{indexOfFirstCat + idx + 1}</td>
+                                                            <td>
+                                                                {catImgUrl ? (
+                                                                    <img
+                                                                        src={catImgUrl}
+                                                                        alt={c.name}
+                                                                        style={{ width: "45px", height: "45px", objectFit: "cover" }}
+                                                                        className="rounded border"
+                                                                    />
+                                                                ) : (
+                                                                    <div
+                                                                        className="bg-light rounded border d-flex align-items-center justify-content-center text-muted"
+                                                                        style={{ width: "45px", height: "45px", fontSize: "18px" }}
+                                                                    >
+                                                                        📁
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                            <td className="fw-bold text-success">{c.name}</td>
+                                                            <td className="text-muted small" style={{ maxWidth: "300px" }}>
+                                                                {c.description || "No description provided."}
+                                                            </td>
+                                                            <td className="text-center">
+                                                                <span className="badge bg-secondary-subtle text-dark border px-2 py-1">
+                                                                    📦 {productCount} items
+                                                                </span>
+                                                            </td>
+                                                            <td className="text-end">
+                                                                <div className="d-flex justify-content-end align-items-center gap-2">
+                                                                    <label className="btn btn-sm btn-outline-secondary p-1 small mb-0" style={{ fontSize: "11px" }} title="Upload Image">
+                                                                        🖼️ Image
+                                                                        <input type="file" accept="image/*" className="d-none" onChange={(e) => handleQuickCategoryImageUpload(c.id, e.target.files[0])} />
+                                                                    </label>
+                                                                    <button className="btn btn-outline-primary btn-sm" onClick={() => handleEditCategory(c)}>
+                                                                        ✏️ Edit
+                                                                    </button>
+                                                                    <button className="btn btn-outline-danger btn-sm" onClick={() => handleDeleteCategory(c.id)}>
+                                                                        🗑️ Delete
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                /* CARD VIEW */
+                                <div className="row g-3">
+                                    {currentCategories.map((c) => {
+                                        const catImgUrl = c.imageUrl ? getImageUrl(c.imageUrl) : null;
+                                        return (
+                                            <div key={c.id} className="col-md-4">
+                                                <div className="card shadow-sm border-0 h-100">
+                                                    {catImgUrl && (
+                                                        <div className="text-center bg-light p-2 border-bottom" style={{ height: "130px", overflow: "hidden" }}>
+                                                            <img src={catImgUrl} alt={c.name} style={{ maxHeight: "115px", maxWidth: "100%", objectFit: "contain" }} className="rounded" />
+                                                        </div>
+                                                    )}
+                                                    <div className="card-body d-flex flex-column justify-content-between">
+                                                        <div>
+                                                            <h5 className="fw-bold text-success mb-1">{c.name}</h5>
+                                                            <p className="text-muted small mb-3">{c.description || "No description provided."}</p>
+                                                        </div>
+                                                        <div className="d-flex justify-content-between align-items-center pt-2 border-top">
+                                                            <label className="btn btn-sm btn-outline-secondary p-1 small text-decoration-none" style={{ fontSize: "11px" }}>
+                                                                🖼️ Image
+                                                                <input type="file" accept="image/*" className="d-none" onChange={(e) => handleQuickCategoryImageUpload(c.id, e.target.files[0])} />
+                                                            </label>
+                                                            <div className="d-flex gap-1">
+                                                                <button className="btn btn-outline-primary btn-sm" onClick={() => handleEditCategory(c)}>
+                                                                    ✏️ Edit
+                                                                </button>
+                                                                <button className="btn btn-outline-danger btn-sm" onClick={() => handleDeleteCategory(c.id)}>
+                                                                    🗑️ Delete
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {/* PAGINATION CONTROLS */}
+                            {totalCatPages > 1 && (
+                                <div className="d-flex flex-wrap justify-content-between align-items-center mt-4 pt-3 border-top">
+                                    <div className="text-muted small fw-medium">
+                                        Showing {indexOfFirstCat + 1} to {Math.min(indexOfLastCat, categories.length)} of {categories.length} categories
                                     </div>
-                                );
-                            })}
+                                    <nav aria-label="Category pagination">
+                                        <ul className="pagination pagination-sm m-0 gap-1">
+                                            <li className={`page-item ${safeCurrentPage === 1 ? "disabled" : ""}`}>
+                                                <button
+                                                    className="page-link rounded"
+                                                    onClick={() => setCategoryCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                                    disabled={safeCurrentPage === 1}
+                                                >
+                                                    &laquo; Previous
+                                                </button>
+                                            </li>
+                                            {Array.from({ length: totalCatPages }, (_, i) => i + 1).map((page) => (
+                                                <li key={page} className={`page-item ${safeCurrentPage === page ? "active" : ""}`}>
+                                                    <button
+                                                        className={`page-link rounded ${safeCurrentPage === page ? "bg-success border-success text-white" : ""}`}
+                                                        onClick={() => setCategoryCurrentPage(page)}
+                                                    >
+                                                        {page}
+                                                    </button>
+                                                </li>
+                                            ))}
+                                            <li className={`page-item ${safeCurrentPage === totalCatPages ? "disabled" : ""}`}>
+                                                <button
+                                                    className="page-link rounded"
+                                                    onClick={() => setCategoryCurrentPage((prev) => Math.min(prev + 1, totalCatPages))}
+                                                    disabled={safeCurrentPage === totalCatPages}
+                                                >
+                                                    Next &raquo;
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            )}
                         </div>
-                    </div>
-                )}
+                    );
+                })()}
 
                 {/* SITE ASSETS MANAGER SECTION */}
                 {activeTab === "assets" && (
@@ -855,38 +1617,40 @@ const AdminDashboard = () => {
                 {activeTab === "orders" && (
                     <div>
                         <h3 className="fw-bold text-success mb-3">🚚 Customer Order Processing</h3>
-                        <div className="table-responsive shadow-sm rounded">
-                            <table className="table table-hover align-middle bg-white m-0">
-                                <thead className="table-success">
+                        <div className="table-responsive shadow-sm rounded" style={{ overflowX: "auto" }}>
+                            <table className="table table-hover align-middle bg-white m-0" style={{ minWidth: "1280px" }}>
+                                <thead className="table-success text-nowrap">
                                     <tr>
                                         <th>Order #</th>
                                         <th>Customer</th>
                                         <th>Items</th>
                                         <th>Logistics & Tracking</th>
+                                        <th>Shipping Fee</th>
                                         <th>Total Amount</th>
                                         <th>Payment</th>
                                         <th>Status</th>
                                         <th>Update Status</th>
-                                        <th className="text-center">Full Details</th>
+                                        <th>Full Details</th>
+                                        <th className="text-center">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {orders.map((o) => (
                                         <tr key={o.id}>
-                                            <td className="fw-bold text-success">{o.orderNumber}</td>
-                                            <td>
+                                            <td className="fw-bold text-success text-nowrap">{o.orderNumber}</td>
+                                            <td style={{ minWidth: "220px" }}>
                                                 <div className="fw-bold">{o.customerName}</div>
                                                 <div className="small text-muted">{o.customerPhone} | {o.customerEmail}</div>
                                                 <div className="small text-secondary">{o.shippingAddress?.streetAddress}, {o.shippingAddress?.city}</div>
                                             </td>
-                                            <td>
+                                            <td style={{ minWidth: "220px" }}>
                                                 {o.items?.map((item, idx) => (
                                                     <div key={idx} className="small">
                                                         • {item.productName} ({item.variantName}) x{item.quantity} = ₹{item.totalPrice}
                                                     </div>
                                                 ))}
                                             </td>
-                                            <td>
+                                            <td style={{ minWidth: "170px" }}>
                                                 {o.courierName ? (
                                                     <div>
                                                         <span className="badge bg-success-subtle text-success border border-success mb-1">
@@ -902,17 +1666,36 @@ const AdminDashboard = () => {
                                                     <span className="text-muted small">Not assigned</span>
                                                 )}
                                             </td>
-                                            <td className="fw-bold fs-6">₹{o.totalAmount}</td>
-                                            <td><span className="badge bg-info text-dark">{o.paymentMethod}</span></td>
-                                            <td>
-                                                <span className={`badge ${o.orderStatus === 'DELIVERED' ? 'bg-success' : 'bg-primary'}`}>
-                                                    {o.orderStatus}
-                                                </span>
+                                            <td className="text-nowrap" style={{ minWidth: "155px" }}>
+                                                <div className="d-flex align-items-center gap-1">
+                                                    <span className="small text-muted fw-bold">₹</span>
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        className="form-control form-control-sm font-monospace fw-bold text-success border-success"
+                                                        style={{ width: "80px" }}
+                                                        value={shippingFeeInputs[o.id] !== undefined ? shippingFeeInputs[o.id] : (o.shippingFee != null ? o.shippingFee : "")}
+                                                        onChange={(e) => setShippingFeeInputs({ ...shippingFeeInputs, [o.id]: e.target.value })}
+                                                        placeholder="0.00"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm btn-outline-success py-1 px-2 fw-bold shadow-sm"
+                                                        onClick={() => handleOrderShippingFeeUpdate(o.id, shippingFeeInputs[o.id] !== undefined ? shippingFeeInputs[o.id] : o.shippingFee)}
+                                                        title="Save Shipping Charge"
+                                                    >
+                                                        💾
+                                                    </button>
+                                                </div>
                                             </td>
-                                            <td>
+                                            <td className="fw-bold fs-6 text-nowrap">₹{o.totalAmount}</td>
+                                            <td className="text-nowrap">{getPaymentBadge(o.paymentMethod)}</td>
+                                            <td className="text-nowrap">{getOrderStatusBadge(o.orderStatus)}</td>
+                                            <td className="text-nowrap">
                                                 <select
-                                                    className="form-select form-select-sm"
+                                                    className="form-select form-select-sm fw-bold border-success"
                                                     value={o.orderStatus}
+                                                    style={{ minWidth: "135px" }}
                                                     onChange={(e) => handleOrderStatusChange(o.id, e.target.value)}
                                                 >
                                                     <option value="CONFIRMED">CONFIRMED</option>
@@ -922,22 +1705,45 @@ const AdminDashboard = () => {
                                                     <option value="CANCELLED">CANCELLED</option>
                                                 </select>
                                             </td>
-                                            <td className="text-center">
-                                                <div className="d-flex justify-content-center gap-1">
+                                            <td className="text-nowrap">
+                                                <div className="d-flex gap-1">
                                                     <button
                                                         type="button"
-                                                        className="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-sm"
+                                                        className="btn btn-sm btn-outline-success rounded-pill px-2.5 fw-bold d-inline-flex align-items-center gap-1 shadow-sm"
                                                         onClick={() => setSelectedOrderModal(o)}
+                                                        title="View Details"
                                                     >
                                                         👁️ View Details
                                                     </button>
                                                     <button
                                                         type="button"
-                                                        className="btn btn-sm btn-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-sm"
+                                                        className="btn btn-sm btn-success rounded-pill px-2.5 fw-bold d-inline-flex align-items-center gap-1 shadow-sm"
                                                         onClick={() => handleDownloadBill(o.orderNumber)}
                                                         title="Download Invoice PDF"
                                                     >
                                                         📄 Bill PDF
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td className="text-center text-nowrap">
+                                                <div className="d-flex justify-content-center gap-1.5">
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm btn-outline-warning text-dark rounded-circle p-0 d-inline-flex align-items-center justify-content-center shadow-sm"
+                                                        style={{ width: "34px", height: "34px" }}
+                                                        onClick={() => handleOpenEditOrder(o)}
+                                                        title="Edit Order Details"
+                                                    >
+                                                        ✏️
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm btn-outline-danger rounded-circle p-0 d-inline-flex align-items-center justify-content-center shadow-sm"
+                                                        style={{ width: "34px", height: "34px" }}
+                                                        onClick={() => handleDeleteOrder(o.id, o.orderNumber)}
+                                                        title="Delete Order"
+                                                    >
+                                                        🗑️
                                                     </button>
                                                 </div>
                                             </td>
@@ -975,14 +1781,12 @@ const AdminDashboard = () => {
                                     <div className="card border-0 shadow-sm mb-4 bg-white rounded-3">
                                         <div className="card-body d-flex flex-wrap align-items-center justify-content-between gap-3 py-3">
                                             <div>
-                                                <span className="text-muted small d-block">Order Status</span>
-                                                <span className={`badge fs-6 ${selectedOrderModal.orderStatus === 'DELIVERED' ? 'bg-success' : 'bg-primary'}`}>
-                                                    {selectedOrderModal.orderStatus}
-                                                </span>
+                                                <span className="text-muted small d-block mb-1">Order Status</span>
+                                                {getOrderStatusBadge(selectedOrderModal.orderStatus)}
                                             </div>
                                             <div>
-                                                <span className="text-muted small d-block">Payment Method</span>
-                                                <span className="badge bg-info text-dark fs-6">{selectedOrderModal.paymentMethod}</span>
+                                                <span className="text-muted small d-block mb-1">Payment Method</span>
+                                                {getPaymentBadge(selectedOrderModal.paymentMethod)}
                                             </div>
                                             <div>
                                                 <span className="text-muted small d-block">Total Amount</span>
@@ -1370,7 +2174,15 @@ const AdminDashboard = () => {
                                                     </tbody>
                                                     <tfoot className="table-light">
                                                         <tr>
-                                                            <td colSpan="4" className="text-end fw-bold">Grand Total:</td>
+                                                            <td colSpan="4" className="text-end text-muted small">Net Items Subtotal:</td>
+                                                            <td className="text-end font-monospace fw-bold">₹{selectedOrderModal.subtotal || selectedOrderModal.items?.reduce((sum, item) => sum + (parseFloat(item.totalPrice) || 0), 0) || 0}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colSpan="4" className="text-end text-muted small">Shipping Charges:</td>
+                                                            <td className="text-end font-monospace fw-bold text-success">+ ₹{selectedOrderModal.shippingFee || 0}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colSpan="4" className="text-end fw-bold text-dark fs-6">Grand Total:</td>
                                                             <td className="text-end fw-bold text-success fs-5">₹{selectedOrderModal.totalAmount}</td>
                                                         </tr>
                                                     </tfoot>
@@ -1391,6 +2203,231 @@ const AdminDashboard = () => {
                                         Close Details
                                     </button>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* MODAL: EDIT ANY ORDER DETAILS */}
+                {editOrderModal && (
+                    <div className="modal d-block bg-dark bg-opacity-50" tabIndex="-1" style={{ zIndex: 1060 }}>
+                        <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                            <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                                <div className="modal-header bg-warning text-dark py-3 px-4">
+                                    <h5 className="modal-title fw-bold m-0 d-flex align-items-center gap-2">
+                                        ✏️ Edit Order: <span className="font-monospace">{editOrderModal.orderNumber}</span>
+                                    </h5>
+                                    <button
+                                        type="button"
+                                        className="btn-close"
+                                        onClick={() => setEditOrderModal(null)}
+                                    ></button>
+                                </div>
+                                <form onSubmit={handleSaveOrderEdits}>
+                                    <div className="modal-body p-4 bg-light">
+                                        {/* SECTION 1: STATUS & PAYMENT */}
+                                        <div className="card border-0 shadow-sm mb-3 rounded-3">
+                                            <div className="card-header bg-white fw-bold text-success border-0 pt-3">
+                                                Status & Payment Configuration
+                                            </div>
+                                            <div className="card-body pt-0">
+                                                <div className="row g-3">
+                                                    <div className="col-md-6">
+                                                        <label className="form-label small fw-bold text-muted mb-1">Order Status</label>
+                                                        <select
+                                                            className="form-select form-select-sm fw-bold"
+                                                            value={editOrderForm.orderStatus}
+                                                            onChange={(e) => setEditOrderForm({ ...editOrderForm, orderStatus: e.target.value })}
+                                                        >
+                                                            <option value="PENDING">PENDING</option>
+                                                            <option value="CONFIRMED">CONFIRMED</option>
+                                                            <option value="PROCESSING">PROCESSING</option>
+                                                            <option value="SHIPPED">SHIPPED</option>
+                                                            <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY</option>
+                                                            <option value="DELIVERED">DELIVERED</option>
+                                                            <option value="CANCELLED">CANCELLED</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="col-md-6">
+                                                        <label className="form-label small fw-bold text-muted mb-1">Payment Method</label>
+                                                        <select
+                                                            className="form-select form-select-sm fw-bold"
+                                                            value={editOrderForm.paymentMethod}
+                                                            onChange={(e) => setEditOrderForm({ ...editOrderForm, paymentMethod: e.target.value })}
+                                                        >
+                                                            <option value="ONLINE">ONLINE</option>
+                                                            <option value="COD">COD</option>
+                                                            <option value="UPI">UPI</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <label className="form-label small fw-bold text-muted mb-1">Payment Status</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control form-control-sm"
+                                                            value={editOrderForm.paymentStatus}
+                                                            onChange={(e) => setEditOrderForm({ ...editOrderForm, paymentStatus: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <label className="form-label small fw-bold text-muted mb-1">Shipping Fee (₹)</label>
+                                                        <input
+                                                            type="number"
+                                                            step="0.01"
+                                                            className="form-control form-control-sm fw-bold text-success"
+                                                            value={editOrderForm.shippingFee}
+                                                            onChange={(e) => setEditOrderForm({ ...editOrderForm, shippingFee: e.target.value })}
+                                                            placeholder="0.00"
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <label className="form-label small fw-bold text-muted mb-1">Total Amount (₹)</label>
+                                                        <input
+                                                            type="number"
+                                                            step="0.01"
+                                                            className="form-control form-control-sm fw-bold text-success"
+                                                            value={editOrderForm.totalAmount}
+                                                            onChange={(e) => setEditOrderForm({ ...editOrderForm, totalAmount: e.target.value })}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* SECTION 2: LOGISTICS & TRACKING */}
+                                        <div className="card border-0 shadow-sm mb-3 rounded-3">
+                                            <div className="card-header bg-white fw-bold text-success border-0 pt-3">
+                                                Logistics & Courier Tracking
+                                            </div>
+                                            <div className="card-body pt-0">
+                                                <div className="row g-3">
+                                                    <div className="col-md-6">
+                                                        <label className="form-label small fw-bold text-muted mb-1">Courier Partner Name</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control form-control-sm"
+                                                            placeholder="e.g. Amazon Shipping, BlueDart, DTDC"
+                                                            value={editOrderForm.courierName}
+                                                            onChange={(e) => setEditOrderForm({ ...editOrderForm, courierName: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-6">
+                                                        <label className="form-label small fw-bold text-muted mb-1">AWB / Tracking Number</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control form-control-sm font-monospace"
+                                                            placeholder="e.g. 371366760861"
+                                                            value={editOrderForm.trackingNumber}
+                                                            onChange={(e) => setEditOrderForm({ ...editOrderForm, trackingNumber: e.target.value })}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* SECTION 3: CUSTOMER & ADDRESS */}
+                                        <div className="card border-0 shadow-sm mb-3 rounded-3">
+                                            <div className="card-header bg-white fw-bold text-success border-0 pt-3">
+                                                Customer Contact & Shipping Address
+                                            </div>
+                                            <div className="card-body pt-0">
+                                                <div className="row g-3 mb-2">
+                                                    <div className="col-md-4">
+                                                        <label className="form-label small fw-bold text-muted mb-1">Customer Name</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control form-control-sm"
+                                                            value={editOrderForm.customerName}
+                                                            onChange={(e) => setEditOrderForm({ ...editOrderForm, customerName: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <label className="form-label small fw-bold text-muted mb-1">Phone Number</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control form-control-sm"
+                                                            value={editOrderForm.customerPhone}
+                                                            onChange={(e) => setEditOrderForm({ ...editOrderForm, customerPhone: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <label className="form-label small fw-bold text-muted mb-1">Email</label>
+                                                        <input
+                                                            type="email"
+                                                            className="form-control form-control-sm"
+                                                            value={editOrderForm.customerEmail}
+                                                            onChange={(e) => setEditOrderForm({ ...editOrderForm, customerEmail: e.target.value })}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="row g-3">
+                                                    <div className="col-md-12">
+                                                        <label className="form-label small fw-bold text-muted mb-1">Street Address</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control form-control-sm"
+                                                            value={editOrderForm.streetAddress}
+                                                            onChange={(e) => setEditOrderForm({ ...editOrderForm, streetAddress: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <label className="form-label small fw-bold text-muted mb-1">City</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control form-control-sm"
+                                                            value={editOrderForm.city}
+                                                            onChange={(e) => setEditOrderForm({ ...editOrderForm, city: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <label className="form-label small fw-bold text-muted mb-1">State</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control form-control-sm"
+                                                            value={editOrderForm.state}
+                                                            onChange={(e) => setEditOrderForm({ ...editOrderForm, state: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <label className="form-label small fw-bold text-muted mb-1">Pincode</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control form-control-sm"
+                                                            value={editOrderForm.pincode}
+                                                            onChange={(e) => setEditOrderForm({ ...editOrderForm, pincode: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div className="col-md-12">
+                                                        <label className="form-label small fw-bold text-muted mb-1">GSTIN (Optional)</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control form-control-sm font-monospace"
+                                                            value={editOrderForm.gstin}
+                                                            onChange={(e) => setEditOrderForm({ ...editOrderForm, gstin: e.target.value })}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="modal-footer bg-white border-0 py-3 px-4">
+                                        <button
+                                            type="button"
+                                            className="btn btn-sm btn-light border rounded-pill px-4"
+                                            onClick={() => setEditOrderModal(null)}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="btn btn-sm btn-success fw-bold rounded-pill px-4 shadow-sm"
+                                        >
+                                            💾 Save Order Changes
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -1424,17 +2461,93 @@ const AdminDashboard = () => {
                                                 ))}
                                             </select>
                                         </div>
-                                        <div className="col-md-6">
-                                            <label className="form-label fw-bold">Variant Size / Volume</label>
-                                            <input type="text" className="form-control" placeholder="e.g. 500 ml, 1 Liter, 1 kg" value={productForm.variantName} onChange={(e) => setProductForm({ ...productForm, variantName: e.target.value })} required />
-                                        </div>
-                                        <div className="col-md-3">
-                                            <label className="form-label fw-bold">Price (₹)</label>
-                                            <input type="number" step="0.01" className="form-control" value={productForm.price} onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} required />
-                                        </div>
-                                        <div className="col-md-3">
-                                            <label className="form-label fw-bold">Discount Price (₹)</label>
-                                            <input type="number" step="0.01" className="form-control" value={productForm.discountPrice} onChange={(e) => setProductForm({ ...productForm, discountPrice: e.target.value })} />
+                                        {/* Dynamic Multi-Variant / Size, Price & Discount Bars */}
+                                        <div className="col-12">
+                                            <div className="card border-0 bg-light shadow-sm p-3 rounded-3">
+                                                <div className="d-flex align-items-center justify-content-between mb-3">
+                                                    <h6 className="fw-bold text-success m-0 d-flex align-items-center gap-2">
+                                                        🏷️ Product Variants & Pricing
+                                                    </h6>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm btn-success rounded-pill px-3 fw-bold shadow-sm d-flex align-items-center gap-1"
+                                                        onClick={handleAddVariant}
+                                                    >
+                                                        ➕ Add Variant
+                                                    </button>
+                                                </div>
+                                                {(productForm.variants || []).map((variant, index) => (
+                                                    <div key={index} className="row g-2 align-items-center mb-2 pb-2 border-bottom border-secondary border-opacity-25">
+                                                        <div className="col-md-2 fw-bold small text-dark d-flex align-items-center gap-1">
+                                                            <span>Variant #{index + 1}</span>
+                                                            {index === 0 ? (
+                                                                <span className="badge bg-success-subtle text-success">Main</span>
+                                                            ) : (
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-sm btn-outline-danger border-0 p-0 px-1 rounded-circle"
+                                                                    title="Remove Variant"
+                                                                    onClick={() => handleRemoveVariant(index)}
+                                                                >
+                                                                    🗑️
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        <div className="col-md-4">
+                                                            <label className="form-label small fw-bold text-secondary mb-1">
+                                                                Weight {index === 0 && <span className="text-danger">*</span>}
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                className="form-control form-control-sm"
+                                                                placeholder={index === 0 ? "e.g. 500g" : index === 1 ? "e.g. 2kg" : "e.g. 5kg"}
+                                                                value={variant.variantName}
+                                                                onChange={(e) => {
+                                                                    const newVariants = [...(productForm.variants || [])];
+                                                                    newVariants[index] = { ...newVariants[index], variantName: e.target.value };
+                                                                    setProductForm({ ...productForm, variants: newVariants });
+                                                                }}
+                                                                required={index === 0}
+                                                            />
+                                                        </div>
+                                                        <div className="col-md-3">
+                                                            <label className="form-label small fw-bold text-secondary mb-1">
+                                                                Price (₹) {index === 0 && <span className="text-danger">*</span>}
+                                                            </label>
+                                                            <input
+                                                                type="number"
+                                                                step="0.01"
+                                                                className="form-control form-control-sm fw-bold"
+                                                                placeholder="e.g. 250"
+                                                                value={variant.price}
+                                                                onChange={(e) => {
+                                                                    const newVariants = [...(productForm.variants || [])];
+                                                                    newVariants[index] = { ...newVariants[index], price: e.target.value };
+                                                                    setProductForm({ ...productForm, variants: newVariants });
+                                                                }}
+                                                                required={index === 0}
+                                                            />
+                                                        </div>
+                                                        <div className="col-md-3">
+                                                            <label className="form-label small fw-bold text-secondary mb-1">
+                                                                Discount Price (₹)
+                                                            </label>
+                                                            <input
+                                                                type="number"
+                                                                step="0.01"
+                                                                className="form-control form-control-sm fw-bold text-success"
+                                                                placeholder="e.g. 220"
+                                                                value={variant.discountPrice}
+                                                                onChange={(e) => {
+                                                                    const newVariants = [...(productForm.variants || [])];
+                                                                    newVariants[index] = { ...newVariants[index], discountPrice: e.target.value };
+                                                                    setProductForm({ ...productForm, variants: newVariants });
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                         {/* Multi-Image Upload (<= 1MB per image) */}
                                         <div className="col-12">

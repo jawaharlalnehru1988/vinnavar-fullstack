@@ -40,7 +40,8 @@ const ProductDetails = () => {
                         );
                         if (found) {
                             setProduct(found);
-                            const defVar = found.variants?.find((v) => v.default) || found.variants?.[0] || null;
+                            const default5kg = found.variants?.find((v) => v.variantName?.toLowerCase().replace(/\s+/g, "") === "5kg");
+                            const defVar = default5kg || found.variants?.find((v) => v.default || v.isDefault) || found.variants?.[0] || null;
                             setSelectedVariant(defVar);
                         }
                     }

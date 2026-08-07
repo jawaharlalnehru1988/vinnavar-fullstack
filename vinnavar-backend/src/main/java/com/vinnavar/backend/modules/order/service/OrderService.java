@@ -140,4 +140,53 @@ public class OrderService {
         }
         return orderRepository.save(order);
     }
+
+    @Transactional
+    public Order updateOrderDetails(Long orderId, com.vinnavar.backend.modules.order.dto.UpdateOrderDto dto) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        if (dto.getOrderStatus() != null) order.setOrderStatus(dto.getOrderStatus());
+        if (dto.getPaymentMethod() != null) order.setPaymentMethod(dto.getPaymentMethod());
+        if (dto.getPaymentStatus() != null) order.setPaymentStatus(dto.getPaymentStatus());
+        if (dto.getCourierName() != null) order.setCourierName(dto.getCourierName());
+        if (dto.getTrackingNumber() != null) order.setTrackingNumber(dto.getTrackingNumber());
+        if (dto.getCustomerName() != null) order.setCustomerName(dto.getCustomerName());
+        if (dto.getCustomerPhone() != null) order.setCustomerPhone(dto.getCustomerPhone());
+        if (dto.getCustomerEmail() != null) order.setCustomerEmail(dto.getCustomerEmail());
+        if (dto.getTotalAmount() != null) order.setTotalAmount(dto.getTotalAmount());
+        if (dto.getShippingFee() != null) {
+            BigDecimal oldFee = order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO;
+            BigDecimal newFee = dto.getShippingFee();
+            order.setShippingFee(newFee);
+            if (dto.getTotalAmount() == null && order.getTotalAmount() != null) {
+                BigDecimal diff = newFee.subtract(oldFee);
+                order.setTotalAmount(order.getTotalAmount().add(diff));
+            }
+        }
+        if (dto.getShippingAddress() != null) order.setShippingAddress(dto.getShippingAddress());
+        if (dto.getGstin() != null) order.setGstin(dto.getGstin());
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public Order updateOrderShippingFee(Long orderId, BigDecimal shippingFee) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        BigDecimal oldFee = order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO;
+        BigDecimal newFee = shippingFee != null ? shippingFee : BigDecimal.ZERO;
+        order.setShippingFee(newFee);
+
+        if (order.getTotalAmount() != null) {
+            BigDecimal diff = newFee.subtract(oldFee);
+            order.setTotalAmount(order.getTotalAmount().add(diff));
+        }
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public void deleteOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        orderRepository.delete(order);
+    }
 }

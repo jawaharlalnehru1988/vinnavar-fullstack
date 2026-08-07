@@ -145,25 +145,36 @@ public class ProductService {
         product.setActive(dto.isActive());
 
         if (dto.getVariants() != null && !dto.getVariants().isEmpty()) {
-            if (product.getVariants() != null && !product.getVariants().isEmpty()) {
-                // Update existing variant in-place to avoid deleting referenced FK records
-                ProductVariant existingVar = product.getVariants().get(0);
-                ProductRequestDto.VariantDto newVarDto = dto.getVariants().get(0);
-                if (newVarDto.getVariantName() != null) existingVar.setVariantName(newVarDto.getVariantName());
-                if (newVarDto.getPrice() != null) existingVar.setPrice(newVarDto.getPrice());
-                if (newVarDto.getDiscountPrice() != null) existingVar.setDiscountPrice(newVarDto.getDiscountPrice());
-            } else {
-                for (ProductRequestDto.VariantDto vDto : dto.getVariants()) {
-                    ProductVariant variant = ProductVariant.builder()
+            List<ProductRequestDto.VariantDto> incomingVariants = dto.getVariants();
+            List<ProductVariant> currentVariants = product.getVariants();
+            if (currentVariants == null) {
+                currentVariants = new ArrayList<>();
+                product.setVariants(currentVariants);
+            }
+
+            for (int i = 0; i < incomingVariants.size(); i++) {
+                ProductRequestDto.VariantDto vDto = incomingVariants.get(i);
+                if (i < currentVariants.size()) {
+                    ProductVariant existingVar = currentVariants.get(i);
+                    if (vDto.getVariantName() != null) existingVar.setVariantName(vDto.getVariantName());
+                    if (vDto.getPrice() != null) existingVar.setPrice(vDto.getPrice());
+                    existingVar.setDiscountPrice(vDto.getDiscountPrice());
+                    existingVar.setDefault(i == 0);
+                } else {
+                    ProductVariant newVar = ProductVariant.builder()
                             .product(product)
-                            .variantName(vDto.getVariantName())
-                            .price(vDto.getPrice())
+                            .variantName(vDto.getVariantName() != null ? vDto.getVariantName() : "Variant " + (i + 1))
+                            .price(vDto.getPrice() != null ? vDto.getPrice() : BigDecimal.ZERO)
                             .discountPrice(vDto.getDiscountPrice())
                             .stockQuantity(vDto.getStockQuantity() != null ? vDto.getStockQuantity() : 100)
-                            .isDefault(vDto.isDefault())
+                            .isDefault(i == 0)
                             .build();
-                    product.getVariants().add(variant);
+                    currentVariants.add(newVar);
                 }
+            }
+
+            while (currentVariants.size() > incomingVariants.size()) {
+                currentVariants.remove(currentVariants.size() - 1);
             }
         }
 
@@ -301,64 +312,153 @@ public class ProductService {
 
         upsertRiceProducts(rice);
 
-        if (productRepository.count() > 2) {
-            return;
+        if (productRepository.count() <= 2) {
+            // Sample Product 1: Groundnut Oil
+            Product groundnutOil = Product.builder()
+                    .name("Wood Pressed Groundnut Oil")
+                    .slug("wood-pressed-groundnut-oil")
+                    .shortDescription("Cold pressed using traditional wooden chekku. 100% pure and unrefined.")
+                    .fullDescription("Extracted from premium quality organic groundnuts using traditional cold pressed wood mill. Retains all natural nutrients and aroma.")
+                    .benefits("Contains natural antioxidants, cholesterol free, rich in Vitamin E.")
+                    .imageUrl("/media/products/product-img-1.jpg")
+                    .category(oils)
+                    .featured(true)
+                    .build();
+
+            ProductVariant gOil500ml = ProductVariant.builder()
+                    .product(groundnutOil)
+                    .variantName("500g")
+                    .price(new BigDecimal("180.00"))
+                    .discountPrice(new BigDecimal("165.00"))
+                    .isDefault(true)
+                    .build();
+
+            ProductVariant gOil2kg = ProductVariant.builder()
+                    .product(groundnutOil)
+                    .variantName("2kg")
+                    .price(new BigDecimal("720.00"))
+                    .discountPrice(new BigDecimal("660.00"))
+                    .isDefault(false)
+                    .build();
+
+            ProductVariant gOil5kg = ProductVariant.builder()
+                    .product(groundnutOil)
+                    .variantName("5kg")
+                    .price(new BigDecimal("1800.00"))
+                    .discountPrice(new BigDecimal("1650.00"))
+                    .isDefault(false)
+                    .build();
+
+            groundnutOil.getVariants().add(gOil500ml);
+            groundnutOil.getVariants().add(gOil2kg);
+            groundnutOil.getVariants().add(gOil5kg);
+
+            // Sample Product 2: Sesame Oil
+            Product sesameOil = Product.builder()
+                    .name("Wood Pressed Sesame / Gingelly Oil")
+                    .slug("wood-pressed-sesame-oil")
+                    .shortDescription("Traditional Marachekku Sesame Oil with pure Palm Jaggery blend.")
+                    .fullDescription("Extracted from black sesame seeds using wooden mill with natural palm jaggery process.")
+                    .benefits("Good for heart health, rich in calcium and omega fatty acids.")
+                    .imageUrl("/media/products/product-img-2.jpg")
+                    .category(oils)
+                    .featured(true)
+                    .build();
+
+            ProductVariant sOil500g = ProductVariant.builder()
+                    .product(sesameOil)
+                    .variantName("500g")
+                    .price(new BigDecimal("210.00"))
+                    .discountPrice(new BigDecimal("195.00"))
+                    .isDefault(true)
+                    .build();
+
+            ProductVariant sOil2kg = ProductVariant.builder()
+                    .product(sesameOil)
+                    .variantName("2kg")
+                    .price(new BigDecimal("840.00"))
+                    .discountPrice(new BigDecimal("780.00"))
+                    .isDefault(false)
+                    .build();
+
+            ProductVariant sOil5kg = ProductVariant.builder()
+                    .product(sesameOil)
+                    .variantName("5kg")
+                    .price(new BigDecimal("2100.00"))
+                    .discountPrice(new BigDecimal("1950.00"))
+                    .isDefault(false)
+                    .build();
+
+            sesameOil.getVariants().add(sOil500g);
+            sesameOil.getVariants().add(sOil2kg);
+            sesameOil.getVariants().add(sOil5kg);
+
+            productRepository.saveAll(List.of(groundnutOil, sesameOil));
         }
 
-        // Sample Product 1: Groundnut Oil
-        Product groundnutOil = Product.builder()
-                .name("Wood Pressed Groundnut Oil")
-                .slug("wood-pressed-groundnut-oil")
-                .shortDescription("Cold pressed using traditional wooden chekku. 100% pure and unrefined.")
-                .fullDescription("Extracted from premium quality organic groundnuts using traditional cold pressed wood mill. Retains all natural nutrients and aroma.")
-                .benefits("Contains natural antioxidants, cholesterol free, rich in Vitamin E.")
-                .imageUrl("/media/products/product-img-1.jpg")
-                .category(oils)
-                .featured(true)
-                .build();
+        standardizeAllProductVariants();
+    }
 
-        ProductVariant gOil500ml = ProductVariant.builder()
-                .product(groundnutOil)
-                .variantName("500 ml")
-                .price(new BigDecimal("180.00"))
-                .discountPrice(new BigDecimal("165.00"))
-                .isDefault(false)
-                .build();
+    @Transactional
+    public void standardizeAllProductVariants() {
+        List<Product> products = productRepository.findAll();
+        for (Product product : products) {
+            List<ProductVariant> variants = product.getVariants();
+            if (variants == null) {
+                variants = new ArrayList<>();
+                product.setVariants(variants);
+            }
 
-        ProductVariant gOil1L = ProductVariant.builder()
-                .product(groundnutOil)
-                .variantName("1 Liter")
-                .price(new BigDecimal("350.00"))
-                .discountPrice(new BigDecimal("320.00"))
-                .isDefault(true)
-                .build();
+            BigDecimal base500gPrice = new BigDecimal("100.00");
+            BigDecimal base500gDiscount = new BigDecimal("90.00");
 
-        groundnutOil.getVariants().add(gOil500ml);
-        groundnutOil.getVariants().add(gOil1L);
+            if (!variants.isEmpty()) {
+                ProductVariant mainVar = variants.get(0);
+                BigDecimal p = mainVar.getPrice() != null ? mainVar.getPrice() : new BigDecimal("100.00");
+                BigDecimal dp = mainVar.getDiscountPrice() != null ? mainVar.getDiscountPrice() : p;
+                String vName = mainVar.getVariantName() != null ? mainVar.getVariantName().toLowerCase() : "";
 
-        // Sample Product 2: Sesame Oil
-        Product sesameOil = Product.builder()
-                .name("Wood Pressed Sesame / Gingelly Oil")
-                .slug("wood-pressed-sesame-oil")
-                .shortDescription("Traditional Marachekku Sesame Oil with pure Palm Jaggery blend.")
-                .fullDescription("Extracted from black sesame seeds using wooden mill with natural palm jaggery process.")
-                .benefits("Good for heart health, rich in calcium and omega fatty acids.")
-                .imageUrl("/media/products/product-img-2.jpg")
-                .category(oils)
-                .featured(true)
-                .build();
+                if (vName.contains("1") && (vName.contains("kg") || vName.contains("l") || vName.contains("liter"))) {
+                    base500gPrice = p.multiply(new BigDecimal("0.5")).setScale(0, java.math.RoundingMode.HALF_UP);
+                    base500gDiscount = dp.multiply(new BigDecimal("0.5")).setScale(0, java.math.RoundingMode.HALF_UP);
+                } else {
+                    base500gPrice = p;
+                    base500gDiscount = dp;
+                }
+            }
 
-        ProductVariant sOil1L = ProductVariant.builder()
-                .product(sesameOil)
-                .variantName("1 Liter")
-                .price(new BigDecimal("420.00"))
-                .discountPrice(new BigDecimal("390.00"))
-                .isDefault(true)
-                .build();
+            BigDecimal price2kg = base500gPrice.multiply(new BigDecimal("4")).setScale(0, java.math.RoundingMode.HALF_UP);
+            BigDecimal discount2kg = base500gDiscount.multiply(new BigDecimal("4")).setScale(0, java.math.RoundingMode.HALF_UP);
 
-        sesameOil.getVariants().add(sOil1L);
+            BigDecimal price5kg = base500gPrice.multiply(new BigDecimal("10")).setScale(0, java.math.RoundingMode.HALF_UP);
+            BigDecimal discount5kg = base500gDiscount.multiply(new BigDecimal("10")).setScale(0, java.math.RoundingMode.HALF_UP);
 
-        productRepository.saveAll(List.of(groundnutOil, sesameOil));
+            String[] names = {"500g", "2kg", "5kg"};
+            BigDecimal[] prices = {base500gPrice, price2kg, price5kg};
+            BigDecimal[] discounts = {base500gDiscount, discount2kg, discount5kg};
+
+            for (int i = 0; i < 3; i++) {
+                if (i < variants.size()) {
+                    ProductVariant existing = variants.get(i);
+                    existing.setVariantName(names[i]);
+                    existing.setPrice(prices[i]);
+                    existing.setDiscountPrice(discounts[i]);
+                    existing.setDefault(i == 0);
+                } else {
+                    ProductVariant newVar = ProductVariant.builder()
+                            .product(product)
+                            .variantName(names[i])
+                            .price(prices[i])
+                            .discountPrice(discounts[i])
+                            .stockQuantity(100)
+                            .isDefault(i == 0)
+                            .build();
+                    variants.add(newVar);
+                }
+            }
+
+            productRepository.save(product);
+        }
     }
 
     @Transactional

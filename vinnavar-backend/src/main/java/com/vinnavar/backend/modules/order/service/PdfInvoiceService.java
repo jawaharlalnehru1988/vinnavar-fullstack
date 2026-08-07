@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 
 @Service
@@ -159,28 +160,35 @@ public class PdfInvoiceService {
 
             // Price Breakdown Summary Box
             PdfPTable summaryTable = new PdfPTable(2);
-            summaryTable.setWidthPercentage(45);
+            summaryTable.setWidthPercentage(50);
             summaryTable.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            summaryTable.setWidths(new float[]{2.5f, 1.8f});
+            summaryTable.setWidths(new float[]{3f, 2f});
 
-            // Subtotal / Base Price
-            summaryTable.addCell(createSummaryLabelCell("Base Price / Subtotal:", fontRegular));
-            summaryTable.addCell(createSummaryValueCell("₹" + order.getSubtotal().toString(), fontRegular));
+            BigDecimal subtotal = order.getSubtotal() != null ? order.getSubtotal() : BigDecimal.ZERO;
+            BigDecimal shippingFee = order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO;
+            BigDecimal gstTax = order.getGstTax() != null ? order.getGstTax() : BigDecimal.ZERO;
+            BigDecimal grandTotal = order.getTotalAmount() != null ? order.getTotalAmount() : subtotal.add(shippingFee).add(gstTax);
 
-            // Weight Based Shipping
-            summaryTable.addCell(createSummaryLabelCell("Weight Based Shipping:", fontRegular));
-            summaryTable.addCell(createSummaryValueCell("₹" + order.getShippingFee().toString(), fontRegular));
+            // Net Items Subtotal
+            summaryTable.addCell(createSummaryLabelCell("Net Items Subtotal:", fontRegular));
+            summaryTable.addCell(createSummaryValueCell("₹" + String.format("%.2f", subtotal), fontRegular));
 
-            // GST Tax
-            summaryTable.addCell(createSummaryLabelCell("GST Tax (5%):", fontRegular));
-            summaryTable.addCell(createSummaryValueCell("₹" + order.getGstTax().toString(), fontRegular));
+            // Shipping Charges
+            summaryTable.addCell(createSummaryLabelCell("Shipping Charges:", fontRegular));
+            summaryTable.addCell(createSummaryValueCell("₹" + String.format("%.2f", shippingFee), fontRegular));
+
+            // GST Tax (optional)
+            if (gstTax.compareTo(BigDecimal.ZERO) > 0) {
+                summaryTable.addCell(createSummaryLabelCell("GST Tax (5%):", fontRegular));
+                summaryTable.addCell(createSummaryValueCell("₹" + String.format("%.2f", gstTax), fontRegular));
+            }
 
             // Grand Total
             PdfPCell totalLblCell = createSummaryLabelCell("Grand Total:", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, new Color(4, 120, 87)));
             totalLblCell.setBackgroundColor(new Color(236, 253, 245));
             summaryTable.addCell(totalLblCell);
 
-            PdfPCell totalValCell = createSummaryValueCell("₹" + order.getTotalAmount().toString(), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, new Color(4, 120, 87)));
+            PdfPCell totalValCell = createSummaryValueCell("₹" + String.format("%.2f", grandTotal), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, new Color(4, 120, 87)));
             totalValCell.setBackgroundColor(new Color(236, 253, 245));
             summaryTable.addCell(totalValCell);
 

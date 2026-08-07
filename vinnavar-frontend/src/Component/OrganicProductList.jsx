@@ -17,10 +17,11 @@ const OrganicProductList = ({ categoryId, limit = 8 }) => {
                 const data = await fetchProducts(params);
                 setProducts(data);
 
-                // Default variants setup
+                // Default variants setup (5kg default)
                 const defaults = {};
                 data.forEach((prod) => {
-                    const defaultVar = prod.variants?.find((v) => v.default) || prod.variants?.[0];
+                    const default5kg = prod.variants?.find((v) => v.variantName?.toLowerCase().replace(/\s+/g, "") === "5kg");
+                    const defaultVar = default5kg || prod.variants?.find((v) => v.default || v.isDefault) || prod.variants?.[0];
                     if (defaultVar) {
                         defaults[prod.id] = defaultVar;
                     }
@@ -189,23 +190,31 @@ const OrganicProductList = ({ categoryId, limit = 8 }) => {
                                         </p>
                                     </div>
 
-                                    {/* Variant selector */}
+                                    {/* Variant selector (Weight Badges) */}
                                     {product.variants && product.variants.length > 0 && (
-                                        <div className="space-y-1">
+                                        <div className="space-y-1 mt-2">
                                             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                                Size / Volume:
+                                                WEIGHT:
                                             </label>
-                                            <select
-                                                className="w-full py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-emerald-500"
-                                                value={currentVariant?.id || ""}
-                                                onChange={(e) => handleVariantChange(product.id, e.target.value)}
-                                            >
-                                                {product.variants.map((v) => (
-                                                    <option key={v.id} value={v.id}>
-                                                        {v.variantName} - ₹{v.discountPrice || v.price}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            <div className="flex flex-wrap gap-1.5 pt-0.5">
+                                                {product.variants.map((v) => {
+                                                    const isSelected = currentVariant?.id === v.id;
+                                                    return (
+                                                        <button
+                                                            key={v.id}
+                                                            type="button"
+                                                            onClick={() => handleVariantChange(product.id, v.id)}
+                                                            className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all border d-inline-flex align-items-center gap-1 cursor-pointer ${
+                                                                isSelected
+                                                                    ? "bg-emerald-700 text-white border-emerald-700 shadow-sm scale-105"
+                                                                    : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-emerald-50 hover:border-emerald-300"
+                                                            }`}
+                                                        >
+                                                            <span>{v.variantName}</span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
