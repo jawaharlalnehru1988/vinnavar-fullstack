@@ -76,7 +76,23 @@ public class Order {
     @Getter(AccessLevel.NONE)
     private BigDecimal gstTax;
 
+    @Getter(AccessLevel.NONE)
     private Double totalWeightKg;
+
+    public Double getTotalWeightKg() {
+        if (totalWeightKg != null && totalWeightKg > 0) return totalWeightKg;
+        if (items != null && !items.isEmpty()) {
+            double calcWeight = items.stream()
+                    .mapToDouble(item -> {
+                        String name = item.getVariantName() != null ? item.getVariantName() : item.getProductName();
+                        int qty = item.getQuantity() != null ? item.getQuantity() : 1;
+                        return qty * com.vinnavar.backend.modules.cart.service.CartService.parseWeightInKg(name);
+                    })
+                    .sum();
+            if (calcWeight > 0) return calcWeight;
+        }
+        return 0.5;
+    }
 
     public BigDecimal getSubtotal() {
         if (subtotal != null) return subtotal;

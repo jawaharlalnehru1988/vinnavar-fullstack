@@ -21,9 +21,15 @@ public class CartService {
 
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
+    private final com.vinnavar.backend.modules.shipping.service.ShippingService shippingService;
 
     @Transactional(readOnly = true)
     public CartResponseDto getCart(String cartId) {
+        return getCart(cartId, "Tamil Nadu", "RAZORPAY");
+    }
+
+    @Transactional(readOnly = true)
+    public CartResponseDto getCart(String cartId, String state, String paymentMethod) {
         List<CartItem> items = cartItemRepository.findByCartId(cartId);
 
         BigDecimal subtotal = items.stream()
@@ -46,10 +52,9 @@ public class CartService {
         BigDecimal totalAmount = BigDecimal.ZERO;
 
         if (totalCount > 0) {
-            // Weight based shipping: ₹48 per 5 kg block (min ₹48)
-            int blocksOf5Kg = (int) Math.ceil(totalWeightKg <= 0 ? 1 : totalWeightKg / 5.0);
-            if (blocksOf5Kg < 1) blocksOf5Kg = 1;
-            shippingFee = BigDecimal.valueOf(blocksOf5Kg * 48L).setScale(2, java.math.RoundingMode.HALF_UP);
+            com.vinnavar.backend.modules.shipping.service.ShippingService.ShippingCalculationResult calcResult =
+                    shippingService.calculateShippingFee(totalWeightKg, state, paymentMethod, subtotal);
+            shippingFee = calcResult.getTotalShippingFee();
 
             // 5% GST Tax on Subtotal
             gstTax = subtotal.multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);

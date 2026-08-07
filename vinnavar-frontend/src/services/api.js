@@ -341,4 +341,76 @@ export const deleteAdminTestimonial = async (id) => {
     return true;
 };
 
+// Reviews & Ratings API Services
+export const fetchProductReviews = async (productId) => {
+    const res = await fetch(`${API_BASE_URL}/reviews/product/${productId}`);
+    if (!res.ok) return { totalReviews: 0, averageRating: 5.0, ratingBreakdown: {}, reviews: [] };
+    return res.json();
+};
+
+export const fetchUserReviews = async (phone) => {
+    const res = await fetch(`${API_BASE_URL}/reviews/user?phone=${encodeURIComponent(phone)}`);
+    if (!res.ok) return [];
+    return res.json();
+};
+
+export const submitProductReview = async (reviewData) => {
+    const res = await fetch(`${API_BASE_URL}/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reviewData)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to submit review.");
+    return data;
+};
+
+export const uploadReviewImage = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(`${API_BASE_URL}/reviews/upload-image`, {
+        method: "POST",
+        body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to upload image.");
+    return data;
+};
+
+export const fetchAdminReviews = async () => {
+    const res = await fetch(`${API_BASE_URL}/admin/reviews`);
+    if (!res.ok) return [];
+    return res.json();
+};
+
+export const updateAdminReviewStatus = async (id, status) => {
+    const res = await fetch(`${API_BASE_URL}/admin/reviews/${id}/status?status=${encodeURIComponent(status)}`, {
+        method: "PUT"
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to update review status.");
+    return data;
+};
+
+export const deleteAdminReview = async (id) => {
+    const res = await fetch(`${API_BASE_URL}/admin/reviews/${id}`, {
+        method: "DELETE"
+    });
+    if (!res.ok) throw new Error("Failed to delete review.");
+    return true;
+};
+
+export const uploadComplaintImage = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(`${API_BASE_URL}/customer/complaints/upload-image`, {
+        method: "POST",
+        body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to upload complaint image.");
+    return data;
+};
+
+
 

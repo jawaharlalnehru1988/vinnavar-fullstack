@@ -48,7 +48,7 @@ const ShopCheckOut = () => {
         pincode: ""
     });
 
-    const fetchCart = async () => {
+    const fetchCart = async (stateVal = shippingForm.state, pMethod = paymentMethod) => {
         const cartId = localStorage.getItem("vinnavar_cart_id");
         if (!cartId) {
             setCart({ items: [], subtotal: 0 });
@@ -56,7 +56,7 @@ const ShopCheckOut = () => {
             return;
         }
         try {
-            const res = await fetch(`${API_BASE_URL}/cart/${cartId}`);
+            const res = await fetch(`${API_BASE_URL}/cart/${cartId}?state=${encodeURIComponent(stateVal || "Tamil Nadu")}&paymentMethod=${pMethod}`);
             if (res.ok) {
                 const data = await res.json();
                 setCart(data);
@@ -69,8 +69,10 @@ const ShopCheckOut = () => {
     };
 
     useEffect(() => {
-        fetchCart();
+        fetchCart(shippingForm.state, paymentMethod);
+    }, [shippingForm.state, paymentMethod]);
 
+    useEffect(() => {
         const savedCustomer = localStorage.getItem("vinnavar_customer");
         if (savedCustomer) {
             try {
@@ -627,7 +629,7 @@ const ShopCheckOut = () => {
                                                 <div className="flex justify-between items-center text-slate-700">
                                                     <span className="font-bold text-slate-900">Shipment</span>
                                                     <span className="text-right">
-                                                        <span className="text-[10px] text-slate-500 block">Weight Based:</span>
+                                                        <span className="text-[10px] text-slate-500 block">Weight Based ({(cart.totalWeightKg || 0).toFixed(1)} kg):</span>
                                                         <span className="font-black text-emerald-700">₹{(cart.shippingFee ?? 48).toFixed(2)}</span>
                                                     </span>
                                                 </div>

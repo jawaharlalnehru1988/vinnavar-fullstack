@@ -8,6 +8,8 @@ import AdminBlog from "./AdminBlog";
 import AdminCustomers from "./AdminCustomers";
 import AdminTestimonials from "./AdminTestimonials";
 import AdminComplaints from "./AdminComplaints";
+import AdminShippingRates from "./AdminShippingRates";
+import AdminReviews from "./AdminReviews";
 
 const getOrderStatusBadge = (status) => {
     switch (status) {
@@ -998,6 +1000,9 @@ const AdminDashboard = () => {
 
                 {/* BLOGS SECTION */}
                 {activeTab === "blogs" && <AdminBlog />}
+
+                {/* SHIPPING RATES SECTION */}
+                {activeTab === "shipping" && <AdminShippingRates />}
 
                 {/* CUSTOMERS SECTION */}
                 {activeTab === "customers" && <AdminCustomers />}
@@ -2432,6 +2437,9 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 )}
+
+                {/* CUSTOMER REVIEWS & PHOTOS SECTION */}
+                {activeTab === "reviews" && <AdminReviews />}
             </div>
 
             {/* MODAL: ADD / EDIT PRODUCT */}

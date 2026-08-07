@@ -54,6 +54,8 @@ const AdminSidebar = ({
         { id: "products", label: "📦 Products", desc: "Manage catalog" },
         { id: "offers", label: "🏷️ Offers & Discounts", desc: "Deals & special prices" },
         { id: "orders", label: "🚚 Customer Orders", desc: "View & track orders" },
+        { id: "shipping", label: "🚛 Shipping Rates", desc: "Weight & zone rates" },
+        { id: "reviews", label: "⭐ Customer Reviews", desc: "Ratings & photo reviews" },
         { id: "customers", label: "👥 Customers", desc: "Customer profiles" },
         { id: "testimonials", label: "💬 Testimonials", desc: "Customer reviews" },
         { id: "assets", label: "🖼️ Site Assets", desc: "Banners & sliders", isDropdown: true },
@@ -61,8 +63,8 @@ const AdminSidebar = ({
         { id: "blogs", label: "📝 Blog Articles", desc: "Posts & recipes" }
     ];
 
-    const primaryItems = navItems.slice(0, 7);
-    const secondaryItems = navItems.slice(7);
+    const primaryItems = navItems.slice(0, 9);
+    const secondaryItems = navItems.slice(9);
 
     const allGroupsList = ["ALL", ...assetGroups.filter((g) => g !== "ALL")];
 

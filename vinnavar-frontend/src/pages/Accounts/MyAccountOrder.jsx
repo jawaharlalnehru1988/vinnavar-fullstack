@@ -1,6 +1,7 @@
-import { API_BASE_URL } from "../../services/api";
+import { API_BASE_URL, submitProductReview, uploadReviewImage } from "../../services/api";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { MagnifyingGlass } from "react-loader-spinner";
 import ScrollToTop from "../ScrollToTop";
@@ -9,6 +10,95 @@ const MyAccountOrder = () => {
   const [loaderStatus, setLoaderStatus] = useState(true);
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  // Review Modal States
+  const [reviewOrderModal, setReviewOrderModal] = useState(null);
+  const [reviewForm, setReviewForm] = useState({
+    rating: 5,
+    title: "",
+    comment: "",
+    imageFile: null,
+    imagePreview: "",
+    submitting: false
+  });
+
+  const openReviewModalForOrder = (order) => {
+    const firstItem = order.items && order.items.length > 0 ? order.items[0] : null;
+    setReviewOrderModal({
+      orderNumber: order.orderNumber,
+      productId: firstItem ? firstItem.productId : 1,
+      productName: firstItem ? firstItem.productName : "Organic Product",
+      items: order.items || []
+    });
+    setReviewForm({
+      rating: 5,
+      title: "",
+      comment: "",
+      imageFile: null,
+      imagePreview: "",
+      submitting: false
+    });
+  };
+
+  const handleImageFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        Swal.fire("File Too Large", "Review image must be less than 5 MB", "warning");
+        return;
+      }
+      setReviewForm(prev => ({
+        ...prev,
+        imageFile: file,
+        imagePreview: URL.createObjectURL(file)
+      }));
+    }
+  };
+
+  const handleReviewFormSubmit = async (e) => {
+    e.preventDefault();
+    if (!reviewForm.comment.trim()) {
+      Swal.fire("Missing Field", "Please write a brief review comment", "warning");
+      return;
+    }
+
+    setReviewForm(prev => ({ ...prev, submitting: true }));
+    try {
+      let uploadedImageUrl = null;
+      if (reviewForm.imageFile) {
+        const uploadRes = await uploadReviewImage(reviewForm.imageFile);
+        uploadedImageUrl = uploadRes.imageUrl;
+      }
+
+      await submitProductReview({
+        productId: reviewOrderModal.productId,
+        productName: reviewOrderModal.productName,
+        customerName: currentUser?.fullName || currentUser?.name || "Verified Customer",
+        customerPhone: currentUser?.mobileNumber || "",
+        customerEmail: currentUser?.email || "",
+        orderNumber: reviewOrderModal.orderNumber,
+        rating: reviewForm.rating,
+        reviewTitle: reviewForm.title,
+        reviewComment: reviewForm.comment,
+        imageUrl: uploadedImageUrl,
+        verifiedPurchase: true,
+        status: "APPROVED"
+      });
+
+      Swal.fire({
+        title: "Review Submitted! ⭐",
+        text: "Thank you for sharing your feedback and product photo!",
+        icon: "success",
+        confirmButtonColor: "#047857"
+      });
+      setReviewOrderModal(null);
+    } catch (err) {
+      console.error("Failed to submit review:", err);
+      Swal.fire("Submission Failed", err.message || "Could not submit review", "error");
+    } finally {
+      setReviewForm(prev => ({ ...prev, submitting: false }));
+    }
+  };
 
   const currentUser = (() => {
     try {
@@ -116,6 +206,11 @@ const MyAccountOrder = () => {
                     </Link>
                   </li>
                   <li className="nav-item">
+                    <Link className="nav-link" to="/MyAccountReviews">
+                      <i className="fas fa-star me-2" /> My Reviews
+                    </Link>
+                  </li>
+                  <li className="nav-item">
                     <Link className="nav-link" to="/MyAccountSetting">
                       <i className="fas fa-cog me-2" /> Settings
                     </Link>
@@ -131,8 +226,8 @@ const MyAccountOrder = () => {
                     </Link>
                   </li>
                   <li className="nav-item">
-                    <Link className="nav-link" to="/MyAcconutNotification">
-                      <i className="fas fa-bell me-2" /> Notification
+                    <Link className="nav-link" to="/MyAccountComplaint">
+                      <i className="fas fa-headset me-2" /> Help &amp; Complaints
                     </Link>
                   </li>
                 </ul>
@@ -217,6 +312,15 @@ const MyAccountOrder = () => {
                                   >
                                     📄 Download Bill (PDF)
                                   </button>
+                                  {(o.orderStatus === "DELIVERED" || o.orderStatus === "SHIPPED") && (
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm btn-warning text-dark font-bold rounded-pill px-3 d-inline-flex align-items-center gap-1 shadow-xs"
+                                      onClick={() => openReviewModalForOrder(o)}
+                                    >
+                                      ⭐ Review
+                                    </button>
+                                  )}
                                   <button
                                     type="button"
                                     className="btn btn-sm btn-light border rounded-circle text-muted"
@@ -341,6 +445,109 @@ const MyAccountOrder = () => {
         </div>
       </section>
 
+      {/* Review Submission Modal */}
+      {reviewOrderModal && (
+        <div className="modal d-block bg-dark bg-opacity-60" tabIndex="-1" style={{ zIndex: 1055 }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
+              <div className="modal-header bg-success text-white py-3 px-4">
+                <h5 className="modal-title font-bold text-white mb-0">
+                  ⭐ Write a Product Review & Upload Photo
+                </h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setReviewOrderModal(null)}></button>
+              </div>
+
+              <form onSubmit={handleReviewFormSubmit}>
+                <div className="modal-body p-4">
+                  <div className="p-3 bg-light rounded-3 mb-3 border">
+                    <div className="small text-muted fw-bold">Reviewing Product for Order: #{reviewOrderModal.orderNumber}</div>
+                    <h6 className="fw-bold text-success mb-0">{reviewOrderModal.productName}</h6>
+                  </div>
+
+                  {/* Rating Selector */}
+                  <div className="mb-4 text-center">
+                    <label className="form-label fw-bold text-dark d-block mb-2">Overall Rating:</label>
+                    <div className="d-inline-flex gap-2 p-2 bg-light rounded-pill border">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          className="btn btn-link p-1 text-decoration-none fs-3 transition-transform"
+                          onClick={() => setReviewForm(prev => ({ ...prev, rating: star }))}
+                        >
+                          <i className={`fas fa-star ${star <= reviewForm.rating ? "text-warning" : "text-secondary opacity-25"}`} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Title */}
+                  <div className="mb-3">
+                    <label className="form-label fw-bold text-dark mb-1">Review Headline / Summary:</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g., Authentic quality and very fresh!"
+                      value={reviewForm.title}
+                      onChange={(e) => setReviewForm(prev => ({ ...prev, title: e.target.value }))}
+                    />
+                  </div>
+
+                  {/* Comment */}
+                  <div className="mb-3">
+                    <label className="form-label fw-bold text-dark mb-1">Detailed Feedback:</label>
+                    <textarea
+                      rows={3}
+                      className="form-control"
+                      placeholder="Share your experience regarding texture, taste, packaging, delivery speed, etc."
+                      value={reviewForm.comment}
+                      onChange={(e) => setReviewForm(prev => ({ ...prev, comment: e.target.value }))}
+                      required
+                    />
+                  </div>
+
+                  {/* Photo Upload */}
+                  <div className="mb-3">
+                    <label className="form-label fw-bold text-dark mb-1">📸 Upload Product Photo (Optional):</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="form-control"
+                      onChange={handleImageFileChange}
+                    />
+                    <div className="form-text small text-muted">Upload a photo of the received package/product (Max 5 MB).</div>
+
+                    {reviewForm.imagePreview && (
+                      <div className="mt-3 text-center p-2 border rounded bg-light">
+                        <img
+                          src={reviewForm.imagePreview}
+                          alt="Review Preview"
+                          className="img-thumbnail rounded"
+                          style={{ maxHeight: "150px", objectFit: "contain" }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="modal-footer bg-light py-3 px-4 justify-content-between">
+                  <button type="button" className="btn btn-outline-secondary rounded-pill px-4" onClick={() => setReviewOrderModal(null)}>
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-success fw-bold rounded-pill px-5 shadow-sm d-flex align-items-center gap-2"
+                    disabled={reviewForm.submitting}
+                  >
+                    {reviewForm.submitting ? "Submitting..." : "Submit Review ⭐"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Offcanvas Drawer for Mobile */}
       <div
         className="offcanvas offcanvas-start"
@@ -374,6 +581,12 @@ const MyAccountOrder = () => {
                   Your Orders
                 </a>
               </li>
+              <li className="nav-item">
+                <a className="nav-link" href="/MyAccountReviews">
+                  <i className="fas fa-star me-2" />
+                  My Reviews
+                </a>
+              </li>
               {/* nav item */}
               <li className="nav-item">
                 <a className="nav-link " href="/MyAccountSetting">
@@ -388,34 +601,7 @@ const MyAccountOrder = () => {
                   Address
                 </a>
               </li>
-              {/* nav item */}
-              <li className="nav-item">
-                <a className="nav-link" href="/MyAcconutPaymentMethod">
-                  <i className="fas fa-credit-card me-2" />
-                  Payment Method
-                </a>
-              </li>
-              {/* nav item */}
-              <li className="nav-item">
-                <a className="nav-link" href="/MyAcconutNotification">
-                  <i className="fas fa-bell me-2" />
-                  Notification
-                </a>
-              </li>
             </ul>
-            <hr className="my-6" />
-            <div>
-              {/* nav  */}
-              <ul className="nav flex-column nav-pills nav-pills-dark">
-                {/* nav item */}
-                <li className="nav-item">
-                  <a className="nav-link " href="/Grocery-react/">
-                    <i className="fas fa-sign-out-alt me-2" />
-                    Log out
-                  </a>
-                </li>
-              </ul>
-            </div>
           </div>
         </div>
     </div>

@@ -52,6 +52,10 @@ const ShopCart = () => {
   useEffect(() => {
     fetchCart();
     fetchSettings();
+    window.addEventListener("cartUpdated", fetchCart);
+    return () => {
+      window.removeEventListener("cartUpdated", fetchCart);
+    };
   }, []);
 
   const openPolicy = (type) => {
@@ -353,7 +357,7 @@ const ShopCart = () => {
                     <div className="flex justify-between items-center text-slate-700">
                       <span className="font-bold text-slate-900">Shipment</span>
                       <span className="text-right">
-                        <span className="text-[11px] text-slate-500 block">Weight Based Shipping:</span>
+                        <span className="text-[11px] text-slate-500 block">Weight Based Shipping ({(cart?.totalWeightKg || 0).toFixed(1)} kg):</span>
                         <span className="font-black text-emerald-700">₹{(cart?.shippingFee ?? 48).toFixed(2)}</span>
                       </span>
                     </div>

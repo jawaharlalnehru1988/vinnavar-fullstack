@@ -35,6 +35,8 @@ public class CustomerComplaint {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
+    private String imageUrl;
+
     @Column(nullable = false)
     @Builder.Default
     private String status = "PENDING"; // "PENDING", "IN_REVIEW", "RESOLVED", "REJECTED"

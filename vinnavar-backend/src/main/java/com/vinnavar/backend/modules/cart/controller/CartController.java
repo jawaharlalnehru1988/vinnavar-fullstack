@@ -15,8 +15,11 @@ public class CartController {
     private final CartService cartService;
 
     @GetMapping("/{cartId}")
-    public ResponseEntity<CartResponseDto> getCart(@PathVariable String cartId) {
-        return ResponseEntity.ok(cartService.getCart(cartId));
+    public ResponseEntity<CartResponseDto> getCart(
+            @PathVariable String cartId,
+            @RequestParam(required = false, defaultValue = "Tamil Nadu") String state,
+            @RequestParam(required = false, defaultValue = "RAZORPAY") String paymentMethod) {
+        return ResponseEntity.ok(cartService.getCart(cartId, state, paymentMethod));
     }
 
     @PostMapping("/items")

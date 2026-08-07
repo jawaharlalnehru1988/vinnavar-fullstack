@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import { API_BASE_URL } from "../../services/api";
+import { API_BASE_URL, getImageUrl } from "../../services/api";
 
 const AdminComplaints = () => {
   const [complaints, setComplaints] = useState([]);
@@ -9,6 +9,7 @@ const AdminComplaints = () => {
   const [status, setStatus] = useState("RESOLVED");
   const [adminNotes, setAdminNotes] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const fetchComplaints = async () => {
     setLoading(true);
@@ -127,8 +128,19 @@ const AdminComplaints = () => {
                       <small className="text-muted d-block mt-1">{c.productName || "General Package"}</small>
                     </td>
                     <td>
-                      <span className="fw-bold text-danger small">{c.issueType.replace("_", " ")}</span>
+                      <span className="fw-bold text-danger small">{c.issueType ? c.issueType.replace("_", " ") : "SUPPORT"}</span>
                       <p className="text-muted small m-0 text-truncate max-w-xs">{c.description}</p>
+                      {c.imageUrl && (
+                        <div className="mt-1">
+                          <img
+                            src={getImageUrl(c.imageUrl)}
+                            alt="Complaint Attachment"
+                            className="img-thumbnail rounded shadow-xs cursor-pointer"
+                            style={{ height: "45px", width: "55px", objectFit: "cover" }}
+                            onClick={() => setPreviewImage(getImageUrl(c.imageUrl))}
+                          />
+                        </div>
+                      )}
                     </td>
                     <td>{getStatusBadge(c.status)}</td>
                     <td>
@@ -161,7 +173,20 @@ const AdminComplaints = () => {
                   <div className="bg-light p-3 rounded-3 mb-3 small">
                     <strong className="text-dark d-block">Customer: {selectedComplaint.customerName} ({selectedComplaint.customerMobile})</strong>
                     <span className="text-muted">Order #{selectedComplaint.orderNumber} • {selectedComplaint.issueType}</span>
-                    <p className="mt-2 mb-0 text-dark italic">"{selectedComplaint.description}"</p>
+                    <p className="mt-2 mb-2 text-dark italic">"{selectedComplaint.description}"</p>
+
+                    {selectedComplaint.imageUrl && (
+                      <div className="mt-2 pt-2 border-top">
+                        <span className="small text-muted fw-bold d-block mb-1">📸 Customer Product Photo:</span>
+                        <img
+                          src={getImageUrl(selectedComplaint.imageUrl)}
+                          alt="Customer Complaint Photo"
+                          className="img-thumbnail rounded-3 shadow-xs cursor-pointer"
+                          style={{ maxHeight: "140px", maxWidth: "180px", objectFit: "cover" }}
+                          onClick={() => setPreviewImage(getImageUrl(selectedComplaint.imageUrl))}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="mb-3">
@@ -195,6 +220,22 @@ const AdminComplaints = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FULL IMAGE PREVIEW MODAL */}
+      {previewImage && (
+        <div className="modal d-block bg-dark bg-opacity-75" tabIndex="-1" onClick={() => setPreviewImage(null)}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content bg-black border-0 rounded-4 overflow-hidden">
+              <div className="modal-header border-0 pb-0">
+                <button type="button" className="btn-close btn-close-white" onClick={() => setPreviewImage(null)}></button>
+              </div>
+              <div className="modal-body text-center p-3">
+                <img src={previewImage} alt="Complaint Attachment Full View" className="img-fluid rounded-3" style={{ maxHeight: "80vh" }} />
+              </div>
             </div>
           </div>
         </div>

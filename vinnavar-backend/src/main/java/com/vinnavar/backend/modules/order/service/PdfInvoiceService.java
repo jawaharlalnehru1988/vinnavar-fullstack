@@ -8,6 +8,9 @@ import com.vinnavar.backend.modules.order.entity.OrderItem;
 import com.vinnavar.backend.modules.order.entity.ShippingAddress;
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
+import com.vinnavar.backend.modules.shipping.service.ShippingService;
+
 import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,7 +18,10 @@ import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 
 @Service
+@RequiredArgsConstructor
 public class PdfInvoiceService {
+
+    private final ShippingService shippingService;
 
     public ByteArrayInputStream generateOrderInvoicePdf(Order order) {
         Document document = new Document(PageSize.A4, 36, 36, 36, 36);
@@ -165,9 +171,20 @@ public class PdfInvoiceService {
             summaryTable.setWidths(new float[]{3f, 2f});
 
             BigDecimal subtotal = order.getSubtotal() != null ? order.getSubtotal() : BigDecimal.ZERO;
-            BigDecimal shippingFee = order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO;
-            BigDecimal gstTax = order.getGstTax() != null ? order.getGstTax() : BigDecimal.ZERO;
-            BigDecimal grandTotal = order.getTotalAmount() != null ? order.getTotalAmount() : subtotal.add(shippingFee).add(gstTax);
+            double weight = order.getTotalWeightKg() != null ? order.getTotalWeightKg() : 0.5;
+            String destState = order.getShippingAddress() != null ? order.getShippingAddress().getState() : "Tamil Nadu";
+            String payMethod = order.getPaymentMethod() != null ? order.getPaymentMethod().name() : "ONLINE";
+
+            com.vinnavar.backend.modules.shipping.service.ShippingService.ShippingCalculationResult calc =
+                    shippingService.calculateShippingFee(weight, destState, payMethod, subtotal);
+            BigDecimal shippingFee = calc.getTotalShippingFee();
+
+            BigDecimal gstTax = subtotal.multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);
+            BigDecimal grandTotal = subtotal.add(shippingFee).add(gstTax).setScale(2, java.math.RoundingMode.HALF_UP);
+
+            // Total Order Weight
+            summaryTable.addCell(createSummaryLabelCell("Total Order Weight:", fontRegular));
+            summaryTable.addCell(createSummaryValueCell(String.format("%.1f kg", weight), fontRegular));
 
             // Net Items Subtotal
             summaryTable.addCell(createSummaryLabelCell("Net Items Subtotal:", fontRegular));

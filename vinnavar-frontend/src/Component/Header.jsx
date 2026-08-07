@@ -252,7 +252,13 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem("vinnavar_customer_token");
     localStorage.removeItem("vinnavar_customer");
+    localStorage.removeItem("vinnavar_cart_id");
+    localStorage.removeItem("vinnavar_wishlist_id");
     setCurrentUser(null);
+    setCart({ items: [], totalItemCount: 0, subtotal: 0 });
+    setWishlistCount(0);
+    window.dispatchEvent(new Event("cartUpdated"));
+    window.dispatchEvent(new Event("wishlistUpdated"));
     Swal.fire({
       icon: "info",
       title: "Signed Out",

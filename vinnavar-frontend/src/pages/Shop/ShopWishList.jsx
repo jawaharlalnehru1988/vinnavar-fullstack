@@ -25,6 +25,10 @@ const ShopWishList = () => {
 
   useEffect(() => {
     loadWishlistData();
+    window.addEventListener("wishlistUpdated", loadWishlistData);
+    return () => {
+      window.removeEventListener("wishlistUpdated", loadWishlistData);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

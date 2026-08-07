@@ -24,6 +24,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final CartItemRepository cartItemRepository;
+    private final com.vinnavar.backend.modules.shipping.service.ShippingService shippingService;
 
     @Transactional
     public Order processCheckout(CheckoutRequestDto request) {
@@ -44,9 +45,13 @@ public class OrderService {
                 })
                 .sum();
 
-        int blocksOf5Kg = (int) Math.ceil(totalWeightKg <= 0 ? 1 : totalWeightKg / 5.0);
-        if (blocksOf5Kg < 1) blocksOf5Kg = 1;
-        BigDecimal shippingFee = BigDecimal.valueOf(blocksOf5Kg * 48L).setScale(2, java.math.RoundingMode.HALF_UP);
+        String destState = request.getShippingAddress() != null ? request.getShippingAddress().getState() : "Tamil Nadu";
+        String pMethod = request.getPaymentMethod() != null ? request.getPaymentMethod().name() : "COD";
+
+        com.vinnavar.backend.modules.shipping.service.ShippingService.ShippingCalculationResult calcResult =
+                shippingService.calculateShippingFee(totalWeightKg, destState, pMethod, subtotal);
+        BigDecimal shippingFee = calcResult.getTotalShippingFee();
+
         BigDecimal gstTax = subtotal.multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);
         BigDecimal totalAmount = subtotal.add(shippingFee).add(gstTax).setScale(2, java.math.RoundingMode.HALF_UP);
 

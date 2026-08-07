@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { MagnifyingGlass } from "react-loader-spinner";
 import Swal from "sweetalert2";
 import ScrollToTop from "../ScrollToTop";
-import { API_BASE_URL } from "../../services/api";
+import { API_BASE_URL, getImageUrl, uploadComplaintImage } from "../../services/api";
 
 const MyAccountComplaint = () => {
   const [loading, setLoading] = useState(true);
@@ -13,6 +13,7 @@ const MyAccountComplaint = () => {
   const [step, setStep] = useState(1); // 1 = Refund Policy, 2 = Complaint Form
   const [refundPolicyAccepted, setRefundPolicyAccepted] = useState(false);
   const [refundPolicyText, setRefundPolicyText] = useState("");
+  const [previewImage, setPreviewImage] = useState(null);
 
   const currentUser = (() => {
     try {
@@ -27,7 +28,10 @@ const MyAccountComplaint = () => {
     orderNumber: "",
     productName: "",
     issueType: "DAMAGED_PRODUCT",
-    description: ""
+    description: "",
+    imageFile: null,
+    imagePreview: "",
+    submitting: false
   });
 
   const fetchData = async () => {
@@ -68,7 +72,10 @@ const MyAccountComplaint = () => {
       orderNumber: userOrders.length > 0 ? userOrders[0].orderNumber : "",
       productName: "",
       issueType: "DAMAGED_PRODUCT",
-      description: ""
+      description: "",
+      imageFile: null,
+      imagePreview: "",
+      submitting: false
     });
     setShowModal(true);
   };
@@ -88,12 +95,23 @@ const MyAccountComplaint = () => {
       return;
     }
 
+    setForm(prev => ({ ...prev, submitting: true }));
     try {
+      let uploadedUrl = null;
+      if (form.imageFile) {
+        const uploadRes = await uploadComplaintImage(form.imageFile);
+        uploadedUrl = uploadRes.imageUrl;
+      }
+
       const res = await fetch(`${API_BASE_URL}/customer/complaints`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...form,
+          orderNumber: form.orderNumber,
+          productName: form.productName,
+          issueType: form.issueType,
+          description: form.description,
+          imageUrl: uploadedUrl,
           customerMobile: currentUser.mobileNumber,
           customerName: currentUser.name || "Customer",
           refundPolicyAccepted: true
@@ -114,7 +132,9 @@ const MyAccountComplaint = () => {
         Swal.fire("Error", "Failed to submit complaint", "error");
       }
     } catch (err) {
-      Swal.fire("Error", "Failed to connect to server", "error");
+      Swal.fire("Error", err.message || "Failed to connect to server", "error");
+    } finally {
+      setForm(prev => ({ ...prev, submitting: false }));
     }
   };
 
@@ -225,6 +245,19 @@ const MyAccountComplaint = () => {
                               Issue Type: <strong className="text-dark">{c.issueType.replace("_", " ")}</strong> • Date: {new Date(c.createdAt).toLocaleDateString("en-IN")}
                             </div>
                             <p className="text-slate-700 bg-light p-3 rounded-3 small mb-2">{c.description}</p>
+
+                            {c.imageUrl && (
+                              <div className="mt-2 mb-2">
+                                <span className="small text-muted fw-bold d-block mb-1">📸 Attached Product Photo:</span>
+                                <img
+                                  src={getImageUrl(c.imageUrl)}
+                                  alt="Complaint Product Attachment"
+                                  className="img-thumbnail rounded-3 shadow-xs cursor-pointer"
+                                  style={{ maxHeight: "130px", maxWidth: "160px", objectFit: "cover" }}
+                                  onClick={() => setPreviewImage(getImageUrl(c.imageUrl))}
+                                />
+                              </div>
+                            )}
 
                             {c.adminNotes && (
                               <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-3 text-emerald-900 small">
@@ -358,6 +391,33 @@ const MyAccountComplaint = () => {
                           onChange={(e) => setForm({ ...form, description: e.target.value })}
                         />
                       </div>
+                      <div className="col-12">
+                        <label className="form-label small fw-bold text-muted mb-1">📸 Attach Product Photo (Optional)</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="form-control form-control-sm"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              if (file.size > 5 * 1024 * 1024) {
+                                Swal.fire("File Too Large", "Photo must be less than 5 MB", "warning");
+                                return;
+                              }
+                              setForm(prev => ({
+                                ...prev,
+                                imageFile: file,
+                                imagePreview: URL.createObjectURL(file)
+                              }));
+                            }
+                          }}
+                        />
+                        {form.imagePreview && (
+                          <div className="mt-2 text-center p-2 border rounded bg-light">
+                            <img src={form.imagePreview} alt="Complaint Preview" className="img-thumbnail" style={{ maxHeight: "120px" }} />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -365,12 +425,28 @@ const MyAccountComplaint = () => {
                     <button type="button" className="btn btn-sm btn-light border rounded-pill px-3" onClick={() => setStep(1)}>
                       ← Back to Policy
                     </button>
-                    <button type="submit" className="btn btn-sm btn-success font-bold rounded-pill px-4 shadow-sm">
-                      Submit Complaint ➔
+                    <button type="submit" className="btn btn-sm btn-success font-bold rounded-pill px-4 shadow-sm" disabled={form.submitting}>
+                      {form.submitting ? "Submitting..." : "Submit Complaint ➔"}
                     </button>
                   </div>
                 </form>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FULL IMAGE PREVIEW MODAL */}
+      {previewImage && (
+        <div className="modal d-block bg-dark bg-opacity-75" tabIndex="-1" onClick={() => setPreviewImage(null)}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content bg-black border-0 rounded-4 overflow-hidden">
+              <div className="modal-header border-0 pb-0">
+                <button type="button" className="btn-close btn-close-white" onClick={() => setPreviewImage(null)}></button>
+              </div>
+              <div className="modal-body text-center p-3">
+                <img src={previewImage} alt="Complaint Attachment Preview" className="img-fluid rounded-3" style={{ maxHeight: "80vh" }} />
+              </div>
             </div>
           </div>
         </div>
