@@ -26,6 +26,13 @@ public class AuthDto {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    public static class GoogleLoginRequest {
+        private String idToken;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class CustomerRegisterRequest {
         private String name;
         private String mobileNumber;

@@ -28,6 +28,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.customerLogin(request));
     }
 
+    @PostMapping("/customer/google")
+    public ResponseEntity<AuthDto.AuthResponse> customerGoogleLogin(@RequestBody AuthDto.GoogleLoginRequest request) {
+        return ResponseEntity.ok(authService.customerGoogleLogin(request));
+    }
+
     @PostMapping("/customer/forgot-password")
     public ResponseEntity<AuthDto.AuthResponse> forgotPassword(@RequestBody AuthDto.ForgotPasswordRequest request) {
         return ResponseEntity.ok(authService.forgotPassword(request));

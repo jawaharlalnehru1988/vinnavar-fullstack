@@ -235,6 +235,19 @@ export const customerLogin = async (loginData) => {
     return data;
 };
 
+export const customerGoogleLogin = async (idToken) => {
+    const res = await fetch(`${API_BASE_URL}/auth/customer/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+        throw new Error(data.message || "Google Sign-In failed. Please try again.");
+    }
+    return data;
+};
+
 export const customerForgotPassword = async (resetData) => {
     const res = await fetch(`${API_BASE_URL}/auth/customer/forgot-password`, {
         method: "POST",

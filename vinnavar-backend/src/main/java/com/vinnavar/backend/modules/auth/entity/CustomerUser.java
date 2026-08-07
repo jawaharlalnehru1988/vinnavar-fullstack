@@ -20,14 +20,21 @@ public class CustomerUser {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = true, unique = true)
     private String mobileNumber;
 
     @Column(nullable = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String password;
+
+    @Column(nullable = true, unique = true)
+    private String googleId;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private String authProvider = "LOCAL";
 
     @Builder.Default
     private String role = "CUSTOMER";

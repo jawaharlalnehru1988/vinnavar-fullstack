@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import Header from './Component/Header';
 import Footer from "./Component/Footer";
 import Home from "./pages/Home";
@@ -105,11 +106,15 @@ const AppContent = () => {
   );
 };
 
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || "";
+
 const App = () => {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <Router>
+        <AppContent />
+      </Router>
+    </GoogleOAuthProvider>
   );
 };
 

@@ -13,5 +13,10 @@
 .idea/
 .vscode/
 
+# Environment variables & secrets
+.env
+.env.*
+*.env
+
 # Media uploads (optional ignore if dynamic uploads shouldn't be tracked)
 # vinnavar-backend/media/

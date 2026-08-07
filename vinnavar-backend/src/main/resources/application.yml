@@ -27,6 +27,8 @@ app:
   media:
     dir: ${MEDIA_DIR:/var/www/vinnavar-fullstack/vinnavar-backend/media}
     url-prefix: /media/
+  google:
+    clientId: ${GOOGLE_CLIENT_ID:}
 
 logging:
   level:

@@ -1,6 +1,7 @@
-import { API_BASE_URL, fetchSettings, getImageUrl, customerLogin, customerRegister, customerForgotPassword } from "../services/api";
+import { API_BASE_URL, fetchSettings, getImageUrl, customerLogin, customerRegister, customerForgotPassword, customerGoogleLogin } from "../services/api";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import Swal from "sweetalert2";
 
 const Grocerylogo = getImageUrl("/media/site/Grocerylogo.png");
@@ -9,6 +10,29 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    if (!credentialResponse?.credential) return;
+    setAuthLoading(true);
+    try {
+      const res = await customerGoogleLogin(credentialResponse.credential);
+      localStorage.setItem("vinnavar_customer_token", res.token);
+      localStorage.setItem("vinnavar_customer", JSON.stringify(res));
+      setCurrentUser(res);
+      closeModal();
+      Swal.fire({
+        icon: "success",
+        title: `Welcome, ${res.name || "Customer"}! 🎉`,
+        text: "You have signed in with Google successfully.",
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (err) {
+      Swal.fire("Google Sign In Failed", err.message, "error");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
   const [cart, setCart] = useState(null);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [logoUrl, setLogoUrl] = useState(Grocerylogo);
@@ -720,6 +744,30 @@ const Header = () => {
                     {authLoading ? "Signing In..." : "Sign In"}
                   </button>
                 </form>
+              )}
+
+              {(authMode === "SIGN_IN" || authMode === "SIGN_UP") && (
+                <div className="mt-4">
+                  <div className="text-center position-relative mb-3">
+                    <hr className="my-0" />
+                    <span className="position-absolute top-50 start-50 translate-middle bg-white px-2 text-muted small fw-semibold">
+                      OR CONTINUE WITH
+                    </span>
+                  </div>
+                  <div className="d-flex justify-content-center">
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={() => {
+                        Swal.fire("Google Sign In", "Google Sign In popup was closed or cancelled.", "info");
+                      }}
+                      useOneTap
+                      shape="pill"
+                      theme="outline"
+                      size="large"
+                      width="100%"
+                    />
+                  </div>
+                </div>
               )}
 
               {/* MODE 2: SIGN UP */}
