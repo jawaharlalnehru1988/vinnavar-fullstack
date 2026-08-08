@@ -15,7 +15,7 @@ cd /var/www/vinnavar-fullstack/vinnavar-backend
 mvn clean package -DskipTests
 
 echo "=== [3/5] Restarting vinnavar-backend Service ==="
-systemctl restart vinnavar-backend
+sudo systemctl restart vinnavar-backend || systemctl restart vinnavar-backend
 
 echo "=== [4/5] Building React Frontend ==="
 cd /var/www/vinnavar-fullstack/vinnavar-frontend
@@ -23,6 +23,6 @@ npm install
 npm run build
 
 echo "=== [5/5] Reloading Nginx ==="
-systemctl reload nginx
+sudo systemctl reload nginx || systemctl reload nginx
 
 echo "=== Deployment Completed Successfully! ==="
