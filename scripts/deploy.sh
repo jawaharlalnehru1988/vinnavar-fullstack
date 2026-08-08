@@ -4,6 +4,7 @@ set -e
 cd /var/www/vinnavar-fullstack
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "master")
+
 if [ -z "$BRANCH" ] || [ "$BRANCH" = "HEAD" ]; then
     BRANCH="master"
 fi

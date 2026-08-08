@@ -18,5 +18,7 @@
 .env.*
 *.env
 
-# Media uploads (optional ignore if dynamic uploads shouldn't be tracked)
-# vinnavar-backend/media/
+# Media uploads
+vinnavar-backend/media/*
+!vinnavar-backend/media/**/.gitkeep
+
