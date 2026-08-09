@@ -2,10 +2,12 @@ import { fetchSettings, getImageUrl } from "../services/api";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import { useLanguage } from "../context/LanguageContext";
 
 const groceryshop = getImageUrl("/media/site/Grocerylogo.png");
 
 const Footer = () => {
+  const { t } = useLanguage();
   let date = new Date();
   let year = date.getFullYear();
   const [logoUrl, setLogoUrl] = useState(groceryshop);
@@ -169,7 +171,7 @@ const Footer = () => {
                 {/* Unified Footer Copyright line inside the same container */}
                 <div className="border-top mt-4 pt-4 text-center">
                   <div className="text-muted small">
-                    © {year} All Rights Reserved By <span className="fw-bold text-success">LP Traders</span>
+                    © {year} {t("footer_rights")} <span className="fw-bold text-success">LP Traders</span>
                   </div>
                 </div>
 

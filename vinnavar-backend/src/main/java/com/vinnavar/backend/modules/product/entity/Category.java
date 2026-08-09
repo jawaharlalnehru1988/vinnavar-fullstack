@@ -29,6 +29,20 @@ public class Category {
 
     private String imageUrl;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "category_name_translations", joinColumns = @JoinColumn(name = "category_id"))
+    @MapKeyColumn(name = "lang_code")
+    @Column(name = "translated_name")
+    @Builder.Default
+    private java.util.Map<String, String> nameTranslations = new java.util.HashMap<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "category_desc_translations", joinColumns = @JoinColumn(name = "category_id"))
+    @MapKeyColumn(name = "lang_code")
+    @Column(name = "translated_desc", columnDefinition = "TEXT")
+    @Builder.Default
+    private java.util.Map<String, String> descriptionTranslations = new java.util.HashMap<>();
+
     @Builder.Default
     private boolean active = true;
 

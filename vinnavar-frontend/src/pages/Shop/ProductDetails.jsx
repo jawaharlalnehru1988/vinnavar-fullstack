@@ -3,12 +3,14 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { API_BASE_URL, getImageUrl, fetchProductReviews, submitProductReview, uploadReviewImage, getCartId } from "../../services/api";
 import AmazonProductMagnifier from "../../Component/AmazonProductMagnifier";
+import { useLanguage } from "../../context/LanguageContext";
 
 const amazonpay = getImageUrl("/media/site/amazonpay.svg");
 const gpay = getImageUrl("/media/site/gpay.svg");
 const paytm = getImageUrl("/media/site/paytm.svg");
 
 const ProductDetails = () => {
+    const { currentLang, t } = useLanguage();
     const { slug } = useParams();
     const navigate = useNavigate();
 
@@ -417,10 +419,10 @@ const ProductDetails = () => {
                         <div className="lg:col-span-7 space-y-6">
                             <div>
                                 <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">
-                                    {product.category?.name || "Pure Organic Product"}
+                                    {product.category?.nameTranslations?.[currentLang] || product.category?.name || "Pure Organic Product"}
                                 </div>
                                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
-                                    {product.name}
+                                    {product.nameTranslations?.[currentLang] || product.name}
                                 </h1>
                             </div>
 
@@ -518,10 +520,10 @@ const ProductDetails = () => {
                             </div>
 
                             {/* SHORT DESCRIPTION */}
-                            {product.shortDescription && (
+                            {(product.descriptionTranslations?.[currentLang] || product.shortDescription) && (
                                 <div>
                                     <h3 className="text-sm font-bold text-slate-900 mb-1">Highlights & Key Details:</h3>
-                                    <p className="text-slate-600 text-sm leading-relaxed">{product.shortDescription}</p>
+                                    <p className="text-slate-600 text-sm leading-relaxed">{product.descriptionTranslations?.[currentLang] || product.shortDescription}</p>
                                 </div>
                             )}
 
@@ -547,7 +549,7 @@ const ProductDetails = () => {
                                     </div>
                                     <div className="flex bg-white">
                                         <span className="w-1/3 p-3 font-semibold text-slate-600">Category</span>
-                                        <span className="w-2/3 p-3 font-medium text-slate-800">{product.category?.name || "Organic Staples"}</span>
+                                        <span className="w-2/3 p-3 font-medium text-slate-800">{product.category?.nameTranslations?.[currentLang] || product.category?.name || "Organic Staples"}</span>
                                     </div>
                                     <div className="flex bg-slate-50">
                                         <span className="w-1/3 p-3 font-semibold text-slate-600">Selected Pack Size</span>

@@ -21,6 +21,8 @@ const AdminProducts = ({ products, categories, loadData }) => {
         videoUrl: "",
         featured: false,
         active: true,
+        nameTranslations: { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" },
+        descriptionTranslations: { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" },
         variants: [
             { variantName: "500g", price: "", discountPrice: "" },
             { variantName: "2kg", price: "", discountPrice: "" },
@@ -43,6 +45,8 @@ const AdminProducts = ({ products, categories, loadData }) => {
             videoUrl: "",
             featured: false,
             active: true,
+            nameTranslations: { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" },
+            descriptionTranslations: { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" },
             variants: [
                 { variantName: "500g", price: "", discountPrice: "" },
                 { variantName: "2kg", price: "", discountPrice: "" },
@@ -89,6 +93,8 @@ const AdminProducts = ({ products, categories, loadData }) => {
             videoUrl: prod.videoUrl || "",
             featured: prod.featured || false,
             active: prod.active || true,
+            nameTranslations: prod.nameTranslations || { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" },
+            descriptionTranslations: prod.descriptionTranslations || { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" },
             variants: rawVariants
         });
         setShowProductModal(true);
@@ -320,11 +326,13 @@ const AdminProducts = ({ products, categories, loadData }) => {
             videoUrl: productForm.videoUrl || "",
             featured: productForm.featured,
             active: productForm.active,
+            nameTranslations: productForm.nameTranslations || {},
+            descriptionTranslations: productForm.descriptionTranslations || {},
             variants: (productForm.variants || [])
                 .map((v, idx) => ({
                     variantName: v.variantName?.trim() || "",
-                    price: v.price ? parseFloat(v.price) : null,
-                    discountPrice: v.discountPrice ? parseFloat(v.discountPrice) : null,
+                    price: (v.price !== null && v.price !== "" && !isNaN(v.price)) ? parseFloat(v.price) : null,
+                    discountPrice: (v.discountPrice !== null && v.discountPrice !== "" && !isNaN(v.discountPrice)) ? parseFloat(v.discountPrice) : null,
                     isDefault: idx === 0
                 }))
                 .filter((v, idx) => idx === 0 || (v.variantName !== "" || v.price !== null))
@@ -563,6 +571,58 @@ const AdminProducts = ({ products, categories, loadData }) => {
                                         value={productForm.benefits}
                                         onChange={(e) => setProductForm({ ...productForm, benefits: e.target.value })}
                                     ></textarea>
+                                </div>
+                            </div>
+
+                            {/* Multilingual Metadata Section */}
+                            <div className="bg-amber-50/60 p-4 rounded-2xl border border-amber-200 space-y-3">
+                                <h4 className="font-bold text-amber-900 text-sm flex items-center gap-1.5">
+                                    <span>🌐</span> Multilingual Product Metadata (Optional)
+                                </h4>
+                                <p className="text-xs text-amber-800 mb-2">
+                                    Enter translated product name and short description for Indian regional languages:
+                                </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {[
+                                        { code: "ta", label: "Tamil (தமிழ்)" },
+                                        { code: "hi", label: "Hindi (हिंदी)" },
+                                        { code: "te", label: "Telugu (తెలుగు)" },
+                                        { code: "kn", label: "Kannada (ಕನ್ನಡ)" },
+                                        { code: "ml", label: "Malayalam (മലയാളം)" },
+                                        { code: "mr", label: "Marathi (मराठी)" },
+                                        { code: "bn", label: "Bengali (বাংলা)" },
+                                        { code: "pa", label: "Punjabi (ਪੰਜਾਬੀ)" }
+                                    ].map((lang) => (
+                                        <div key={lang.code} className="p-2.5 bg-white rounded-xl border border-amber-200 space-y-1.5">
+                                            <span className="block text-xs font-bold text-amber-900">{lang.label}</span>
+                                            <input
+                                                type="text"
+                                                placeholder="Translated Product Name"
+                                                className="w-full px-2.5 py-1.5 bg-amber-50/40 border border-slate-200 rounded-lg text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none"
+                                                value={productForm.nameTranslations?.[lang.code] || ""}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setProductForm((prev) => ({
+                                                        ...prev,
+                                                        nameTranslations: { ...(prev.nameTranslations || {}), [lang.code]: val }
+                                                    }));
+                                                }}
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Translated Short Description"
+                                                className="w-full px-2.5 py-1.5 bg-amber-50/40 border border-slate-200 rounded-lg text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none"
+                                                value={productForm.descriptionTranslations?.[lang.code] || ""}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setProductForm((prev) => ({
+                                                        ...prev,
+                                                        descriptionTranslations: { ...(prev.descriptionTranslations || {}), [lang.code]: val }
+                                                    }));
+                                                }}
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 

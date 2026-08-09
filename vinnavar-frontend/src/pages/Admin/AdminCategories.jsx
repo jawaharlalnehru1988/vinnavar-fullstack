@@ -5,7 +5,13 @@ import { API_BASE_URL, getImageUrl } from "../../services/api";
 const AdminCategories = ({ categories, products, loadData }) => {
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [editingCategoryId, setEditingCategoryId] = useState(null);
-    const [categoryForm, setCategoryForm] = useState({ name: "", description: "", imageUrl: "" });
+    const [categoryForm, setCategoryForm] = useState({
+        name: "",
+        description: "",
+        imageUrl: "",
+        nameTranslations: { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" },
+        descriptionTranslations: { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" }
+    });
     const [categoryViewMode, setCategoryViewMode] = useState("list");
     const [categoryCurrentPage, setCategoryCurrentPage] = useState(1);
 
@@ -82,7 +88,13 @@ const AdminCategories = ({ categories, products, loadData }) => {
                 Swal.fire({ icon: "success", title: editingCategoryId ? "Category Updated" : "Category Created", timer: 1500, showConfirmButton: false });
                 setShowCategoryModal(false);
                 setEditingCategoryId(null);
-                setCategoryForm({ name: "", description: "", imageUrl: "" });
+                setCategoryForm({
+                    name: "",
+                    description: "",
+                    imageUrl: "",
+                    nameTranslations: { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" },
+                    descriptionTranslations: { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" }
+                });
                 loadData();
             }
         } catch (err) {
@@ -95,7 +107,9 @@ const AdminCategories = ({ categories, products, loadData }) => {
         setCategoryForm({
             name: cat.name || "",
             description: cat.description || "",
-            imageUrl: cat.imageUrl || ""
+            imageUrl: cat.imageUrl || "",
+            nameTranslations: cat.nameTranslations || { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" },
+            descriptionTranslations: cat.descriptionTranslations || { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" }
         });
         setShowCategoryModal(true);
     };
@@ -353,8 +367,8 @@ const AdminCategories = ({ categories, products, loadData }) => {
             {/* MODAL: ADD / EDIT CATEGORY */}
             {showCategoryModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full border border-slate-100 overflow-hidden">
-                        <div className="bg-emerald-700 text-white px-6 py-4 flex items-center justify-between">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full border border-slate-100 overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="bg-emerald-700 text-white px-6 py-4 flex items-center justify-between shrink-0">
                             <h3 className="text-base font-extrabold flex items-center gap-2">
                                 <span>🗂️</span> {editingCategoryId ? "Edit Organic Category" : "Add Organic Category"}
                             </h3>
@@ -366,7 +380,7 @@ const AdminCategories = ({ categories, products, loadData }) => {
                                 &times;
                             </button>
                         </div>
-                        <form onSubmit={handleSaveCategory} className="p-6 space-y-4">
+                        <form onSubmit={handleSaveCategory} className="p-6 space-y-4 overflow-y-auto">
                             <div>
                                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Category Name</label>
                                 <input
@@ -395,6 +409,53 @@ const AdminCategories = ({ categories, products, loadData }) => {
                                     onChange={handleCategoryImageUploadInModal}
                                 />
                                 {categoryForm.imageUrl && <p className="text-xs text-emerald-600 font-bold mt-1.5 truncate">Selected: {categoryForm.imageUrl}</p>}
+                            </div>
+
+                            {/* Multilingual Category Names & Descriptions */}
+                            <div className="bg-amber-50/60 p-4 rounded-2xl border border-amber-200 space-y-3">
+                                <span className="block text-xs font-bold text-amber-900">🌐 Category Multilingual Translations (Optional)</span>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-1">
+                                    {[
+                                        { code: "ta", label: "Tamil (தமிழ்)" },
+                                        { code: "hi", label: "Hindi (हिंदी)" },
+                                        { code: "te", label: "Telugu (తెలుగు)" },
+                                        { code: "kn", label: "Kannada (ಕನ್ನಡ)" },
+                                        { code: "ml", label: "Malayalam (മലയാളം)" },
+                                        { code: "mr", label: "Marathi (मराठी)" },
+                                        { code: "bn", label: "Bengali (বাংলা)" },
+                                        { code: "pa", label: "Punjabi (ਪੰਜਾਬੀ)" }
+                                    ].map((lang) => (
+                                        <div key={lang.code} className="p-2.5 bg-white rounded-xl border border-amber-200 space-y-1.5">
+                                            <span className="block text-xs font-bold text-amber-900">{lang.label}</span>
+                                            <input
+                                                type="text"
+                                                placeholder="Category Name"
+                                                className="w-full px-2.5 py-1.5 bg-amber-50/30 border border-slate-200 rounded-lg text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none"
+                                                value={categoryForm.nameTranslations?.[lang.code] || ""}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setCategoryForm((prev) => ({
+                                                        ...prev,
+                                                        nameTranslations: { ...(prev.nameTranslations || {}), [lang.code]: val }
+                                                    }));
+                                                }}
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Description"
+                                                className="w-full px-2.5 py-1.5 bg-amber-50/30 border border-slate-200 rounded-lg text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none"
+                                                value={categoryForm.descriptionTranslations?.[lang.code] || ""}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setCategoryForm((prev) => ({
+                                                        ...prev,
+                                                        descriptionTranslations: { ...(prev.descriptionTranslations || {}), [lang.code]: val }
+                                                    }));
+                                                }}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
 
                             <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">

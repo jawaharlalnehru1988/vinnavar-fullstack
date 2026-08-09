@@ -23,6 +23,8 @@ public class ProductRequestDto {
     private Long categoryId;
     private boolean featured;
     private boolean active = true;
+    private java.util.Map<String, String> nameTranslations;
+    private java.util.Map<String, String> descriptionTranslations;
     private List<VariantDto> variants;
 
     @Data

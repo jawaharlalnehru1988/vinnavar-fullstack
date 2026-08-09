@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import { API_BASE_URL, fetchProducts, getImageUrl, toggleWishlist, getCartId } from "../services/api";
+import { useLanguage } from "../context/LanguageContext";
 
 import { ProductSkeleton } from "./Skeleton";
 
 const OrganicProductList = ({ categoryId, limit = 8 }) => {
+    const { currentLang, t } = useLanguage();
     const [products, setProducts] = useState([]);
     const [selectedVariants, setSelectedVariants] = useState({});
     const [loading, setLoading] = useState(true);
@@ -181,15 +183,15 @@ const OrganicProductList = ({ categoryId, limit = 8 }) => {
                                     {/* Details */}
                                     <div>
                                         <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wide">
-                                            {product.category?.name || "Organic Staples"}
+                                            {product.category?.nameTranslations?.[currentLang] || product.category?.name || "Organic Staples"}
                                         </span>
                                         <h3 className="font-bold text-slate-900 text-sm mt-1 truncate hover:text-emerald-700 transition-colors">
                                             <Link to={`/product/${product.slug}`}>
-                                                {product.name}
+                                                {product.nameTranslations?.[currentLang] || product.name}
                                             </Link>
                                         </h3>
                                         <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                                            {product.shortDescription}
+                                            {product.descriptionTranslations?.[currentLang] || product.shortDescription}
                                         </p>
                                     </div>
 

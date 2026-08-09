@@ -45,6 +45,20 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String benefits;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "product_name_translations", joinColumns = @JoinColumn(name = "product_id"))
+    @MapKeyColumn(name = "lang_code")
+    @Column(name = "translated_name")
+    @Builder.Default
+    private java.util.Map<String, String> nameTranslations = new java.util.HashMap<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "product_desc_translations", joinColumns = @JoinColumn(name = "product_id"))
+    @MapKeyColumn(name = "lang_code")
+    @Column(name = "translated_desc", columnDefinition = "TEXT")
+    @Builder.Default
+    private java.util.Map<String, String> descriptionTranslations = new java.util.HashMap<>();
+
     @Builder.Default
     private String hsnCode = "1006";
 

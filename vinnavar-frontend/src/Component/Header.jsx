@@ -1,15 +1,19 @@
 import { API_BASE_URL, fetchSettings, getImageUrl, customerLogin, customerRegister, customerForgotPassword, customerGoogleLogin, getCartId, getWishlistId, mergeCart, mergeWishlist } from "../services/api";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import Swal from "sweetalert2";
+import { useLanguage } from "../context/LanguageContext";
 
 const Grocerylogo = getImageUrl("/media/site/Grocerylogo.png");
 
 const Header = () => {
+  const { currentLang, setLanguage, t, languages } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const langMenuRef = useRef(null);
 
   const handleGoogleSuccess = async (credentialResponse) => {
     if (!credentialResponse?.credential) return;
@@ -44,6 +48,9 @@ const Header = () => {
     const handleClickOutside = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
+      }
+      if (langMenuRef.current && !langMenuRef.current.contains(event.target)) {
+        setIsLangMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -408,7 +415,7 @@ const Header = () => {
         <div className="w-full py-1.5 bg-emerald-800 text-white font-medium text-xs tracking-wide overflow-hidden">
           {/* eslint-disable-next-line jsx-a11y/no-distracting-elements */}
           <marquee behavior="scroll" direction="left" scrollamount="6" className="m-0 align-middle">
-            🌱 100% Certified Pure Natural Organic Staples & Cold-Pressed Oils delivered directly to your doorstep!
+            {t("header_marquee")}
           </marquee>
         </div>
 
@@ -436,7 +443,7 @@ const Header = () => {
                     isActive("/") ? "text-emerald-700 font-black border-b-2 border-emerald-600" : "text-slate-700 hover:text-emerald-600 font-semibold"
                   }`}
                 >
-                  Home
+                  {t("nav_home")}
                 </Link>
 
                 {/* Shop Dropdown */}
@@ -447,21 +454,21 @@ const Header = () => {
                       isActive("/Shop") ? "text-emerald-700 font-black border-b-2 border-emerald-600" : "text-slate-700 hover:text-emerald-600 font-semibold"
                     }`}
                   >
-                    <span>Shop</span>
+                    <span>{t("nav_shop")}</span>
                     <span className="text-[10px]">▼</span>
                   </Link>
                   <div className="absolute left-0 top-full hidden group-hover:block w-48 bg-white border border-slate-100 shadow-xl rounded-2xl p-2 z-50 normal-case">
                     <Link to="/Shop" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                      🛍️ Shop Catalog
+                      {t("nav_shop_catalog")}
                     </Link>
                     <Link to="/ShopWishList" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                      ❤️ Wishlist ({wishlistCount})
+                      {t("nav_wishlist")} ({wishlistCount})
                     </Link>
                     <Link to="/ShopCart" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                      🛒 Shopping Cart
+                      {t("nav_cart")}
                     </Link>
                     <Link to="/ShopCheckOut" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                      💳 Checkout
+                      {t("nav_checkout")}
                     </Link>
                   </div>
                 </div>
@@ -475,22 +482,22 @@ const Header = () => {
                         : "text-slate-700 hover:text-emerald-600 font-semibold"
                     }`}
                   >
-                    <span>About</span>
+                    <span>{t("nav_about")}</span>
                     <span className="text-[10px]">▼</span>
                   </span>
                   <div className="absolute left-0 top-full hidden group-hover:block w-52 bg-white border border-slate-100 shadow-xl rounded-2xl p-2 z-50 normal-case">
                     <Link to="/Blog" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                      📝 Blog &amp; Articles
+                      {t("nav_blog")}
                     </Link>
                     <Link to="/BlogCategory" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
-                      📚 Blog Categories
+                      {t("nav_categories")}
                     </Link>
                     <a
                       href="#corporate-contact"
                       onClick={scrollToContact}
                       className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl"
                     >
-                      📞 Contact Admin Desk
+                      {t("nav_contact")}
                     </a>
                   </div>
                 </div>
@@ -504,7 +511,7 @@ const Header = () => {
                 <input
                   type="text"
                   className="w-full pl-10 pr-4 py-2 bg-slate-100/80 hover:bg-slate-100 border border-slate-200 rounded-full text-slate-900 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none transition-all placeholder:text-slate-400"
-                  placeholder="Search organic rice, oils, spices..."
+                  placeholder={t("search_placeholder")}
                   onClick={() => navigate("/Shop")}
                 />
               </div>
@@ -512,6 +519,49 @@ const Header = () => {
 
             {/* Right: Action Buttons */}
             <div className="flex items-center gap-2 sm:gap-2.5">
+              {/* Language Selector Dropdown */}
+              <div className="relative" ref={langMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsLangMenuOpen((prev) => !prev)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 transition-all shadow-xs cursor-pointer"
+                  title="Change Language"
+                >
+                  <span className="text-sm">🌐</span>
+                  <span>{languages.find((l) => l.code === currentLang)?.nativeName || "English"}</span>
+                  <span className="text-[10px]">▼</span>
+                </button>
+                {isLangMenuOpen && (
+                  <ul
+                    className="dropdown-menu shadow-2xl border border-slate-100 rounded-2xl p-2 mt-2 font-sans text-xs w-48 d-block show"
+                    style={{ position: "absolute", right: 0, top: "100%", zIndex: 1000, backgroundColor: "#ffffff" }}
+                  >
+                    {languages.map((lang) => (
+                      <li key={lang.code}>
+                        <button
+                          type="button"
+                          className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-xl flex items-center justify-between transition-colors ${
+                            currentLang === lang.code
+                              ? "bg-emerald-100 text-emerald-800 font-bold"
+                              : "text-slate-700 hover:bg-slate-50 hover:text-emerald-700"
+                          }`}
+                          onClick={() => {
+                            setLanguage(lang.code);
+                            setIsLangMenuOpen(false);
+                          }}
+                        >
+                          <span className="flex items-center gap-2">
+                            <span>{lang.flag}</span>
+                            <span>{lang.nativeName}</span>
+                          </span>
+                          <span className="text-[11px] text-slate-400">({lang.name})</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
               {/* Track Order */}
               <Link
                 to="/TrackOrder"
@@ -519,7 +569,7 @@ const Header = () => {
                 title="Track Order"
               >
                 <span className="text-sm">🚚</span>
-                <span className="hidden sm:inline">Track</span>
+                <span className="hidden sm:inline">{t("nav_track")}</span>
               </Link>
 
               {/* Wishlist */}

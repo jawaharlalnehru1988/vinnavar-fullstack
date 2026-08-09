@@ -90,6 +90,8 @@ public class ProductService {
                 .category(category)
                 .featured(dto.isFeatured())
                 .active(dto.isActive())
+                .nameTranslations(dto.getNameTranslations() != null ? new java.util.HashMap<>(dto.getNameTranslations()) : new java.util.HashMap<>())
+                .descriptionTranslations(dto.getDescriptionTranslations() != null ? new java.util.HashMap<>(dto.getDescriptionTranslations()) : new java.util.HashMap<>())
                 .variants(new ArrayList<>())
                 .build();
 
@@ -148,6 +150,14 @@ public class ProductService {
         }
         if (mainImageUrl != null && !mainImageUrl.isBlank()) {
             product.setImageUrl(mainImageUrl);
+        }
+        if (dto.getNameTranslations() != null) {
+            product.getNameTranslations().clear();
+            product.getNameTranslations().putAll(dto.getNameTranslations());
+        }
+        if (dto.getDescriptionTranslations() != null) {
+            product.getDescriptionTranslations().clear();
+            product.getDescriptionTranslations().putAll(dto.getDescriptionTranslations());
         }
         product.setFeatured(dto.isFeatured());
         product.setActive(dto.isActive());
@@ -279,6 +289,10 @@ public class ProductService {
         if (category.getImageUrl() != null && !category.getImageUrl().isBlank()) {
             existing.setImageUrl(category.getImageUrl());
         }
+        if (category.getNameTranslations() != null) {
+            existing.getNameTranslations().clear();
+            existing.getNameTranslations().putAll(category.getNameTranslations());
+        }
         return categoryRepository.save(existing);
     }
 
@@ -310,17 +324,24 @@ public class ProductService {
         );
 
         for (Category cat : allCategories) {
-            if (categoryRepository.findBySlug(cat.getSlug()).isEmpty()) {
-                categoryRepository.save(cat);
+            Category savedCat = categoryRepository.findBySlug(cat.getSlug()).orElseGet(() -> categoryRepository.save(cat));
+            if (savedCat.getNameTranslations() == null) {
+                savedCat.setNameTranslations(new java.util.HashMap<>());
             }
+            if (savedCat.getDescriptionTranslations() == null) {
+                savedCat.setDescriptionTranslations(new java.util.HashMap<>());
+            }
+            savedCat.getNameTranslations().putAll(getPreseededCategoryNameTranslations(savedCat.getSlug(), savedCat.getName()));
+            savedCat.getDescriptionTranslations().putAll(getPreseededCategoryDescTranslations(savedCat.getSlug(), savedCat.getDescription()));
+            categoryRepository.save(savedCat);
         }
 
         Category oils = categoryRepository.findBySlug("cold-pressed-oils").orElse(allCategories.get(0));
         Category rice = categoryRepository.findBySlug("organic-rice-grains").orElse(allCategories.get(1));
 
-        upsertRiceProducts(rice);
+        if (productRepository.count() == 0) {
+            upsertRiceProducts(rice);
 
-        if (productRepository.count() <= 2) {
             // Sample Product 1: Groundnut Oil
             Product groundnutOil = Product.builder()
                     .name("Wood Pressed Groundnut Oil")
@@ -385,7 +406,7 @@ public class ProductService {
                     .product(sesameOil)
                     .variantName("2kg")
                     .price(new BigDecimal("840.00"))
-                    .discountPrice(new BigDecimal("780.00"))
+                    .discountPrice(new BigDecimal("680.00"))
                     .isDefault(false)
                     .build();
 
@@ -402,9 +423,8 @@ public class ProductService {
             sesameOil.getVariants().add(sOil5kg);
 
             productRepository.saveAll(List.of(groundnutOil, sesameOil));
+            standardizeAllProductVariants();
         }
-
-        standardizeAllProductVariants();
     }
 
     @Transactional
@@ -585,5 +605,98 @@ public class ProductService {
         }
 
         productRepository.save(kolam);
+    }
+
+    private java.util.Map<String, String> getPreseededCategoryNameTranslations(String slug, String fallbackName) {
+        java.util.Map<String, String> m = new java.util.HashMap<>();
+        if ("cold-pressed-oils".equals(slug)) {
+            m.put("ta", "மரச்செக்கு எண்ணெய்கள்");
+            m.put("hi", "कोल्ड-प्रेस तेल");
+            m.put("te", "గానుగ నూనెలు");
+            m.put("kn", "ಗಾಣದ ಎಣ್ಣೆಗಳು");
+            m.put("ml", "മരച്ചക്കിൻ എണ്ണകൾ");
+            m.put("mr", "कोल्ड-प्रेस तेल");
+            m.put("bn", "ঘানির তেল");
+            m.put("pa", "ਕੋਲਡ-ਪ੍ਰੈੱਸਡ ਤੇਲ");
+        } else if ("organic-rice-grains".equals(slug)) {
+            m.put("ta", "பாரம்பரிய இயற்கை அரிசி");
+            m.put("hi", "पारंपरिक जैविक चावल");
+            m.put("te", "సాంప్రదాయ ఆర్గానిక్ బియ్యం");
+            m.put("kn", "ಸಾಂಪ್ರದಾಯಿಕ ಆರ್ಗಾನಿಕ್ ಅಕ್ಕಿ");
+            m.put("ml", "പാരമ്പര്യ ജൈവ അരി");
+            m.put("mr", "पारंपारिक सेंद्रिय तांदूळ");
+            m.put("bn", "ঐতিহ্যবাহী অর্গানিক চাল");
+            m.put("pa", "ਰਵਾਇਤੀ ਜੈਵਿਕ ਚਾਵਲ");
+        } else if ("natural-spices-masala".equals(slug)) {
+            m.put("ta", "இயற்கை மசாலாக்கள்");
+            m.put("hi", "प्राकृतिक मसाले");
+            m.put("te", "సహజ మసాలాలు");
+            m.put("kn", "ನೈಸರ್ಗಿಕ ಮಸಾಲೆಗಳು");
+            m.put("ml", "സ്വാഭാവിക മസാലകൾ");
+            m.put("mr", "नैसर्गिक मसाले");
+            m.put("bn", "প্রাকৃতিক মশলা");
+            m.put("pa", "ਕੁਦਰਤੀ ਮਸਾਲੇ");
+        } else if ("natural-sweeteners".equals(slug)) {
+            m.put("ta", "இயற்கை இனிப்புகள்");
+            m.put("hi", "प्राकृतिक मिठास");
+            m.put("te", "సహజ తీపి పదార్ధాలు");
+            m.put("kn", "ನೈಸರ್ಗಿಕ ಸಿಹಿ");
+            m.put("ml", "സ്വാഭാവിക മധുരപലഹാരങ്ങൾ");
+            m.put("mr", "नैसर्गिक गोडवा");
+            m.put("bn", "প্রাকৃতিক মিষ্টি");
+            m.put("pa", "ਕੁਦਰਤੀ ਮਿਠਾਸ");
+        } else if ("atta-rice-dal".equals(slug)) {
+            m.put("ta", "மாவு, அரிசி & பருப்பு");
+            m.put("hi", "आटा, चावल और दाल");
+            m.put("te", "పిండి, బియ్యం & పప్పు");
+            m.put("kn", "ಹಿಟ್ಟು, ಅಕ್ಕಿ ಮತ್ತು ಬೇಳೆ");
+            m.put("ml", "പൊടി, അരി & പരിപ്പ്");
+            m.put("mr", "पीठ, तांदूळ आणि डाळ");
+            m.put("bn", "আটা, চাল ও ডাল");
+            m.put("pa", "ਆਟਾ, ਚਾਵਲ ਅਤੇ ਦਾਲ");
+        } else {
+            m.put("ta", fallbackName);
+            m.put("hi", fallbackName);
+            m.put("te", fallbackName);
+            m.put("kn", fallbackName);
+            m.put("ml", fallbackName);
+            m.put("mr", fallbackName);
+            m.put("bn", fallbackName);
+            m.put("pa", fallbackName);
+        }
+        return m;
+    }
+
+    private java.util.Map<String, String> getPreseededCategoryDescTranslations(String slug, String fallbackDesc) {
+        java.util.Map<String, String> m = new java.util.HashMap<>();
+        if ("cold-pressed-oils".equals(slug)) {
+            m.put("ta", "100% மரச்செக்கில் பிழியப்பட்ட தூய்மையான இயற்கை எண்ணெய்கள்");
+            m.put("hi", "100% पारंपरिक लकड़ी के कोल्हू से बना शुद्ध प्राकृतिक तेल");
+            m.put("te", "100% సాంప్రదాయ గానుగతో తీసిన స్వచ్ఛమైన నూనెలు");
+            m.put("kn", "100% ಸಾಂಪ್ರದಾಯಿಕ ಗಾಣದಿಂದ ತೆಗೆದ ಶುದ್ಧ ಎಣ್ಣೆಗಳು");
+            m.put("ml", "100% പാരമ്പര്യ മരച്ചക്കിൽ നിന്ന് നിർമ്മിച്ച വെളിച്ചെണ്ണയും എണ്ണകളും");
+            m.put("mr", "100% लाकडी घाण्याचे शुद्ध सेंद्रिय तेल");
+            m.put("bn", "১০০% খাঁটি কাঠের ঘানিতে তৈরি প্রাকৃতিক তেল");
+            m.put("pa", "100% ਸ਼ੁੱਧ ਕੁਦਰਤੀ ਕੋਲਡ-ਪ੍ਰੈੱਸਡ ਤੇਲ");
+        } else if ("organic-rice-grains".equals(slug)) {
+            m.put("ta", "பாரம்பரிய பாலிஷ் செய்யப்படாத இயற்கை அரிசி வகைகள்");
+            m.put("hi", "पारंपरिक अनपॉलिश देशी चावल की किस्में");
+            m.put("te", "సాంప్రదాయ పాలిష్ చేయని సహజ బియ్యం రకాలు");
+            m.put("kn", "ಸಾಂಪ್ರದಾಯಿಕ ಪಾಲಿಶ್ ಮಾಡದ ನೈಸರ್ಗಿಕ ಅಕ್ಕಿ ತಳಿಗಳು");
+            m.put("ml", "പാരമ്പര്യമായി കൃഷി ചെയ്ത പോളിഷ് ചെയ്യാത്ത അരി ഇനങ്ങൾ");
+            m.put("mr", "पारंपारिक सेंद्रिय तांदूळ प्रकार");
+            m.put("bn", "ঐতিহ্যবাহী আনপলিশড অর্গানিক চালের ধরন");
+            m.put("pa", "ਰਵਾਇਤੀ ਅਨਪਾਲਿਸ਼ਡ ਜੈਵਿਕ ਚਾਵਲ");
+        } else {
+            m.put("ta", fallbackDesc != null ? fallbackDesc : "");
+            m.put("hi", fallbackDesc != null ? fallbackDesc : "");
+            m.put("te", fallbackDesc != null ? fallbackDesc : "");
+            m.put("kn", fallbackDesc != null ? fallbackDesc : "");
+            m.put("ml", fallbackDesc != null ? fallbackDesc : "");
+            m.put("mr", fallbackDesc != null ? fallbackDesc : "");
+            m.put("bn", fallbackDesc != null ? fallbackDesc : "");
+            m.put("pa", fallbackDesc != null ? fallbackDesc : "");
+        }
+        return m;
     }
 }
