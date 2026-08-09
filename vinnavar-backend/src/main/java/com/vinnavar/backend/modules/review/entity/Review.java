@@ -25,6 +25,8 @@ public class Review {
     @Column(nullable = false)
     private String customerName;
 
+    private String customerLocation;
+
     private String customerEmail;
 
     private String customerPhone;

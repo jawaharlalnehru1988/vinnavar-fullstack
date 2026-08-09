@@ -27,6 +27,7 @@ public class OrderItem {
     private Long productId;
     private String productName;
     private String variantName;
+    private String hsnCode;
     private Integer quantity;
     private BigDecimal unitPrice;
     private BigDecimal totalPrice;

@@ -11,6 +11,7 @@ const AdminProducts = ({ products, categories, loadData }) => {
     const [productForm, setProductForm] = useState({
         name: "",
         slug: "",
+        hsnCode: "1006",
         categoryId: "",
         shortDescription: "",
         fullDescription: "",
@@ -32,6 +33,7 @@ const AdminProducts = ({ products, categories, loadData }) => {
         setProductForm({
             name: "",
             slug: "",
+            hsnCode: "1006",
             categoryId: "",
             shortDescription: "",
             fullDescription: "",
@@ -77,6 +79,7 @@ const AdminProducts = ({ products, categories, loadData }) => {
         setProductForm({
             name: prod.name || "",
             slug: prod.slug || "",
+            hsnCode: prod.hsnCode || "1006",
             categoryId: prod.category?.id || "",
             shortDescription: prod.shortDescription || "",
             fullDescription: prod.fullDescription || "",
@@ -307,6 +310,7 @@ const AdminProducts = ({ products, categories, loadData }) => {
         const payload = {
             name: productForm.name,
             slug: productForm.slug,
+            hsnCode: productForm.hsnCode || "1006",
             categoryId: productForm.categoryId ? parseInt(productForm.categoryId) : null,
             shortDescription: productForm.shortDescription,
             fullDescription: productForm.fullDescription,
@@ -387,6 +391,7 @@ const AdminProducts = ({ products, categories, loadData }) => {
                             <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider">
                                 <th className="py-3.5 px-4 text-center">Image</th>
                                 <th className="py-3.5 px-4">Product Name</th>
+                                <th className="py-3.5 px-4">HSN Code</th>
                                 <th className="py-3.5 px-4">Category</th>
                                 <th className="py-3.5 px-4">Variant / Price</th>
                                 <th className="py-3.5 px-4">Status</th>
@@ -425,6 +430,11 @@ const AdminProducts = ({ products, categories, loadData }) => {
                                                 </div>
                                             </td>
                                             <td className="py-3 px-4 font-bold text-slate-900">{p.name}</td>
+                                            <td className="py-3 px-4">
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                                    {p.hsnCode || "1006"}
+                                                </span>
+                                            </td>
                                             <td className="py-3 px-4 text-slate-600 font-medium">{p.category?.name || "Unassigned"}</td>
                                             <td className="py-3 px-4">
                                                 <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-200">
@@ -502,6 +512,16 @@ const AdminProducts = ({ products, categories, loadData }) => {
                                         value={productForm.slug}
                                         onChange={(e) => setProductForm({ ...productForm, slug: e.target.value })}
                                         placeholder="e.g. kattuyanam-rice"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">HSN Code</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all font-mono"
+                                        value={productForm.hsnCode}
+                                        onChange={(e) => setProductForm({ ...productForm, hsnCode: e.target.value })}
+                                        placeholder="1006"
                                     />
                                 </div>
                                 <div>

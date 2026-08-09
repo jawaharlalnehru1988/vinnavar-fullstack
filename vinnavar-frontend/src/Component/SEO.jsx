@@ -89,6 +89,25 @@ const SEO = () => {
             document.head.appendChild(canonicalLink);
         }
         canonicalLink.setAttribute("href", seoData.canonical || `https://vinnavar.com${pathname}`);
+
+        // Update Robots Meta Directives
+        let metaRobots = document.querySelector('meta[name="robots"]');
+        if (!metaRobots) {
+            metaRobots = document.createElement("meta");
+            metaRobots.setAttribute("name", "robots");
+            document.head.appendChild(metaRobots);
+        }
+
+        const isPrivateRoute = pathname.startsWith("/admin") ||
+                               pathname.startsWith("/MyAccount") ||
+                               pathname.startsWith("/ShopCheckOut") ||
+                               pathname.startsWith("/ShopCart");
+
+        if (isPrivateRoute) {
+            metaRobots.setAttribute("content", "noindex, nofollow");
+        } else {
+            metaRobots.setAttribute("content", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
+        }
     }, [pathname]);
 
     return null;

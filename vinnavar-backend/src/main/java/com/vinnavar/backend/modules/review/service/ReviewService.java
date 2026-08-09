@@ -31,6 +31,10 @@ public class ReviewService {
             review.setStatus("APPROVED");
         }
 
+        if (review.getCustomerLocation() == null || review.getCustomerLocation().isBlank()) {
+            review.setCustomerLocation("India");
+        }
+
         review.setCreatedAt(LocalDateTime.now());
         Review saved = reviewRepository.save(review);
         log.info("Created new product review ID {} for product ID {}", saved.getId(), saved.getProductId());

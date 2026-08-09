@@ -1,12 +1,8 @@
 User-agent: *
 Allow: /
 
-# Disallow sensitive internal admin and customer account pages from indexing
-Disallow: /admin
-Disallow: /admin/
-Disallow: /MyAccount*
-Disallow: /ShopCheckOut
-Disallow: /ShopCart
+# Disallow internal backend API endpoints
+Disallow: /api/
 
 # Search Engine XML Sitemap
 Sitemap: https://vinnavar.com/sitemap.xml

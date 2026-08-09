@@ -75,12 +75,15 @@ public class ProductService {
             mainImageUrl = images.get(0);
         }
 
+        String hsn = (dto.getHsnCode() != null && !dto.getHsnCode().isBlank()) ? dto.getHsnCode().trim() : "1006";
+
         Product product = Product.builder()
                 .name(dto.getName())
                 .slug(slug)
                 .shortDescription(dto.getShortDescription())
                 .fullDescription(dto.getFullDescription())
                 .benefits(dto.getBenefits())
+                .hsnCode(hsn)
                 .imageUrl(mainImageUrl)
                 .imageUrls(images)
                 .videoUrl(dto.getVideoUrl())
@@ -129,6 +132,11 @@ public class ProductService {
         product.setShortDescription(dto.getShortDescription());
         product.setFullDescription(dto.getFullDescription());
         product.setBenefits(dto.getBenefits());
+        if (dto.getHsnCode() != null && !dto.getHsnCode().isBlank()) {
+            product.setHsnCode(dto.getHsnCode().trim());
+        } else if (product.getHsnCode() == null || product.getHsnCode().isBlank()) {
+            product.setHsnCode("1006");
+        }
         if (dto.getImageUrls() != null) {
             product.getImageUrls().clear();
             product.getImageUrls().addAll(dto.getImageUrls());

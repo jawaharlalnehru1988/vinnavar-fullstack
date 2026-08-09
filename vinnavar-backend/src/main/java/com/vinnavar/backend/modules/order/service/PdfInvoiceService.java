@@ -183,7 +183,7 @@ public class PdfInvoiceService {
                     totalQty += qty;
                     BigDecimal lineTotal = item.getTotalPrice() != null ? item.getTotalPrice() : unitPrice.multiply(BigDecimal.valueOf(qty));
 
-                    String hsnCode = "1006";
+                    String hsnCode = (item.getHsnCode() != null && !item.getHsnCode().isBlank()) ? item.getHsnCode() : "1006";
 
                     BigDecimal mrp = unitPrice.multiply(new BigDecimal("1.15")).setScale(2, RoundingMode.HALF_UP);
                     BigDecimal lineMrpTotal = mrp.multiply(BigDecimal.valueOf(qty));

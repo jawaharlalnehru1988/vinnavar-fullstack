@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { MagnifyingGlass } from "react-loader-spinner";
 import Swal from "sweetalert2";
 import ScrollToTop from "../ScrollToTop";
-import { API_BASE_URL } from "../../services/api";
+import { API_BASE_URL, submitProductReview } from "../../services/api";
 
 const MyAccountReview = () => {
   const [loading, setLoading] = useState(true);
@@ -12,6 +12,7 @@ const MyAccountReview = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
+  const [location, setLocation] = useState("");
 
   const currentUser = (() => {
     try {
@@ -49,19 +50,39 @@ const MyAccountReview = () => {
     setSelectedProduct(item);
     setRating(5);
     setComment("");
+    setLocation(currentUser?.city ? `${currentUser.city}, ${currentUser.state || ""}` : "");
     setShowModal(true);
   };
 
-  const handleSubmitReview = (e) => {
+  const handleSubmitReview = async (e) => {
     e.preventDefault();
-    setShowModal(false);
-    Swal.fire({
-      icon: "success",
-      title: "Review Submitted! ⭐",
-      text: `Thank you for rating ${selectedProduct?.productName || "our product"} ${rating} stars! Your feedback helps organic farmers.`,
-      timer: 2500,
-      showConfirmButton: false
-    });
+    try {
+      await submitProductReview({
+        productId: selectedProduct?.productId || selectedProduct?.id || 1,
+        productName: selectedProduct?.productName || "Organic Product",
+        customerName: currentUser?.fullName || currentUser?.name || "Verified Customer",
+        customerLocation: location.trim() || "India",
+        customerPhone: currentUser?.mobileNumber || "",
+        customerEmail: currentUser?.email || "",
+        orderNumber: selectedProduct?.orderNumber || "",
+        rating: rating,
+        reviewTitle: `${rating} Star Rating`,
+        reviewComment: comment,
+        verifiedPurchase: true,
+        status: "APPROVED"
+      });
+
+      setShowModal(false);
+      Swal.fire({
+        icon: "success",
+        title: "Review Submitted! ⭐",
+        text: `Thank you for rating ${selectedProduct?.productName || "our product"} ${rating} stars! Your feedback helps organic farmers.`,
+        timer: 2500,
+        showConfirmButton: false
+      });
+    } catch (err) {
+      Swal.fire("Error", err.message || "Failed to submit review.", "error");
+    }
   };
 
   return (
@@ -198,6 +219,17 @@ const MyAccountReview = () => {
                   <div className="mb-3">
                     <label className="form-label small fw-bold text-muted mb-1">Product</label>
                     <input type="text" className="form-control form-control-sm bg-light" readOnly value={selectedProduct?.productName || ""} />
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label small fw-bold text-muted mb-1">Your City / Location (Place)</label>
+                    <input
+                      type="text"
+                      className="form-control form-control-sm"
+                      placeholder="e.g., Chennai, Tamil Nadu"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                    />
                   </div>
 
                   <div className="mb-3">

@@ -45,6 +45,9 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String benefits;
 
+    @Builder.Default
+    private String hsnCode = "1006";
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private Category category;

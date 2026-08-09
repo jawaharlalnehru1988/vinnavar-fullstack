@@ -16,6 +16,7 @@ public class ProductRequestDto {
     private String shortDescription;
     private String fullDescription;
     private String benefits;
+    private String hsnCode;
     private String imageUrl;
     private List<String> imageUrls;
     private String videoUrl;

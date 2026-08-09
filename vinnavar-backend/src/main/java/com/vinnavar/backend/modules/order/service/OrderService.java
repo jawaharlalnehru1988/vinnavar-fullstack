@@ -82,11 +82,15 @@ public class OrderService {
                 .build();
 
         for (CartItem cartItem : cartItems) {
+            String itemHsn = (cartItem.getProduct() != null && cartItem.getProduct().getHsnCode() != null && !cartItem.getProduct().getHsnCode().isBlank())
+                    ? cartItem.getProduct().getHsnCode()
+                    : "1006";
             OrderItem orderItem = OrderItem.builder()
                     .order(order)
                     .productId(cartItem.getProduct().getId())
                     .productName(cartItem.getProduct().getName())
                     .variantName(cartItem.getVariant().getVariantName())
+                    .hsnCode(itemHsn)
                     .quantity(cartItem.getQuantity())
                     .unitPrice(cartItem.getUnitPrice())
                     .totalPrice(cartItem.getTotalPrice())

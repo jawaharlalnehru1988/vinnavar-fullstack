@@ -8,6 +8,11 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.vinnavar.backend.modules.review.entity.Review;
+import com.vinnavar.backend.modules.review.repository.ReviewRepository;
+
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -15,6 +20,7 @@ import java.util.List;
 public class TestimonialService {
 
     private final TestimonialRepository testimonialRepository;
+    private final ReviewRepository reviewRepository;
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
@@ -67,7 +73,35 @@ public class TestimonialService {
     }
 
     public List<Testimonial> getActiveTestimonials() {
-        return testimonialRepository.findByActiveTrueOrderByCreatedAtDesc();
+        List<Testimonial> testimonials = new ArrayList<>(testimonialRepository.findByActiveTrueOrderByCreatedAtDesc());
+
+        List<Review> approvedReviews = reviewRepository.findByStatusOrderByCreatedAtDesc("APPROVED");
+        for (Review r : approvedReviews) {
+            String text = (r.getReviewComment() != null && !r.getReviewComment().isBlank())
+                    ? r.getReviewComment()
+                    : (r.getReviewTitle() != null ? r.getReviewTitle() : "Great organic product!");
+
+            Testimonial t = Testimonial.builder()
+                    .id(r.getId() + 100000L)
+                    .customerName(r.getCustomerName() != null ? r.getCustomerName() : "Valued Customer")
+                    .customerLocation((r.getCustomerLocation() != null && !r.getCustomerLocation().isBlank()) ? r.getCustomerLocation() : "India")
+                    .rating(r.getRating() != null ? r.getRating() : 5)
+                    .reviewText(text)
+                    .productName(r.getProductName() != null ? r.getProductName() : "Organic Specialty")
+                    .avatarUrl(r.getImageUrl())
+                    .active(true)
+                    .createdAt(r.getCreatedAt() != null ? r.getCreatedAt() : java.time.LocalDateTime.now())
+                    .build();
+            testimonials.add(t);
+        }
+
+        testimonials.sort((t1, t2) -> {
+            if (t1.getCreatedAt() == null && t2.getCreatedAt() == null) return 0;
+            if (t1.getCreatedAt() == null) return 1;
+            if (t2.getCreatedAt() == null) return -1;
+            return t2.getCreatedAt().compareTo(t1.getCreatedAt());
+        });
+        return testimonials;
     }
 
     public List<Testimonial> getAllTestimonialsForAdmin() {

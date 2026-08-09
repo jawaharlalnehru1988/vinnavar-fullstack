@@ -36,6 +36,7 @@ const ProductDetails = () => {
         title: "",
         comment: "",
         customerName: "",
+        customerLocation: "",
         customerPhone: "",
         imageFile: null,
         imagePreview: "",
@@ -114,6 +115,7 @@ const ProductDetails = () => {
                 productId: product.id,
                 productName: product.name,
                 customerName: newReview.customerName || currentUser?.fullName || currentUser?.name || "Organic Enthusiast",
+                customerLocation: newReview.customerLocation || "India",
                 customerPhone: newReview.customerPhone || currentUser?.mobileNumber || "",
                 rating: newReview.rating,
                 reviewTitle: newReview.title,
@@ -135,6 +137,7 @@ const ProductDetails = () => {
                 title: "",
                 comment: "",
                 customerName: "",
+                customerLocation: "",
                 customerPhone: "",
                 imageFile: null,
                 imagePreview: "",
@@ -834,7 +837,7 @@ const ProductDetails = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div>
                                         <label className="block text-xs font-bold text-slate-700 mb-1">Your Name:</label>
                                         <input
@@ -846,11 +849,21 @@ const ProductDetails = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-700 mb-1">Mobile Number (Optional):</label>
+                                        <label className="block text-xs font-bold text-slate-700 mb-1">City / Location (Place):</label>
+                                        <input
+                                            type="text"
+                                            className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none"
+                                            placeholder="e.g. Chennai, Tamil Nadu"
+                                            value={newReview.customerLocation}
+                                            onChange={(e) => setNewReview(prev => ({ ...prev, customerLocation: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-700 mb-1">Mobile (Optional):</label>
                                         <input
                                             type="tel"
                                             className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none"
-                                            placeholder="Mobile for verified buyer badge"
+                                            placeholder="Mobile number"
                                             value={newReview.customerPhone}
                                             onChange={(e) => setNewReview(prev => ({ ...prev, customerPhone: e.target.value }))}
                                         />

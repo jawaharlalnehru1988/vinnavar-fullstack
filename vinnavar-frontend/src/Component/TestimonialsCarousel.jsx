@@ -83,6 +83,39 @@ const TestimonialsCarousel = () => {
 
     const currentItem = testimonials[currentIndex];
 
+    const formatDate = (isoString) => {
+        if (!isoString) return "";
+        try {
+            const date = new Date(isoString);
+            if (isNaN(date.getTime())) return "";
+            return date.toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            });
+        } catch (e) {
+            return "";
+        }
+    };
+
+    const formatTime = (isoString) => {
+        if (!isoString) return "";
+        try {
+            const date = new Date(isoString);
+            if (isNaN(date.getTime())) return "";
+            return date.toLocaleTimeString("en-IN", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true
+            });
+        } catch (e) {
+            return "";
+        }
+    };
+
+    const formattedDateStr = formatDate(currentItem.createdAt);
+    const formattedTimeStr = formatTime(currentItem.createdAt);
+
     return (
         <section
             className="py-5 bg-light position-relative overflow-hidden"
@@ -94,11 +127,11 @@ const TestimonialsCarousel = () => {
                 {/* Section Header */}
                 <div className="text-center mb-4">
                     <span className="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-2 rounded-pill mb-2" style={{ color: "#2d6a4f" }}>
-                        💚 CUSTOMER REVIEWS
+                        💚 CUSTOMER REVIEWS & TESTIMONIALS
                     </span>
                     <h2 className="fw-bold text-dark fs-1 mb-2">What Our Happy Customers Say</h2>
                     <p className="text-muted fs-5 mb-0" style={{ maxWidth: "600px", margin: "0 auto" }}>
-                        Real stories and experiences from verified buyers across India who trust Vinnavar Organics.
+                        Real reviews and verified experiences from organic food buyers across India.
                     </p>
                 </div>
 
@@ -169,7 +202,7 @@ const TestimonialsCarousel = () => {
                                 "{currentItem.reviewText}"
                             </p>
 
-                            {/* Footer Customer Info */}
+                            {/* Footer Customer Info with Time, Place, Date */}
                             <div className="pt-3 border-top d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
                                 <div className="d-flex align-items-center gap-3">
                                     <div
@@ -187,9 +220,21 @@ const TestimonialsCarousel = () => {
                                         <h5 className="fw-bold mb-0 text-dark" style={{ fontSize: "17px" }}>
                                             {currentItem.customerName}
                                         </h5>
-                                        <small className="text-muted" style={{ fontSize: "13px" }}>
-                                            📍 {currentItem.customerLocation || "India"}
-                                        </small>
+                                        <div className="d-flex flex-wrap align-items-center gap-2 text-muted" style={{ fontSize: "12.5px" }}>
+                                            <span>📍 {currentItem.customerLocation || "India"}</span>
+                                            {formattedDateStr && (
+                                                <>
+                                                    <span className="text-secondary">•</span>
+                                                    <span>📅 {formattedDateStr}</span>
+                                                </>
+                                            )}
+                                            {formattedTimeStr && (
+                                                <>
+                                                    <span className="text-secondary">•</span>
+                                                    <span>🕒 {formattedTimeStr}</span>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 

@@ -408,7 +408,7 @@ const Header = () => {
         <div className="w-full py-1.5 bg-emerald-800 text-white font-medium text-xs tracking-wide overflow-hidden">
           {/* eslint-disable-next-line jsx-a11y/no-distracting-elements */}
           <marquee behavior="scroll" direction="left" scrollamount="6" className="m-0 align-middle">
-            🌱 100% Certified Pure Natural Organic Staples & Cold-Pressed Oils delivered directly to your doorstep! 🚚 Free Shipping across India!
+            🌱 100% Certified Pure Natural Organic Staples & Cold-Pressed Oils delivered directly to your doorstep!
           </marquee>
         </div>
 
