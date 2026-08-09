@@ -101,7 +101,9 @@ public class ShippingService {
 
                 ShippingCalculationResult calc = calculateShippingFee(w, st, pm, sub);
                 BigDecimal sf = calc.getTotalShippingFee();
-                BigDecimal gst = sub.multiply(new BigDecimal("0.05")).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal productGst = sub.multiply(new BigDecimal("0.05")).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal shippingGst = sf.multiply(new BigDecimal("0.18")).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal gst = productGst.add(shippingGst);
                 BigDecimal tot = sub.add(sf).add(gst).setScale(2, RoundingMode.HALF_UP);
 
                 o.setTotalWeightKg(w);

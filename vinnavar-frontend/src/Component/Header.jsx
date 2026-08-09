@@ -798,7 +798,7 @@ const Header = () => {
                       onError={() => {
                         Swal.fire("Google Sign In", "Google Sign In popup was closed or cancelled.", "info");
                       }}
-                      useOneTap
+                      useOneTap={!currentUser && !localStorage.getItem("vinnavar_customer_token")}
                       shape="pill"
                       theme="outline"
                       size="large"

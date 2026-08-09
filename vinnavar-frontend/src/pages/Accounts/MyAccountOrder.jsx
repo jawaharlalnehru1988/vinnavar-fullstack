@@ -411,7 +411,7 @@ const MyAccountOrder = () => {
                                 <span className="font-bold text-emerald-700">₹{selectedOrder.shippingFee || "48.00"}</span>
                               </div>
                               <div className="d-flex justify-content-between text-slate-700">
-                                <span>GST Tax (5%):</span>
+                                <span>GST Tax:</span>
                                 <span className="font-bold text-emerald-700">₹{selectedOrder.gstTax || "0.00"}</span>
                               </div>
                               <div className="d-flex justify-content-between text-slate-900 font-bold fs-6 pt-2 border-top border-emerald-200">

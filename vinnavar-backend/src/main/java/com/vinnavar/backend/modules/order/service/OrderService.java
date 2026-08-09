@@ -52,8 +52,11 @@ public class OrderService {
                 shippingService.calculateShippingFee(totalWeightKg, destState, pMethod, subtotal);
         BigDecimal shippingFee = calcResult.getTotalShippingFee();
 
-        BigDecimal gstTax = subtotal.multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);
-        BigDecimal totalAmount = subtotal.add(shippingFee).add(gstTax).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal productGst = subtotal.multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal shippingGst = shippingFee.multiply(new BigDecimal("0.18")).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal gstTax = productGst.add(shippingGst);
+        BigDecimal unroundedTotal = subtotal.add(shippingFee).add(gstTax).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal totalAmount = unroundedTotal.setScale(0, java.math.RoundingMode.FLOOR).setScale(2, java.math.RoundingMode.HALF_UP);
 
         String datePrefix = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String randomSuffix = UUID.randomUUID().toString().substring(0, 4).toUpperCase();

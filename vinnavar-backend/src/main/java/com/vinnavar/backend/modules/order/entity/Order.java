@@ -112,7 +112,11 @@ public class Order {
 
     public BigDecimal getGstTax() {
         if (gstTax != null) return gstTax;
-        return getSubtotal().multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal sub = getSubtotal();
+        BigDecimal shipFee = getShippingFee();
+        BigDecimal prodGst = sub.multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal shipGst = shipFee.multiply(new BigDecimal("0.18")).setScale(2, java.math.RoundingMode.HALF_UP);
+        return prodGst.add(shipGst);
     }
 
     @Enumerated(EnumType.STRING)

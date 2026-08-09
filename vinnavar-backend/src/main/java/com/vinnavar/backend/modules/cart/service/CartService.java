@@ -50,16 +50,20 @@ public class CartService {
         BigDecimal shippingFee = BigDecimal.ZERO;
         BigDecimal gstTax = BigDecimal.ZERO;
         BigDecimal totalAmount = BigDecimal.ZERO;
+        BigDecimal roundOff = BigDecimal.ZERO;
 
         if (totalCount > 0) {
             com.vinnavar.backend.modules.shipping.service.ShippingService.ShippingCalculationResult calcResult =
                     shippingService.calculateShippingFee(totalWeightKg, state, paymentMethod, subtotal);
             shippingFee = calcResult.getTotalShippingFee();
 
-            // 5% GST Tax on Subtotal
-            gstTax = subtotal.multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);
+            BigDecimal productGst = subtotal.multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);
+            BigDecimal shippingGst = shippingFee.multiply(new BigDecimal("0.18")).setScale(2, java.math.RoundingMode.HALF_UP);
+            gstTax = productGst.add(shippingGst);
 
-            totalAmount = subtotal.add(shippingFee).add(gstTax).setScale(2, java.math.RoundingMode.HALF_UP);
+            BigDecimal unroundedTotal = subtotal.add(shippingFee).add(gstTax).setScale(2, java.math.RoundingMode.HALF_UP);
+            totalAmount = unroundedTotal.setScale(0, java.math.RoundingMode.FLOOR).setScale(2, java.math.RoundingMode.HALF_UP);
+            roundOff = totalAmount.subtract(unroundedTotal).setScale(2, java.math.RoundingMode.HALF_UP);
         }
 
         return CartResponseDto.builder()
@@ -70,6 +74,7 @@ public class CartService {
                 .shippingFee(shippingFee)
                 .gstTax(gstTax)
                 .totalAmount(totalAmount)
+                .roundOff(roundOff)
                 .totalWeightKg(totalWeightKg)
                 .build();
     }

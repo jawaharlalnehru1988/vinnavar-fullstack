@@ -21,5 +21,6 @@ public class CartResponseDto {
     private BigDecimal shippingFee;
     private BigDecimal gstTax;
     private BigDecimal totalAmount;
+    private BigDecimal roundOff;
     private double totalWeightKg;
 }

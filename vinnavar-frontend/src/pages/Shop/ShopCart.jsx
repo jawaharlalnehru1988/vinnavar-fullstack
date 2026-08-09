@@ -363,9 +363,16 @@ const ShopCart = () => {
                     </div>
 
                     <div className="flex justify-between text-slate-700">
-                      <span className="font-bold text-slate-900">Tax (GST 5%)</span>
-                      <span className="font-black text-emerald-700">₹{(cart?.gstTax ?? (subtotal * 0.05)).toFixed(2)}</span>
+                      <span className="font-bold text-slate-900">Tax (GST)</span>
+                      <span className="font-black text-emerald-700">₹{(cart?.gstTax ?? 0).toFixed(2)}</span>
                     </div>
+
+                    {cart?.roundOff !== undefined && cart?.roundOff !== null && cart.roundOff !== 0 && (
+                      <div className="flex justify-between text-slate-700">
+                        <span className="font-bold text-slate-900">Round Off</span>
+                        <span className="font-black text-emerald-700">{cart.roundOff > 0 ? `+₹${cart.roundOff.toFixed(2)}` : `-₹${Math.abs(cart.roundOff).toFixed(2)}`}</span>
+                      </div>
+                    )}
 
                     <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-sm font-black text-slate-900">
                       <span>Total</span>
