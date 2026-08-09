@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import ScrollToTop from "../ScrollToTop";
@@ -9,6 +9,7 @@ import { ProductSkeleton } from "../../Component/Skeleton";
 const assortment = getImageUrl("/media/site/assortment-citrus-fruits.png");
 
 const Shop = () => {
+  const [searchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
@@ -16,6 +17,13 @@ const Shop = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("Featured");
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const catParam = searchParams.get("category");
+    if (catParam) {
+      setSelectedCategoryId(parseInt(catParam));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -293,18 +301,53 @@ const Shop = () => {
 
               {/* Products Grid */}
               {filteredProducts.length === 0 ? (
-                <div className="bg-white rounded-3xl p-12 border border-slate-100 shadow-sm text-center space-y-4">
-                  <div className="text-4xl">🌿</div>
-                  <h3 className="font-bold text-slate-900 text-base">No organic products found</h3>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto">
-                    No matching items found for your search. Try clearing filters or select another category.
-                  </p>
-                  <button
-                    className="px-6 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs rounded-full border border-emerald-200 transition-all active:scale-95"
-                    onClick={() => { setSelectedCategoryId(null); setSearchTerm(""); }}
-                  >
-                    Reset All Filters
-                  </button>
+                <div className="bg-white rounded-3xl p-8 sm:p-12 border border-slate-100 shadow-sm text-center space-y-6">
+                  <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto text-3xl text-amber-600 border border-amber-200/60 shadow-sm">
+                    🛠️
+                  </div>
+                  
+                  <div className="space-y-2 max-w-xl mx-auto">
+                    <h3 className="font-extrabold text-slate-900 text-lg sm:text-xl">
+                      Products are being updated in Admin side. kindly contact Owner
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-500 font-medium">
+                      We are currently populating products for <span className="font-bold text-emerald-700">{selectedCategoryObj?.name || "this category"}</span>. For instant queries or bulk availability, please contact the store owner directly.
+                    </p>
+                  </div>
+
+                  <div className="inline-flex flex-wrap items-center justify-center gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200/70 text-xs sm:text-sm">
+                    <a href="tel:+917550210447" className="font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1.5 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-xs">
+                      📞 +91 7550210447
+                    </a>
+                    <a href="mailto:vinnavarbrand@gmail.com" className="font-semibold text-slate-700 hover:text-emerald-700 flex items-center gap-1.5 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-xs">
+                      ✉️ vinnavarbrand@gmail.com
+                    </a>
+                  </div>
+
+                  <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const footerEl = document.getElementById("footer") || document.querySelector("footer");
+                        if (footerEl) {
+                          footerEl.scrollIntoView({ behavior: "smooth" });
+                        } else {
+                          window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+                        }
+                      }}
+                      className="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-full shadow-md shadow-emerald-700/20 transition-all active:scale-95 flex items-center gap-2"
+                    >
+                      <span>👇</span> View Owner & Store Details in Footer
+                    </button>
+
+                    <button
+                      type="button"
+                      className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-full transition-all active:scale-95"
+                      onClick={() => { setSelectedCategoryId(null); setSearchTerm(""); }}
+                    >
+                      View All Categories
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -321,15 +364,16 @@ const Shop = () => {
                           {/* Image Container & Badges */}
                           <div className="relative bg-slate-50 rounded-2xl p-4 h-48 flex items-center justify-center overflow-hidden">
                             {product.featured && (
-                              <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white uppercase tracking-wider shadow-sm">
+                              <span className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white uppercase tracking-wider shadow-sm">
                                 Featured
                               </span>
                             )}
                             <button
-                              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-white transition-all"
+                              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-white transition-all"
                               title="Add to Wishlist"
                               onClick={() => handleToggleWishlist(product)}
                             >
+
                               ❤️
                             </button>
 
@@ -338,6 +382,10 @@ const Shop = () => {
                                 src={imgUrl}
                                 alt={product.name}
                                 className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = "/media/placeholder.png";
+                                }}
                               />
                             </Link>
                           </div>

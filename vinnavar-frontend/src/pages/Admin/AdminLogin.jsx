@@ -53,58 +53,72 @@ const AdminLogin = () => {
     };
 
     return (
-        <div
-            className="d-flex align-items-center justify-content-center min-vh-100"
-            style={{
-                background: "linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)",
-                width: "100vw",
-                height: "100vh",
-                position: "fixed",
-                top: 0,
-                left: 0,
-                zIndex: 9999
-            }}
-        >
-            <div className="card shadow-lg border-0 rounded-4" style={{ width: "100%", maxWidth: "420px" }}>
-                <div className="card-body p-4 p-md-5">
-                    <div className="text-center mb-4">
-                        <img src={getImageUrl("/media/site/vinnavar_logo.png")} alt="Vinnavar Logo" style={{ height: "70px", objectFit: "contain" }} className="mb-2" />
-                        <h4 className="fw-bold text-success mb-1">Vinnavar Organics</h4>
-                        <p className="text-muted small">Admin Control Panel Login</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-900 p-4 font-sans">
+            {/* Background Decorative Glow Blobs */}
+            <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div className="w-full max-w-md bg-white/95 backdrop-blur-md rounded-3xl p-8 sm:p-10 shadow-2xl shadow-emerald-950/40 border border-white/20 relative z-10">
+                {/* Brand Header */}
+                <div className="text-center mb-8">
+                    <img
+                        src={getImageUrl("/media/site/vinnavar_logo.png")}
+                        alt="Vinnavar Logo"
+                        className="h-20 w-auto mx-auto object-contain mb-3 drop-shadow-md"
+                    />
+                    <h1 className="text-2xl font-black text-slate-900 tracking-tight">Vinnavar Organics</h1>
+                    <p className="text-xs text-slate-500 font-semibold mt-1 uppercase tracking-wider font-mono">
+                        Admin Control Panel
+                    </p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            Username
+                        </label>
+                        <input
+                            type="text"
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all duration-200"
+                            placeholder="Enter username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
                     </div>
 
-                    <form onSubmit={handleSubmit}>
-                        <div className="mb-3">
-                            <label className="form-label fw-bold text-dark">Username</label>
-                            <input
-                                type="text"
-                                className="form-control form-control-lg fs-6"
-                                placeholder="Enter username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="form-label fw-bold text-dark">Password</label>
-                            <input
-                                type="password"
-                                className="form-control form-control-lg fs-6"
-                                placeholder="Enter password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="btn btn-success btn-lg w-100 fw-bold fs-6 shadow-sm"
-                            disabled={loading}
-                            style={{ backgroundColor: "#2d6a4f", borderColor: "#2d6a4f" }}
-                        >
-                            {loading ? "Authenticating..." : "Login to Admin Portal"}
-                        </button>
-                    </form>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all duration-200"
+                            placeholder="Enter password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/30 transition-all duration-200 disabled:opacity-60 flex items-center justify-center gap-2 mt-2"
+                    >
+                        {loading ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                <span>Authenticating...</span>
+                            </>
+                        ) : (
+                            <span>Login to Admin Portal &rarr;</span>
+                        )}
+                    </button>
+                </form>
+
+                <div className="mt-8 text-center border-t border-slate-100 pt-4">
+                    <p className="text-[11px] text-slate-400 font-medium">Vinnavar Organic E-Commerce &copy; {new Date().getFullYear()}</p>
                 </div>
             </div>
         </div>

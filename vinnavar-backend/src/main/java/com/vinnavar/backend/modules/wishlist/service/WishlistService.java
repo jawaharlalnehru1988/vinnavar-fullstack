@@ -89,4 +89,23 @@ public class WishlistService {
     public void clearWishlist(String wishlistId) {
         wishlistItemRepository.deleteByWishlistId(wishlistId);
     }
+
+    @Transactional
+    public WishlistResponseDto mergeWishlists(String guestWishlistId, String userWishlistId) {
+        if (guestWishlistId != null && !guestWishlistId.trim().isEmpty() && !guestWishlistId.equals(userWishlistId)) {
+            List<WishlistItem> guestItems = wishlistItemRepository.findByWishlistId(guestWishlistId);
+            for (WishlistItem item : guestItems) {
+                WishlistRequestDto req = new WishlistRequestDto();
+                req.setWishlistId(userWishlistId);
+                req.setProductId(item.getProduct().getId());
+                if (item.getVariant() != null) {
+                    req.setVariantId(item.getVariant().getId());
+                }
+                addToWishlist(req);
+            }
+            wishlistItemRepository.deleteByWishlistId(guestWishlistId);
+        }
+        return getWishlist(userWishlistId);
+    }
 }
+

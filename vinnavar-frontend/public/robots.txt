@@ -1,3 +1,12 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+
+# Disallow sensitive internal admin and customer account pages from indexing
+Disallow: /admin
+Disallow: /admin/
+Disallow: /MyAccount*
+Disallow: /ShopCheckOut
+Disallow: /ShopCart
+
+# Search Engine XML Sitemap
+Sitemap: https://vinnavar.com/sitemap.xml

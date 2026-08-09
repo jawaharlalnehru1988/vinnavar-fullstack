@@ -90,6 +90,7 @@ public class AuthService {
 
         return AuthDto.AuthResponse.builder()
                 .token(token)
+                .id(customer.getId())
                 .username(customer.getMobileNumber())
                 .name(customer.getName())
                 .mobileNumber(customer.getMobileNumber())
@@ -122,6 +123,7 @@ public class AuthService {
 
         return AuthDto.AuthResponse.builder()
                 .token(token)
+                .id(customer.getId())
                 .username(customer.getMobileNumber())
                 .name(customer.getName())
                 .mobileNumber(customer.getMobileNumber())
@@ -154,6 +156,7 @@ public class AuthService {
 
         return AuthDto.AuthResponse.builder()
                 .token(token)
+                .id(customer.getId())
                 .username(customer.getMobileNumber())
                 .name(customer.getName())
                 .mobileNumber(customer.getMobileNumber())
@@ -235,6 +238,7 @@ public class AuthService {
 
         return AuthDto.AuthResponse.builder()
                 .token(token)
+                .id(customer.getId())
                 .username(customer.getMobileNumber())
                 .name(customer.getName())
                 .mobileNumber(customer.getMobileNumber())
@@ -295,6 +299,7 @@ public class AuthService {
 
             return AuthDto.AuthResponse.builder()
                     .token(token)
+                    .id(customer.getId())
                     .username(userIdentifier)
                     .name(customer.getName())
                     .mobileNumber(customer.getMobileNumber())

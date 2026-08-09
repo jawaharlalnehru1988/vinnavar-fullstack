@@ -40,4 +40,12 @@ public class WishlistController {
         wishlistService.clearWishlist(wishlistId);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/merge")
+    public ResponseEntity<WishlistResponseDto> mergeWishlists(
+            @RequestParam String guestWishlistId,
+            @RequestParam String userWishlistId) {
+        return ResponseEntity.ok(wishlistService.mergeWishlists(guestWishlistId, userWishlistId));
+    }
 }
+

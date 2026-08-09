@@ -65,6 +65,7 @@ public class AuthDto {
     @Builder
     public static class AuthResponse {
         private String token;
+        private Long id;
         private String username;
         private String role;
         private String name;
@@ -72,3 +73,4 @@ public class AuthDto {
         private String email;
     }
 }
+

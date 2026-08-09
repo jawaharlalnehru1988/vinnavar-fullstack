@@ -1,4 +1,4 @@
-import { API_BASE_URL, fetchSettings, getImageUrl, customerLogin, customerRegister, customerForgotPassword, customerGoogleLogin } from "../services/api";
+import { API_BASE_URL, fetchSettings, getImageUrl, customerLogin, customerRegister, customerForgotPassword, customerGoogleLogin, getCartId, getWishlistId, mergeCart, mergeWishlist } from "../services/api";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
@@ -19,6 +19,7 @@ const Header = () => {
       localStorage.setItem("vinnavar_customer_token", res.token);
       localStorage.setItem("vinnavar_customer", JSON.stringify(res));
       setCurrentUser(res);
+      await processPostLoginSync(res);
       closeModal();
       Swal.fire({
         icon: "success",
@@ -154,6 +155,34 @@ const Header = () => {
     }
   };
 
+  const processPostLoginSync = async (userRes) => {
+    try {
+      const userIdentifier = userRes.id || userRes.mobileNumber || userRes.username;
+      if (!userIdentifier) return;
+
+      const guestCartId = localStorage.getItem("vinnavar_cart_id");
+      const guestWishlistId = localStorage.getItem("vinnavar_wishlist_id");
+
+      const userCartId = `user_cart_${userIdentifier}`;
+      const userWishlistId = `user_wishlist_${userIdentifier}`;
+
+      if (guestCartId && guestCartId !== userCartId) {
+        await mergeCart(guestCartId, userCartId);
+      }
+      if (guestWishlistId && guestWishlistId !== userWishlistId) {
+        await mergeWishlist(guestWishlistId, userWishlistId);
+      }
+
+      localStorage.setItem("vinnavar_cart_id", userCartId);
+      localStorage.setItem("vinnavar_wishlist_id", userWishlistId);
+
+      window.dispatchEvent(new Event("cartUpdated"));
+      window.dispatchEvent(new Event("wishlistUpdated"));
+    } catch (e) {
+      console.error("Error merging cart/wishlist post login", e);
+    }
+  };
+
   const handleCustomerLogin = async (e) => {
     e.preventDefault();
     setAuthLoading(true);
@@ -162,6 +191,7 @@ const Header = () => {
       localStorage.setItem("vinnavar_customer_token", res.token);
       localStorage.setItem("vinnavar_customer", JSON.stringify(res));
       setCurrentUser(res);
+      await processPostLoginSync(res);
       closeModal();
       Swal.fire({
         icon: "success",
@@ -196,6 +226,7 @@ const Header = () => {
       localStorage.setItem("vinnavar_customer_token", res.token);
       localStorage.setItem("vinnavar_customer", JSON.stringify(res));
       setCurrentUser(res);
+      await processPostLoginSync(res);
       closeModal();
       Swal.fire({
         icon: "success",
@@ -230,6 +261,7 @@ const Header = () => {
       localStorage.setItem("vinnavar_customer_token", res.token);
       localStorage.setItem("vinnavar_customer", JSON.stringify(res));
       setCurrentUser(res);
+      await processPostLoginSync(res);
       closeModal();
       Swal.fire({
         icon: "success",
@@ -269,7 +301,7 @@ const Header = () => {
   };
 
   const fetchCart = async () => {
-    const cartId = localStorage.getItem("vinnavar_cart_id");
+    const cartId = getCartId();
     if (!cartId) {
       setCart({ items: [], totalItemCount: 0, subtotal: 0 });
       return;
@@ -286,7 +318,7 @@ const Header = () => {
   };
 
   const fetchWishlistCount = async () => {
-    const wishlistId = localStorage.getItem("vinnavar_wishlist_id");
+    const wishlistId = getWishlistId();
     if (!wishlistId) {
       setWishlistCount(0);
       return;

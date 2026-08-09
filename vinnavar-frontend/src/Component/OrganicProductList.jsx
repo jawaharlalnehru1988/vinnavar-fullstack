@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
-import { API_BASE_URL, fetchProducts, getImageUrl, toggleWishlist } from "../services/api";
+import { API_BASE_URL, fetchProducts, getImageUrl, toggleWishlist, getCartId } from "../services/api";
+
 import { ProductSkeleton } from "./Skeleton";
 
 const OrganicProductList = ({ categoryId, limit = 8 }) => {
@@ -48,11 +49,8 @@ const OrganicProductList = ({ categoryId, limit = 8 }) => {
         const variant = selectedVariants[product.id] || product.variants?.[0];
         if (!variant) return;
 
-        let cartId = localStorage.getItem("vinnavar_cart_id");
-        if (!cartId) {
-            cartId = "cart_" + Math.random().toString(36).substring(2, 11);
-            localStorage.setItem("vinnavar_cart_id", cartId);
-        }
+        const cartId = getCartId();
+
 
         try {
             const response = await fetch(`${API_BASE_URL}/cart/items`, {
@@ -154,15 +152,16 @@ const OrganicProductList = ({ categoryId, limit = 8 }) => {
                                     {/* Image Container & Badges */}
                                     <div className="relative bg-slate-50 rounded-2xl p-4 h-48 flex items-center justify-center overflow-hidden">
                                         {product.featured && (
-                                            <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white uppercase tracking-wider shadow-sm">
-                                                Best Seller
+                                            <span className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white uppercase tracking-wider shadow-sm">
+                                                Featured
                                             </span>
                                         )}
                                         <button
-                                            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-white transition-all"
+                                            className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md shadow-sm border border-slate-200/60 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-white transition-all"
                                             title="Add to Wishlist"
                                             onClick={() => handleToggleWishlist(product)}
                                         >
+
                                             ❤️
                                         </button>
 
@@ -171,6 +170,10 @@ const OrganicProductList = ({ categoryId, limit = 8 }) => {
                                                 src={imgUrl}
                                                 alt={product.name}
                                                 className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                                                onError={(e) => {
+                                                    e.target.onerror = null;
+                                                    e.target.src = "/media/placeholder.png";
+                                                }}
                                             />
                                         </Link>
                                     </div>

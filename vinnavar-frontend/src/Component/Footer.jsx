@@ -31,7 +31,7 @@ const Footer = () => {
 
   return (
     <div>
-      <footer className="footer mt-4" style={{ padding: "2rem 0" }}>
+      <footer id="footer" className="footer mt-4" style={{ padding: "2rem 0" }}>
         <div className="overlay" />
         <div className="container">
           <div className="row justify-content-center">

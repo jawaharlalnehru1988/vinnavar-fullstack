@@ -152,4 +152,24 @@ public class CartService {
     public void clearCart(String cartId) {
         cartItemRepository.deleteByCartId(cartId);
     }
+
+    @Transactional
+    public CartResponseDto mergeCarts(String guestCartId, String userCartId) {
+        if (guestCartId != null && !guestCartId.trim().isEmpty() && !guestCartId.equals(userCartId)) {
+            List<CartItem> guestItems = cartItemRepository.findByCartId(guestCartId);
+            for (CartItem item : guestItems) {
+                CartRequestDto req = new CartRequestDto();
+                req.setCartId(userCartId);
+                req.setProductId(item.getProduct().getId());
+                if (item.getVariant() != null) {
+                    req.setVariantId(item.getVariant().getId());
+                }
+                req.setQuantity(item.getQuantity());
+                addToCart(req);
+            }
+            cartItemRepository.deleteByCartId(guestCartId);
+        }
+        return getCart(userCartId);
+    }
 }
+

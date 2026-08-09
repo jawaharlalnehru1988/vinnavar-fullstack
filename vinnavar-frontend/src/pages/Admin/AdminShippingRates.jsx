@@ -107,7 +107,7 @@ const AdminShippingRates = () => {
             icon: "warning",
             showCancelButton: true,
             confirmButtonText: "Yes, Reseed Rates",
-            confirmButtonColor: "#047857"
+            confirmButtonColor: "#059669"
         });
 
         if (confirm.isConfirmed) {
@@ -130,92 +130,103 @@ const AdminShippingRates = () => {
     });
 
     return (
-        <div className="container-fluid p-4">
+        <div className="space-y-6">
             {/* Header */}
-            <div className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+            <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-slate-200">
                 <div>
-                    <h3 className="fw-bold text-dark mb-1">🚚 Shipping Rates & Zone Management</h3>
-                    <p className="text-muted mb-0">View, search, and adjust weight-based shipping rate cards and COD fees.</p>
+                    <h2 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>🚚</span> Shipping Rates & Zone Management
+                    </h2>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">View, search, and adjust weight-based shipping rate cards and COD fees</p>
                 </div>
-                <button className="btn btn-outline-success fw-bold d-flex align-items-center gap-2" onClick={handleReseedExcel}>
+                <button
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-all flex items-center gap-2"
+                    onClick={handleReseedExcel}
+                >
                     <span>📊</span> Re-import from Excel
                 </button>
             </div>
 
             {/* COD Config Card */}
-            <div className="card shadow-sm border-0 mb-4 rounded-4" style={{ backgroundColor: "#f8fafc" }}>
-                <div className="card-body p-4">
-                    <h5 className="fw-bold text-success mb-3 d-flex align-items-center gap-2">
-                        <span>💵</span> Cash On Delivery (COD) Fee Configuration
-                    </h5>
-                    <div className="row g-3 align-items-end">
-                        <div className="col-md-4">
-                            <label className="form-label fw-bold text-secondary">Fixed COD Fee (₹)</label>
-                            <div className="input-group">
-                                <span className="input-group-text bg-white">₹</span>
-                                <input
-                                    type="number"
-                                    step="0.5"
-                                    className="form-control"
-                                    value={codFixed}
-                                    onChange={(e) => setCodFixed(e.target.value)}
-                                    placeholder="30.0"
-                                />
-                            </div>
-                            <small className="text-muted">Applied on every COD order</small>
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+                <h3 className="font-extrabold text-emerald-800 text-sm flex items-center gap-2">
+                    <span>💵</span> Cash On Delivery (COD) Fee Configuration
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-600 mb-1">Fixed COD Fee (₹)</label>
+                        <div className="relative">
+                            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs font-bold text-slate-400">₹</span>
+                            <input
+                                type="number"
+                                step="0.5"
+                                className="w-full pl-7 pr-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500"
+                                value={codFixed}
+                                onChange={(e) => setCodFixed(e.target.value)}
+                                placeholder="30.0"
+                            />
                         </div>
-                        <div className="col-md-4">
-                            <label className="form-label fw-bold text-secondary">Variable COD Fee (%)</label>
-                            <div className="input-group">
-                                <input
-                                    type="number"
-                                    step="0.1"
-                                    className="form-control"
-                                    value={codVar}
-                                    onChange={(e) => setCodVar(e.target.value)}
-                                    placeholder="1.5"
-                                />
-                                <span className="input-group-text bg-white">%</span>
-                            </div>
-                            <small className="text-muted">Calculated on subtotal (optional)</small>
+                        <span className="text-[11px] text-slate-400 mt-1 block">Applied on every COD order</span>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-600 mb-1">Variable COD Fee (%)</label>
+                        <div className="relative">
+                            <input
+                                type="number"
+                                step="0.1"
+                                className="w-full pl-3.5 pr-7 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500"
+                                value={codVar}
+                                onChange={(e) => setCodVar(e.target.value)}
+                                placeholder="1.5"
+                            />
+                            <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs font-bold text-slate-400">%</span>
                         </div>
-                        <div className="col-md-4">
-                            <button
-                                className="btn btn-success fw-bold w-100 py-2"
-                                onClick={handleSaveCodConfigs}
-                                disabled={isSavingConfig}
-                            >
-                                {isSavingConfig ? "Saving Settings..." : "Save COD Settings"}
-                            </button>
-                        </div>
+                        <span className="text-[11px] text-slate-400 mt-1 block">Calculated on subtotal (optional)</span>
+                    </div>
+                    <div>
+                        <button
+                            className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all disabled:opacity-50"
+                            onClick={handleSaveCodConfigs}
+                            disabled={isSavingConfig}
+                        >
+                            {isSavingConfig ? "Saving Settings..." : "Save COD Settings"}
+                        </button>
                     </div>
                 </div>
             </div>
 
             {/* Rate Card Tabs & Filter */}
-            <div className="card shadow-sm border-0 rounded-4">
-                <div className="card-header bg-white p-3 border-0 d-flex flex-wrap justify-content-between align-items-center gap-3">
-                    <div className="btn-group p-1 bg-light rounded-3" role="group">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden space-y-4">
+                <div className="p-4 bg-slate-50/50 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4">
+                    <div className="bg-slate-200/80 p-1 rounded-xl flex items-center gap-1 shadow-inner">
                         <button
                             type="button"
-                            className={`btn fw-bold rounded-2 px-4 ${rateType === "FORWARD" ? "btn-success shadow-sm" : "btn-light text-secondary"}`}
+                            className={`text-xs font-bold px-4 py-1.5 rounded-lg transition-all ${
+                                rateType === "FORWARD"
+                                    ? "bg-white text-emerald-800 shadow-sm"
+                                    : "text-slate-600 hover:text-slate-900"
+                            }`}
                             onClick={() => setRateType("FORWARD")}
                         >
                             Forward Shipping Rates
                         </button>
                         <button
                             type="button"
-                            className={`btn fw-bold rounded-2 px-4 ${rateType === "REVERSE" ? "btn-success shadow-sm" : "btn-light text-secondary"}`}
+                            className={`text-xs font-bold px-4 py-1.5 rounded-lg transition-all ${
+                                rateType === "REVERSE"
+                                    ? "bg-white text-emerald-800 shadow-sm"
+                                    : "text-slate-600 hover:text-slate-900"
+                            }`}
                             onClick={() => setRateType("REVERSE")}
                         >
                             Reverse (Return) Rates
                         </button>
                     </div>
 
-                    <div style={{ maxWidth: "250px" }}>
+                    <div className="w-56">
                         <input
                             type="text"
-                            className="form-control form-control-sm rounded-3 px-3"
+                            className="w-full px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500"
                             placeholder="🔍 Search weight (e.g. 4.0)..."
                             value={searchWeight}
                             onChange={(e) => setSearchWeight(e.target.value)}
@@ -223,140 +234,138 @@ const AdminShippingRates = () => {
                     </div>
                 </div>
 
-                <div className="card-body p-0">
+                <div className="overflow-x-auto">
                     {loading ? (
-                        <div className="text-center py-5">
-                            <div className="spinner-border text-success" role="status"></div>
-                            <p className="text-muted mt-2">Loading shipping rate slabs...</p>
+                        <div className="text-center py-12">
+                            <div className="inline-block w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+                            <p className="text-xs text-slate-500 font-bold mt-2">Loading shipping rate slabs...</p>
                         </div>
                     ) : (
-                        <div className="table-responsive" style={{ maxHeight: "600px" }}>
-                            <table className="table table-hover align-middle mb-0">
-                                <thead className="table-light sticky-top shadow-sm">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider">
+                                    <th className="py-3.5 px-4">Weight (kg)</th>
+                                    <th className="py-3.5 px-4">Local (TN)</th>
+                                    <th className="py-3.5 px-4">Regional (South)</th>
+                                    <th className="py-3.5 px-4">Metro</th>
+                                    <th className="py-3.5 px-4">National</th>
+                                    <th className="py-3.5 px-4">Remote</th>
+                                    <th className="py-3.5 px-4 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 text-sm">
+                                {filteredRates.length === 0 ? (
                                     <tr>
-                                        <th className="px-3">Weight (kg)</th>
-                                        <th>Local (TN)</th>
-                                        <th>Regional (South)</th>
-                                        <th>Metro</th>
-                                        <th>National</th>
-                                        <th>Remote</th>
-                                        <th className="text-center px-3">Action</th>
+                                        <td colSpan="7" className="py-8 text-center text-slate-500 font-medium">
+                                            No rate slabs found for "{searchWeight}".
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredRates.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="7" className="text-center py-4 text-muted">
-                                                No rate slabs found for "{searchWeight}".
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        filteredRates.map((rate) => {
-                                            const isEditing = editingRate && editingRate.id === rate.id;
-                                            const activeRow = isEditing ? editingRate : rate;
+                                ) : (
+                                    filteredRates.map((rate) => {
+                                        const isEditing = editingRate && editingRate.id === rate.id;
+                                        const activeRow = isEditing ? editingRate : rate;
 
-                                            return (
-                                                <tr key={rate.id}>
-                                                    <td className="px-3 fw-bold text-dark">
-                                                        {rate.weightKg} {rate.unit}
-                                                    </td>
-                                                    <td>
-                                                        {isEditing ? (
-                                                            <input
-                                                                type="number"
-                                                                step="0.5"
-                                                                className="form-control form-control-sm"
-                                                                value={activeRow.localRate}
-                                                                onChange={(e) => setEditingRate({ ...activeRow, localRate: e.target.value })}
-                                                            />
-                                                        ) : (
-                                                            `₹${rate.localRate}`
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {isEditing ? (
-                                                            <input
-                                                                type="number"
-                                                                step="0.5"
-                                                                className="form-control form-control-sm"
-                                                                value={activeRow.regionalRate}
-                                                                onChange={(e) => setEditingRate({ ...activeRow, regionalRate: e.target.value })}
-                                                            />
-                                                        ) : (
-                                                            `₹${rate.regionalRate}`
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {isEditing ? (
-                                                            <input
-                                                                type="number"
-                                                                step="0.5"
-                                                                className="form-control form-control-sm"
-                                                                value={activeRow.metroRate}
-                                                                onChange={(e) => setEditingRate({ ...activeRow, metroRate: e.target.value })}
-                                                            />
-                                                        ) : (
-                                                            `₹${rate.metroRate}`
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {isEditing ? (
-                                                            <input
-                                                                type="number"
-                                                                step="0.5"
-                                                                className="form-control form-control-sm"
-                                                                value={activeRow.nationalRate}
-                                                                onChange={(e) => setEditingRate({ ...activeRow, nationalRate: e.target.value })}
-                                                            />
-                                                        ) : (
-                                                            `₹${rate.nationalRate}`
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {isEditing ? (
-                                                            <input
-                                                                type="number"
-                                                                step="0.5"
-                                                                className="form-control form-control-sm"
-                                                                value={activeRow.remoteRate}
-                                                                onChange={(e) => setEditingRate({ ...activeRow, remoteRate: e.target.value })}
-                                                            />
-                                                        ) : (
-                                                            `₹${rate.remoteRate}`
-                                                        )}
-                                                    </td>
-                                                    <td className="text-center px-3">
-                                                        {isEditing ? (
-                                                            <div className="btn-group btn-group-sm">
-                                                                <button
-                                                                    className="btn btn-success"
-                                                                    onClick={() => handleSaveRate(editingRate)}
-                                                                >
-                                                                    Save
-                                                                </button>
-                                                                <button
-                                                                    className="btn btn-secondary"
-                                                                    onClick={() => setEditingRate(null)}
-                                                                >
-                                                                    Cancel
-                                                                </button>
-                                                            </div>
-                                                        ) : (
+                                        return (
+                                            <tr key={rate.id} className="hover:bg-slate-50/80 transition-colors">
+                                                <td className="py-3 px-4 font-mono font-bold text-slate-900">
+                                                    {rate.weightKg} {rate.unit}
+                                                </td>
+                                                <td className="py-3 px-4 font-mono font-semibold text-slate-700">
+                                                    {isEditing ? (
+                                                        <input
+                                                            type="number"
+                                                            step="0.5"
+                                                            className="w-20 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-mono font-bold"
+                                                            value={activeRow.localRate}
+                                                            onChange={(e) => setEditingRate({ ...activeRow, localRate: e.target.value })}
+                                                        />
+                                                    ) : (
+                                                        `₹${rate.localRate}`
+                                                    )}
+                                                </td>
+                                                <td className="py-3 px-4 font-mono font-semibold text-slate-700">
+                                                    {isEditing ? (
+                                                        <input
+                                                            type="number"
+                                                            step="0.5"
+                                                            className="w-20 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-mono font-bold"
+                                                            value={activeRow.regionalRate}
+                                                            onChange={(e) => setEditingRate({ ...activeRow, regionalRate: e.target.value })}
+                                                        />
+                                                    ) : (
+                                                        `₹${rate.regionalRate}`
+                                                    )}
+                                                </td>
+                                                <td className="py-3 px-4 font-mono font-semibold text-slate-700">
+                                                    {isEditing ? (
+                                                        <input
+                                                            type="number"
+                                                            step="0.5"
+                                                            className="w-20 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-mono font-bold"
+                                                            value={activeRow.metroRate}
+                                                            onChange={(e) => setEditingRate({ ...activeRow, metroRate: e.target.value })}
+                                                        />
+                                                    ) : (
+                                                        `₹${rate.metroRate}`
+                                                    )}
+                                                </td>
+                                                <td className="py-3 px-4 font-mono font-semibold text-slate-700">
+                                                    {isEditing ? (
+                                                        <input
+                                                            type="number"
+                                                            step="0.5"
+                                                            className="w-20 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-mono font-bold"
+                                                            value={activeRow.nationalRate}
+                                                            onChange={(e) => setEditingRate({ ...activeRow, nationalRate: e.target.value })}
+                                                        />
+                                                    ) : (
+                                                        `₹${rate.nationalRate}`
+                                                    )}
+                                                </td>
+                                                <td className="py-3 px-4 font-mono font-semibold text-slate-700">
+                                                    {isEditing ? (
+                                                        <input
+                                                            type="number"
+                                                            step="0.5"
+                                                            className="w-20 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-mono font-bold"
+                                                            value={activeRow.remoteRate}
+                                                            onChange={(e) => setEditingRate({ ...activeRow, remoteRate: e.target.value })}
+                                                        />
+                                                    ) : (
+                                                        `₹${rate.remoteRate}`
+                                                    )}
+                                                </td>
+                                                <td className="py-3 px-4 text-center">
+                                                    {isEditing ? (
+                                                        <div className="flex items-center justify-center gap-1.5">
                                                             <button
-                                                                className="btn btn-sm btn-outline-primary fw-bold"
-                                                                onClick={() => setEditingRate({ ...rate })}
+                                                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-2.5 py-1 rounded-lg"
+                                                                onClick={() => handleSaveRate(editingRate)}
                                                             >
-                                                                ✏️ Edit
+                                                                Save
                                                             </button>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                                            <button
+                                                                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-2.5 py-1 rounded-lg border border-slate-200"
+                                                                onClick={() => setEditingRate(null)}
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <button
+                                                            className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-3 py-1.5 rounded-lg border border-slate-300 transition-all shadow-xs"
+                                                            onClick={() => setEditingRate({ ...rate })}
+                                                        >
+                                                            ✏️ Edit
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
                     )}
                 </div>
             </div>

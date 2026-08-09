@@ -9,6 +9,8 @@ import FAQ from "./FooterElements/Faq";
 import OrganicProductList from "../Component/OrganicProductList";
 import TestimonialsCarousel from "../Component/TestimonialsCarousel";
 import { ProductSkeleton, CategorySkeleton, OfferProductSkeleton } from "../Component/Skeleton";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const bannerdeal = getImageUrl("/media/site/banner-deal1.jpg");
 const product11 = getImageUrl("/media/products/product-img-11.jpg");
@@ -16,9 +18,6 @@ const refresh = getImageUrl("/media/site/refresh-cw.svg");
 const clock = getImageUrl("/media/site/clock.svg");
 const gift = getImageUrl("/media/site/gift.svg");
 const package1 = getImageUrl("/media/site/package.svg");
-// import "slick-carousel/slick/slick.css";
-// import "slick-carousel/slick/slick-theme.css";
-// import { PulseLoader } from 'react-spinners';
 
 const Home = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
@@ -44,6 +43,17 @@ const Home = () => {
     };
     loadCategories();
     loadOfferProducts();
+
+    // Ensure hero carousel continuously auto-plays without pausing on hover
+    const el = document.getElementById("carouselExampleFade");
+    if (el && window.bootstrap) {
+      const bsCarousel = new window.bootstrap.Carousel(el, {
+        interval: 2500,
+        pause: false,
+        ride: "carousel"
+      });
+      bsCarousel.cycle();
+    }
   }, []);
 
   const handleAddToCart = async (product) => {
@@ -99,65 +109,40 @@ const Home = () => {
     }
   };
 
-  const settings1 = {
+  const categorySliderSettings = {
     dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 3,
+    infinite: categories.length > 1,
+    speed: 600,
+    slidesToShow: 4,
     slidesToScroll: 1,
-    initialSlide: 1,
+    autoplay: true,
+    autoplaySpeed: 2500,
+    pauseOnHover: false,
+    pauseOnFocus: false,
+    arrows: true,
     responsive: [
       {
-        breakpoint: 1600,
+        breakpoint: 1200,
         settings: {
           slidesToShow: 3,
           slidesToScroll: 1,
-          infinite: true,
-          dots: true,
-        },
-      },
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 1,
-          initialSlide: 1,
-        },
-      },
-      {
-        breakpoint: 900,
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 1,
-          initialSlide: 1,
-        },
+        }
       },
       {
         breakpoint: 768,
         settings: {
-          slidesToShow: 3,
-          slidesToScroll: 1,
-          initialSlide: 1,
-        },
-      },
-      {
-        breakpoint: 600,
-        settings: {
           slidesToShow: 2,
           slidesToScroll: 1,
-          initialSlide: 1,
-        },
+        }
       },
       {
         breakpoint: 480,
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-        },
-      },
-    ],
-    autoplay: true,
-    autoplaySpeed: 2000,
+        }
+      }
+    ]
   };
 
   // loading
@@ -194,6 +179,8 @@ const Home = () => {
                     id="carouselExampleFade"
                     className="carousel slide carousel-fade"
                     data-bs-ride="carousel"
+                    data-bs-pause="false"
+                    data-bs-interval="2500"
                   >
                     <div className="carousel-inner">
                       {/* Slide 1 */}
@@ -294,11 +281,11 @@ const Home = () => {
             <>
               {/* section category */}
               <section className="my-lg-14 my-8">
-                <div className="container ">
+                <div className="container">
                   <div className="row">
                     <div className="col-12">
                       <div className="mb-6">
-                        {/* heading    */}
+                        {/* heading */}
                         <div className="section-head text-center mt-8">
                           <h3
                             className="h3style"
@@ -308,84 +295,86 @@ const Home = () => {
                           </h3>
                           <div className="wt-separator bg-primarys"></div>
                           <div className="wt-separator2 bg-primarys"></div>
-                          {/* <p>Connecting with entrepreneurs online, is just a few clicks away.</p> */}
                         </div>
                       </div>
                     </div>
-                    <div className="row g-4 justify-content-center align-items-stretch">
+
+                    <div className="col-12">
                       {categories.length > 0 ? (
-                        categories.map((cat) => (
-                          <div key={cat.id} className="col-lg-3 col-md-6 col-12 d-flex">
-                            <div className="card h-100 w-100 category-card border-0 shadow-sm rounded-4 overflow-hidden d-flex flex-column">
-                              {/* Category Image */}
-                              <div
-                                className="position-relative overflow-hidden category-img-container d-flex align-items-center justify-content-center p-3 bg-light"
-                                style={{ height: "200px" }}
-                              >
-                                <Link
-                                  to="#"
-                                  onClick={(e) => { e.preventDefault(); setSelectedCategoryId(cat.id); }}
-                                  className="w-100 h-100 d-flex align-items-center justify-content-center"
+                        <Slider {...categorySliderSettings}>
+                          {categories.map((cat) => (
+                            <div key={cat.id} className="px-2 pb-3 h-100">
+                              <div className="card h-100 category-card border-0 shadow-sm rounded-4 overflow-hidden d-flex flex-column">
+                                {/* Category Image */}
+                                <div
+                                  className="position-relative overflow-hidden category-img-container d-flex align-items-center justify-content-center p-3 bg-light"
+                                  style={{ height: "200px" }}
                                 >
-                                  <img
-                                    src={cat.imageUrl ? getImageUrl(cat.imageUrl) : getImageUrl("/media/site/category-atta-rice-dal.jpg")}
-                                    alt={cat.name}
-                                    style={{
-                                      height: "100%",
-                                      width: "100%",
-                                      objectFit: "cover",
-                                      borderRadius: "12px",
-                                      transition: "transform 0.3s ease"
-                                    }}
-                                    className="img-fluid"
-                                  />
-                                </Link>
-                              </div>
-                              {/* Category Content */}
-                              <div className="card-body p-4 d-flex flex-column flex-grow-1">
-                                <h4
-                                  className="fs-6 fw-bold mb-2 text-dark"
-                                  style={{
-                                    display: "-webkit-box",
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: "vertical",
-                                    overflow: "hidden",
-                                    height: "44px"
-                                  }}
-                                  title={cat.name}
-                                >
-                                  <Link to="#" className="text-dark text-decoration-none" onClick={(e) => { e.preventDefault(); setSelectedCategoryId(cat.id); }}>
-                                    {cat.name}
+                                  <Link
+                                    to={`/Shop?category=${cat.id}`}
+                                    className="w-100 h-100 d-flex align-items-center justify-content-center"
+                                  >
+                                    <img
+                                      src={cat.imageUrl ? getImageUrl(cat.imageUrl) : getImageUrl("/media/site/category-atta-rice-dal.jpg")}
+                                      alt={cat.name}
+                                      style={{
+                                        height: "100%",
+                                        width: "100%",
+                                        objectFit: "cover",
+                                        borderRadius: "12px",
+                                        transition: "transform 0.3s ease"
+                                      }}
+                                      className="img-fluid"
+                                      onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = "/media/placeholder.png";
+                                      }}
+                                    />
                                   </Link>
-                                </h4>
-                                <p
-                                  className="text-muted small mb-4 flex-grow-1"
-                                  style={{
-                                    display: "-webkit-box",
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: "vertical",
-                                    overflow: "hidden",
-                                    height: "40px"
-                                  }}
-                                  title={cat.description}
-                                >
-                                  {cat.description || "Premium quality organically grown products."}
-                                </p>
-                                <Link
-                                  to="#"
-                                  onClick={(e) => { e.preventDefault(); setSelectedCategoryId(cat.id); }}
-                                  className="btn btn-success btn-sm rounded-pill mt-auto fw-bold py-2 w-100 shadow-sm"
-                                >
-                                  Browse Products
-                                </Link>
+                                </div>
+                                {/* Category Content */}
+                                <div className="card-body p-4 d-flex flex-column flex-grow-1">
+                                  <h4
+                                    className="fs-6 fw-bold mb-2 text-dark"
+                                    style={{
+                                      display: "-webkit-box",
+                                      WebkitLineClamp: 2,
+                                      WebkitBoxOrient: "vertical",
+                                      overflow: "hidden",
+                                      height: "44px"
+                                    }}
+                                    title={cat.name}
+                                  >
+                                    <Link to={`/Shop?category=${cat.id}`} className="text-dark text-decoration-none">
+                                      {cat.name}
+                                    </Link>
+                                  </h4>
+                                  <p
+                                    className="text-muted small mb-4 flex-grow-1"
+                                    style={{
+                                      display: "-webkit-box",
+                                      WebkitLineClamp: 2,
+                                      WebkitBoxOrient: "vertical",
+                                      overflow: "hidden",
+                                      height: "40px"
+                                    }}
+                                    title={cat.description}
+                                  >
+                                    {cat.description || "Premium quality organically grown products."}
+                                  </p>
+                                  <Link
+                                    to={`/Shop?category=${cat.id}`}
+                                    className="btn btn-success btn-sm rounded-pill mt-auto fw-bold py-2 w-100 shadow-sm"
+                                  >
+                                    Browse Products
+                                  </Link>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))
+                          ))}
+                        </Slider>
                       ) : (
-                        <div className="col-12">
-                          <CategorySkeleton count={4} />
-                        </div>
+                        <CategorySkeleton count={4} />
                       )}
                     </div>
                   </div>
@@ -484,7 +473,7 @@ const Home = () => {
                               <h3 className="h5 mb-3">10 minute grocery now</h3>
                               <p>
                                 Get your order delivered to your doorstep at the
-                                earliest from FreshCart pickup
+                                earliest from Vinnavar Organics pickup
                                 <p> stores near you.</p>
                               </p>
                             </div>

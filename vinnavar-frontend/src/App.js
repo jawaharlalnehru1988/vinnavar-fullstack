@@ -41,6 +41,7 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 import ProductDetails from "./pages/Shop/ProductDetails";
 import FloatingWhatsApp from "./Component/FloatingWhatsApp";
 import TrackOrder from "./pages/TrackOrder";
+import SEO from "./Component/SEO";
 
 const ScrollToTopOnNavigation = () => {
   const { pathname, search } = useLocation();
@@ -56,6 +57,7 @@ const AppContent = () => {
 
   return (
     <div>
+      <SEO />
       <ScrollToTopOnNavigation />
       {!isAdminRoute && <Header />}
       {!isAdminRoute && <FloatingWhatsApp />}

@@ -12881,7 +12881,7 @@ fieldset:disabled .btn {
 }
 .breadcrumb-item + .breadcrumb-item:before {
   color: var(--bs-breadcrumb-divider-color);
-  content: var(--bs-breadcrumb-divider, "../../index-2.html");
+  content: var(--bs-breadcrumb-divider, "/");
   float: left;
   padding-right: var(--bs-breadcrumb-item-padding-x);
 }

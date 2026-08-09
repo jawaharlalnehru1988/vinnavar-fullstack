@@ -64,7 +64,7 @@ const AdminCustomers = () => {
             name: cust.name || "",
             mobileNumber: cust.mobileNumber || "",
             email: cust.email || "",
-            password: "" // Blank by default, updated only if typed
+            password: ""
         });
         setIsModalOpen(true);
     };
@@ -111,8 +111,8 @@ const AdminCustomers = () => {
             text: "This customer profile will be permanently deleted.",
             icon: "warning",
             showCancelButton: true,
-            confirmButtonColor: "#dc3545",
-            cancelButtonColor: "#6c757d",
+            confirmButtonColor: "#e11d48",
+            cancelButtonColor: "#64748b",
             confirmButtonText: "Yes, Delete Profile"
         });
 
@@ -137,144 +137,129 @@ const AdminCustomers = () => {
     });
 
     return (
-        <div className="container-fluid p-4">
+        <div className="space-y-6">
             {/* Header Section */}
-            <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-slate-200">
                 <div>
-                    <h3 className="fw-bold mb-1 d-flex align-items-center gap-2 text-dark">
-                        <span>👥 Registered Customers</span>
-                        <span className="badge bg-success rounded-pill fs-6 px-3" style={{ backgroundColor: "#2d6a4f" }}>
+                    <h2 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>👥</span> Registered Customers
+                        <span className="bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 text-xs font-bold px-3 py-1 rounded-full font-mono">
                             {customers.length} Total
                         </span>
-                    </h3>
-                    <p className="text-muted mb-0 small">
-                        Manage customer accounts, update profile information, or perform CRUD operations.
+                    </h2>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                        Manage customer accounts, update profile information, or perform CRUD operations
                     </p>
                 </div>
-                <div className="d-flex gap-2">
+                <div className="flex items-center gap-2">
                     <button
-                        className="btn btn-success fw-bold d-flex align-items-center gap-2 px-3 py-2 rounded-3 shadow-sm"
-                        style={{ backgroundColor: "#2d6a4f", borderColor: "#2d6a4f" }}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs transition-all flex items-center gap-1.5"
                         onClick={handleOpenAddModal}
                     >
-                        <span>➕</span>
-                        <span>Add Customer</span>
+                        <span>➕</span> Add Customer
                     </button>
                     <button
-                        className="btn btn-outline-secondary fw-semibold d-flex align-items-center gap-2 px-3 py-2 rounded-3"
+                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 transition-all flex items-center gap-1.5"
                         onClick={loadCustomers}
                     >
-                        <span>🔄</span>
-                        <span>Refresh</span>
+                        <span>🔄</span> Refresh
                     </button>
                 </div>
             </div>
 
             {/* Filter / Search Bar */}
-            <div className="card border-0 shadow-sm mb-4 rounded-3">
-                <div className="card-body p-3">
-                    <div className="row g-3 align-items-center">
-                        <div className="col-12 col-md-6">
-                            <div className="input-group">
-                                <span className="input-group-text bg-white border-end-0 text-muted">🔍</span>
-                                <input
-                                    type="text"
-                                    className="form-control border-start-0 ps-0"
-                                    placeholder="Search customers by Name, Mobile Number, or Email..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                                {searchQuery && (
-                                    <button
-                                        className="btn btn-link text-muted text-decoration-none border-0"
-                                        onClick={() => setSearchQuery("")}
-                                    >
-                                        ✕
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                        <div className="col-12 col-md-6 text-md-end text-muted small">
-                            Showing <strong className="text-dark">{filteredCustomers.length}</strong> of <strong className="text-dark">{customers.length}</strong> customers
-                        </div>
-                    </div>
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex flex-wrap items-center justify-between gap-4">
+                <div className="relative w-full max-w-md">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-xs text-slate-400">🔍</span>
+                    <input
+                        type="text"
+                        className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-emerald-500"
+                        placeholder="Search customers by Name, Mobile Number, or Email..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    {searchQuery && (
+                        <button
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 font-bold"
+                            onClick={() => setSearchQuery("")}
+                        >
+                            ✕
+                        </button>
+                    )}
+                </div>
+                <div className="text-xs text-slate-500 font-medium">
+                    Showing <strong className="text-slate-800">{filteredCustomers.length}</strong> of <strong className="text-slate-800">{customers.length}</strong> customers
                 </div>
             </div>
 
             {/* Customers Table */}
-            <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div className="table-responsive">
-                    <table className="table table-hover align-middle mb-0">
-                        <thead className="bg-light text-muted text-uppercase small" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
-                            <tr>
-                                <th className="ps-4 py-3">Customer</th>
-                                <th className="py-3">Mobile Number</th>
-                                <th className="py-3">Email Address</th>
-                                <th className="py-3">Joined Date</th>
-                                <th className="text-end pe-4 py-3">Actions</th>
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider">
+                                <th className="py-3.5 px-4">Customer</th>
+                                <th className="py-3.5 px-4">Mobile Number</th>
+                                <th className="py-3.5 px-4">Email Address</th>
+                                <th className="py-3.5 px-4">Joined Date</th>
+                                <th className="py-3.5 px-4 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y divide-slate-100 text-sm">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="5" className="text-center py-5">
-                                        <div className="spinner-border text-success" role="status">
-                                            <span className="visually-hidden">Loading...</span>
-                                        </div>
-                                        <div className="mt-2 text-muted small">Fetching registered customers...</div>
+                                    <td colSpan="5" className="py-12 text-center">
+                                        <div className="inline-block w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+                                        <p className="text-xs text-slate-500 font-bold mt-2">Fetching registered customers...</p>
                                     </td>
                                 </tr>
                             ) : filteredCustomers.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="text-center py-5 text-muted">
-                                        <div className="fs-1 mb-2">👤</div>
-                                        <div className="fw-bold">No customers found</div>
-                                        <div className="small text-muted mt-1">
+                                    <td colSpan="5" className="py-12 text-center text-slate-500 font-medium">
+                                        <div className="text-4xl mb-2 opacity-40">👤</div>
+                                        <div className="font-bold text-slate-800">No customers found</div>
+                                        <div className="text-xs text-slate-400 mt-1">
                                             {searchQuery ? "Try refining your search filter query." : "No registered customers yet."}
                                         </div>
                                     </td>
                                 </tr>
                             ) : (
                                 filteredCustomers.map((cust) => (
-                                    <tr key={cust.id}>
-                                        <td className="ps-4 py-3">
-                                            <div className="d-flex align-items-center gap-3">
-                                                <span
-                                                    className="d-inline-flex align-items-center justify-content-center rounded-circle text-white fw-bold shadow-sm"
-                                                    style={{
-                                                        width: "40px",
-                                                        height: "40px",
-                                                        fontSize: "14px",
-                                                        backgroundColor: "#2d6a4f"
-                                                    }}
-                                                >
+                                    <tr key={cust.id} className="hover:bg-slate-50/80 transition-colors">
+                                        <td className="py-3 px-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-emerald-700 text-white font-bold flex items-center justify-center text-xs shadow-xs">
                                                     {getUserInitials(cust.name)}
-                                                </span>
+                                                </div>
                                                 <div>
-                                                    <div className="fw-bold text-dark">{cust.name}</div>
-                                                    <small className="text-muted">ID: #{cust.id}</small>
+                                                    <div className="font-bold text-slate-900">{cust.name}</div>
+                                                    <div className="text-xs font-mono text-slate-400">ID: #{cust.id}</div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="py-3 fw-semibold text-dark">
+                                        <td className="py-3 px-4 font-semibold text-slate-800">
                                             📱 +91 {cust.mobileNumber}
                                         </td>
-                                        <td className="py-3 text-muted">
-                                            {cust.email ? <span>✉️ {cust.email}</span> : <span className="badge bg-light text-secondary">N/A</span>}
+                                        <td className="py-3 px-4 text-slate-500 text-xs">
+                                            {cust.email ? (
+                                                <span>✉️ {cust.email}</span>
+                                            ) : (
+                                                <span className="bg-slate-100 text-slate-400 border border-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-md">N/A</span>
+                                            )}
                                         </td>
-                                        <td className="py-3 text-muted small">
+                                        <td className="py-3 px-4 text-slate-400 text-xs">
                                             📅 {cust.createdAt ? new Date(cust.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "Recent"}
                                         </td>
-                                        <td className="text-end pe-4 py-3">
-                                            <div className="d-flex justify-content-end gap-2">
+                                        <td className="py-3 px-4 text-right">
+                                            <div className="flex items-center justify-end gap-2">
                                                 <button
-                                                    className="btn btn-sm btn-outline-primary fw-semibold px-3 rounded-pill"
+                                                    className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-3 py-1.5 rounded-lg border border-slate-300 transition-all shadow-xs"
                                                     onClick={() => handleOpenEditModal(cust)}
                                                 >
                                                     ✏️ Edit
                                                 </button>
                                                 <button
-                                                    className="btn btn-sm btn-outline-danger fw-semibold px-3 rounded-pill"
+                                                    className="bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs px-3 py-1.5 rounded-lg border border-rose-200 transition-all shadow-xs"
                                                     onClick={() => handleDelete(cust)}
                                                 >
                                                     🗑️ Delete
@@ -291,92 +276,97 @@ const AdminCustomers = () => {
 
             {/* Custom Modal for Add / Edit */}
             {isModalOpen && (
-                <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0, 0, 0, 0.5)", zIndex: 1055 }} tabIndex="-1">
-                    <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content shadow-lg border-0 rounded-4">
-                            <div className="modal-header border-0 pb-0">
-                                <h5 className="modal-title fw-bold text-success">
-                                    {modalMode === "ADD" ? "➕ Add New Customer" : `✏️ Edit Customer (${selectedCustomer?.name})`}
-                                </h5>
-                                <button type="button" className="btn-close" onClick={handleCloseModal}></button>
-                            </div>
-                            <form onSubmit={handleSubmitForm}>
-                                <div className="modal-body py-3">
-                                    <div className="mb-3">
-                                        <label className="form-label small fw-bold">Full Name *</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            placeholder="e.g. Jawaharlal Nehru"
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label className="form-label small fw-bold">Mobile Phone Number *</label>
-                                        <div className="input-group">
-                                            <span className="input-group-text bg-light fw-bold text-muted">+91</span>
-                                            <input
-                                                type="tel"
-                                                className="form-control"
-                                                placeholder="e.g. 9876543210"
-                                                value={formData.mobileNumber}
-                                                onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="mb-3">
-                                        <label className="form-label small fw-bold">Email Address (Optional)</label>
-                                        <input
-                                            type="email"
-                                            className="form-control"
-                                            placeholder="you@example.com"
-                                            value={formData.email}
-                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        />
-                                    </div>
-                                     <div className="mb-3">
-                                         <label className="form-label small fw-bold">
-                                             {modalMode === "ADD" ? "Password *" : "Password (Leave blank to keep existing)"}
-                                         </label>
-                                         <div className="input-group">
-                                             <input
-                                                 type={showPassword ? "text" : "password"}
-                                                 className="form-control"
-                                                 placeholder={modalMode === "ADD" ? "Enter password" : "Enter new password if changing"}
-                                                 value={formData.password}
-                                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                                 required={modalMode === "ADD"}
-                                             />
-                                             <button
-                                                 className="btn btn-outline-secondary bg-white text-muted border-start-0"
-                                                 type="button"
-                                                 onClick={() => setShowPassword(!showPassword)}
-                                                 title={showPassword ? "Hide password" : "Show password"}
-                                                 style={{ borderColor: "#ced4da" }}
-                                             >
-                                                 {showPassword ? "🙈" : "👁️"}
-                                             </button>
-                                         </div>
-                                     </div>
-                                </div>
-                                <div className="modal-footer border-0 pt-0">
-                                    <button type="button" className="btn btn-light fw-semibold px-4 rounded-3" onClick={handleCloseModal}>
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="btn btn-success fw-bold px-4 rounded-3"
-                                        style={{ backgroundColor: "#2d6a4f", borderColor: "#2d6a4f" }}
-                                        disabled={submitting}
-                                    >
-                                        {submitting ? "Saving..." : modalMode === "ADD" ? "Create Customer" : "Update Customer"}
-                                    </button>
-                                </div>
-                            </form>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full border border-slate-100 overflow-hidden">
+                        <div className="bg-emerald-700 text-white px-6 py-4 flex items-center justify-between">
+                            <h3 className="text-base font-extrabold flex items-center gap-2">
+                                <span>👤</span> {modalMode === "ADD" ? "Add New Customer" : `Edit Customer (${selectedCustomer?.name})`}
+                            </h3>
+                            <button
+                                type="button"
+                                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white font-bold transition-all"
+                                onClick={handleCloseModal}
+                            >
+                                &times;
+                            </button>
                         </div>
+
+                        <form onSubmit={handleSubmitForm} className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Full Name *</label>
+                                <input
+                                    type="text"
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+                                    placeholder="e.g. Jawaharlal Nehru"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Mobile Phone Number *</label>
+                                <div className="relative">
+                                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs font-bold text-slate-400">+91</span>
+                                    <input
+                                        type="tel"
+                                        className="w-full pl-11 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+                                        placeholder="e.g. 9876543210"
+                                        value={formData.mobileNumber}
+                                        onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Email Address (Optional)</label>
+                                <input
+                                    type="email"
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+                                    placeholder="you@example.com"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                                    {modalMode === "ADD" ? "Password *" : "Password (Leave blank to keep existing)"}
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        className="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+                                        placeholder={modalMode === "ADD" ? "Enter password" : "Enter new password if changing"}
+                                        value={formData.password}
+                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                        required={modalMode === "ADD"}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                    >
+                                        {showPassword ? "🙈" : "👁️"}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl"
+                                    onClick={handleCloseModal}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs disabled:opacity-50"
+                                    disabled={submitting}
+                                >
+                                    {submitting ? "Saving..." : modalMode === "ADD" ? "Create Customer" : "Update Customer"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

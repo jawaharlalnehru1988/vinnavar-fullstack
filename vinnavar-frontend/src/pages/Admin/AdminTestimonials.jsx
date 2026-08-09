@@ -119,8 +119,8 @@ const AdminTestimonials = () => {
             text: "This testimonial will be permanently deleted from the database.",
             icon: "warning",
             showCancelButton: true,
-            confirmButtonColor: "#dc3545",
-            cancelButtonColor: "#6c757d",
+            confirmButtonColor: "#e11d48",
+            cancelButtonColor: "#64748b",
             confirmButtonText: "Yes, Delete"
         });
 
@@ -146,141 +146,134 @@ const AdminTestimonials = () => {
     });
 
     return (
-        <div className="container-fluid p-4">
+        <div className="space-y-6">
             {/* Header Section */}
-            <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-slate-200">
                 <div>
-                    <h3 className="fw-bold mb-1 d-flex align-items-center gap-2 text-dark">
-                        <span>💬 Customer Testimonials</span>
-                        <span className="badge bg-success rounded-pill fs-6 px-3" style={{ backgroundColor: "#2d6a4f" }}>
+                    <h2 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>💬</span> Customer Testimonials
+                        <span className="bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 text-xs font-bold px-3 py-1 rounded-full font-mono">
                             {testimonials.length} Total
                         </span>
-                    </h3>
-                    <p className="text-muted mb-0 small">
-                        Manage customer reviews & testimonials displayed in the moving carousel on the Home page.
+                    </h2>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                        Manage customer reviews & testimonials displayed in the moving carousel on the Home page
                     </p>
                 </div>
-                <div className="d-flex gap-2">
+                <div className="flex items-center gap-2">
                     <button
-                        className="btn btn-success fw-bold d-flex align-items-center gap-2 px-3 py-2 rounded-3 shadow-sm"
-                        style={{ backgroundColor: "#2d6a4f", borderColor: "#2d6a4f" }}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs transition-all flex items-center gap-1.5"
                         onClick={handleOpenAddModal}
                     >
-                        <span>➕</span>
-                        <span>Add Testimonial</span>
+                        <span>➕</span> Add Testimonial
                     </button>
                     <button
-                        className="btn btn-outline-secondary fw-semibold d-flex align-items-center gap-2 px-3 py-2 rounded-3"
+                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 transition-all flex items-center gap-1.5"
                         onClick={loadTestimonials}
                     >
-                        <span>🔄</span>
-                        <span>Refresh</span>
+                        <span>🔄</span> Refresh
                     </button>
                 </div>
             </div>
 
             {/* Search Filter */}
-            <div className="card border-0 shadow-sm mb-4 rounded-3">
-                <div className="card-body p-3">
-                    <div className="row g-3 align-items-center">
-                        <div className="col-12 col-md-6">
-                            <div className="input-group">
-                                <span className="input-group-text bg-white border-end-0 text-muted">🔍</span>
-                                <input
-                                    type="text"
-                                    className="form-control border-start-0 ps-0"
-                                    placeholder="Search testimonials by Name, Location, Product, or Review..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                                {searchQuery && (
-                                    <button className="btn btn-link text-muted text-decoration-none border-0" onClick={() => setSearchQuery("")}>
-                                        ✕
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                        <div className="col-12 col-md-6 text-md-end text-muted small">
-                            Showing <strong className="text-dark">{filteredTestimonials.length}</strong> of <strong className="text-dark">{testimonials.length}</strong> testimonials
-                        </div>
-                    </div>
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex flex-wrap items-center justify-between gap-4">
+                <div className="relative w-full max-w-md">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-xs text-slate-400">🔍</span>
+                    <input
+                        type="text"
+                        className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-emerald-500"
+                        placeholder="Search testimonials by Name, Location, Product, or Review..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    {searchQuery && (
+                        <button
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 font-bold"
+                            onClick={() => setSearchQuery("")}
+                        >
+                            ✕
+                        </button>
+                    )}
+                </div>
+                <div className="text-xs text-slate-500 font-medium">
+                    Showing <strong className="text-slate-800">{filteredTestimonials.length}</strong> of <strong className="text-slate-800">{testimonials.length}</strong> testimonials
                 </div>
             </div>
 
             {/* Testimonials Table */}
-            <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div className="table-responsive">
-                    <table className="table table-hover align-middle mb-0">
-                        <thead className="bg-light text-muted text-uppercase small" style={{ fontSize: "11px", letterSpacing: "0.5px" }}>
-                            <tr>
-                                <th className="ps-4 py-3">Customer</th>
-                                <th className="py-3">Rating & Product</th>
-                                <th className="py-3" style={{ width: "35%" }}>Review Content</th>
-                                <th className="py-3">Status</th>
-                                <th className="text-end pe-4 py-3">Actions</th>
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider whitespace-nowrap">
+                                <th className="py-3.5 px-4">Customer</th>
+                                <th className="py-3.5 px-4">Rating & Product</th>
+                                <th className="py-3.5 px-4 w-[35%]">Review Content</th>
+                                <th className="py-3.5 px-4">Status</th>
+                                <th className="py-3.5 px-4 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y divide-slate-100 text-sm">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="5" className="text-center py-5">
-                                        <div className="spinner-border text-success" role="status">
-                                            <span className="visually-hidden">Loading...</span>
-                                        </div>
-                                        <div className="mt-2 text-muted small">Fetching testimonials...</div>
+                                    <td colSpan="5" className="py-12 text-center">
+                                        <div className="inline-block w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+                                        <p className="text-xs text-slate-500 font-bold mt-2">Fetching testimonials...</p>
                                     </td>
                                 </tr>
                             ) : filteredTestimonials.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="text-center py-5 text-muted">
-                                        <div className="fs-1 mb-2">💬</div>
-                                        <div className="fw-bold">No testimonials found</div>
-                                        <div className="small text-muted mt-1">
+                                    <td colSpan="5" className="py-12 text-center text-slate-500 font-medium">
+                                        <div className="text-4xl mb-2 opacity-40">💬</div>
+                                        <div className="font-bold text-slate-800">No testimonials found</div>
+                                        <div className="text-xs text-slate-400 mt-1">
                                             {searchQuery ? "Try refining your search query." : "Click 'Add Testimonial' to create one."}
                                         </div>
                                     </td>
                                 </tr>
                             ) : (
                                 filteredTestimonials.map((item) => (
-                                    <tr key={item.id}>
-                                        <td className="ps-4 py-3">
-                                            <div className="fw-bold text-dark">{item.customerName}</div>
-                                            <small className="text-muted">📍 {item.customerLocation || "India"}</small>
+                                    <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                                        <td className="py-3 px-4">
+                                            <div className="font-bold text-slate-900">{item.customerName}</div>
+                                            <div className="text-xs text-slate-400">📍 {item.customerLocation || "India"}</div>
                                         </td>
-                                        <td className="py-3">
-                                            <div className="text-warning fw-bold fs-6">
+                                        <td className="py-3 px-4 whitespace-nowrap">
+                                            <div className="text-amber-400 font-bold text-sm tracking-widest">
                                                 {"★".repeat(item.rating || 5)}
                                             </div>
                                             {item.productName && (
-                                                <span className="badge bg-light text-success border fw-semibold mt-1">
+                                                <span className="inline-block bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-md mt-1">
                                                     🌾 {item.productName}
                                                 </span>
                                             )}
                                         </td>
-                                        <td className="py-3 text-secondary small">
+                                        <td className="py-3 px-4 text-xs text-slate-600 italic">
                                             "{item.reviewText}"
                                         </td>
-                                        <td className="py-3">
+                                        <td className="py-3 px-4 whitespace-nowrap">
                                             <button
-                                                className={`btn btn-sm fw-semibold rounded-pill px-3 ${
-                                                    item.active !== false ? "btn-success" : "btn-secondary"
+                                                className={`px-3 py-1 rounded-full text-xs font-bold transition-all border ${
+                                                    item.active !== false
+                                                        ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20 hover:bg-emerald-500/20"
+                                                        : "bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200"
                                                 }`}
-                                                style={{ fontSize: "11px" }}
                                                 onClick={() => handleToggleActive(item)}
                                             >
                                                 {item.active !== false ? "✓ Active" : "Hidden"}
                                             </button>
                                         </td>
-                                        <td className="text-end pe-4 py-3">
-                                            <div className="d-flex justify-content-end gap-2">
+                                        <td className="py-3 px-4 text-right">
+                                            <div className="flex items-center justify-end gap-2">
                                                 <button
-                                                    className="btn btn-sm btn-outline-primary fw-semibold px-3 rounded-pill"
+                                                    className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-3 py-1.5 rounded-lg border border-slate-300 transition-all shadow-xs"
                                                     onClick={() => handleOpenEditModal(item)}
                                                 >
                                                     ✏️ Edit
                                                 </button>
                                                 <button
-                                                    className="btn btn-sm btn-outline-danger fw-semibold px-3 rounded-pill"
+                                                    className="bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs px-3 py-1.5 rounded-lg border border-rose-200 transition-all shadow-xs"
                                                     onClick={() => handleDelete(item)}
                                                 >
                                                     🗑️ Delete
@@ -297,108 +290,113 @@ const AdminTestimonials = () => {
 
             {/* Modal for Add / Edit */}
             {isModalOpen && (
-                <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0, 0, 0, 0.5)", zIndex: 1055 }} tabIndex="-1">
-                    <div className="modal-dialog modal-dialog-centered modal-lg">
-                        <div className="modal-content shadow-lg border-0 rounded-4">
-                            <div className="modal-header border-0 pb-0">
-                                <h5 className="modal-title fw-bold text-success">
-                                    {modalMode === "ADD" ? "➕ Add New Testimonial" : `✏️ Edit Testimonial (#${selectedTestimonial?.id})`}
-                                </h5>
-                                <button type="button" className="btn-close" onClick={handleCloseModal}></button>
-                            </div>
-                            <form onSubmit={handleSubmitForm}>
-                                <div className="modal-body py-3">
-                                    <div className="row g-3 mb-3">
-                                        <div className="col-md-6">
-                                            <label className="form-label small fw-bold">Customer Name *</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                placeholder="e.g. Kavitha R."
-                                                value={formData.customerName}
-                                                onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="col-md-6">
-                                            <label className="form-label small fw-bold">Location (City, State)</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                placeholder="e.g. Chennai, Tamil Nadu"
-                                                value={formData.customerLocation}
-                                                onChange={(e) => setFormData({ ...formData, customerLocation: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="row g-3 mb-3">
-                                        <div className="col-md-6">
-                                            <label className="form-label small fw-bold">Product Purchased</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                placeholder="e.g. Traditional Poongar Rice"
-                                                value={formData.productName}
-                                                onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="col-md-6">
-                                            <label className="form-label small fw-bold">Rating (1 to 5 Stars) *</label>
-                                            <select
-                                                className="form-select"
-                                                value={formData.rating}
-                                                onChange={(e) => setFormData({ ...formData, rating: parseInt(e.target.value) })}
-                                            >
-                                                <option value={5}>⭐⭐⭐⭐⭐ (5 Stars)</option>
-                                                <option value={4}>⭐⭐⭐⭐ (4 Stars)</option>
-                                                <option value={3}>⭐⭐⭐ (3 Stars)</option>
-                                                <option value={2}>⭐⭐ (2 Stars)</option>
-                                                <option value={1}>⭐ (1 Star)</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div className="mb-3">
-                                        <label className="form-label small fw-bold">Review Text *</label>
-                                        <textarea
-                                            className="form-control"
-                                            rows="3"
-                                            placeholder="Enter customer review text..."
-                                            value={formData.reviewText}
-                                            onChange={(e) => setFormData({ ...formData, reviewText: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="form-check form-switch mt-3">
-                                        <input
-                                            className="form-check-input"
-                                            type="checkbox"
-                                            id="testimonialActive"
-                                            checked={formData.active}
-                                            onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-                                        />
-                                        <label className="form-check-label fw-bold small" htmlFor="testimonialActive">
-                                            Publish Testimonial to Home Page Carousel
-                                        </label>
-                                    </div>
-                                </div>
-                                <div className="modal-footer border-0 pt-0">
-                                    <button type="button" className="btn btn-light fw-semibold px-4 rounded-3" onClick={handleCloseModal}>
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="btn btn-success fw-bold px-4 rounded-3"
-                                        style={{ backgroundColor: "#2d6a4f", borderColor: "#2d6a4f" }}
-                                        disabled={submitting}
-                                    >
-                                        {submitting ? "Saving..." : modalMode === "ADD" ? "Create Testimonial" : "Update Testimonial"}
-                                    </button>
-                                </div>
-                            </form>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full border border-slate-100 overflow-hidden">
+                        <div className="bg-emerald-700 text-white px-6 py-4 flex items-center justify-between">
+                            <h3 className="text-base font-extrabold flex items-center gap-2">
+                                <span>💬</span> {modalMode === "ADD" ? "Add New Testimonial" : `Edit Testimonial (#${selectedTestimonial?.id})`}
+                            </h3>
+                            <button
+                                type="button"
+                                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white font-bold transition-all"
+                                onClick={handleCloseModal}
+                            >
+                                &times;
+                            </button>
                         </div>
+                        <form onSubmit={handleSubmitForm} className="p-6 space-y-4 text-xs">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">Customer Name *</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+                                        placeholder="e.g. Kavitha R."
+                                        value={formData.customerName}
+                                        onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">Location (City, State)</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+                                        placeholder="e.g. Chennai, Tamil Nadu"
+                                        value={formData.customerLocation}
+                                        onChange={(e) => setFormData({ ...formData, customerLocation: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">Product Purchased</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+                                        placeholder="e.g. Traditional Poongar Rice"
+                                        value={formData.productName}
+                                        onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">Rating (1 to 5 Stars) *</label>
+                                    <select
+                                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+                                        value={formData.rating}
+                                        onChange={(e) => setFormData({ ...formData, rating: parseInt(e.target.value) })}
+                                    >
+                                        <option value={5}>⭐⭐⭐⭐⭐ (5 Stars)</option>
+                                        <option value={4}>⭐⭐⭐⭐ (4 Stars)</option>
+                                        <option value={3}>⭐⭐⭐ (3 Stars)</option>
+                                        <option value={2}>⭐⭐ (2 Stars)</option>
+                                        <option value={1}>⭐ (1 Star)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">Review Text *</label>
+                                <textarea
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+                                    rows="3"
+                                    placeholder="Enter customer review text..."
+                                    value={formData.reviewText}
+                                    onChange={(e) => setFormData({ ...formData, reviewText: e.target.value })}
+                                    required
+                                />
+                            </div>
+
+                            <label className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4"
+                                    checked={formData.active}
+                                    onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                                />
+                                <span className="font-bold text-slate-800 text-xs">
+                                    Publish Testimonial to Home Page Carousel
+                                </span>
+                            </label>
+
+                            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+                                <button
+                                    type="button"
+                                    className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl"
+                                    onClick={handleCloseModal}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs disabled:opacity-50"
+                                    disabled={submitting}
+                                >
+                                    {submitting ? "Saving..." : modalMode === "ADD" ? "Create Testimonial" : "Update Testimonial"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

@@ -125,14 +125,45 @@ export const uploadImageFile = async (file) => {
     return data.imageUrl;
 };
 
-// Wishlist API Services
+// Wishlist & Cart Identifier Helpers
 export const getWishlistId = () => {
+    try {
+        const customerData = localStorage.getItem("vinnavar_customer");
+        if (customerData) {
+            const customer = JSON.parse(customerData);
+            if (customer && (customer.id || customer.mobileNumber)) {
+                const userWishlistId = `user_wishlist_${customer.id || customer.mobileNumber}`;
+                localStorage.setItem("vinnavar_wishlist_id", userWishlistId);
+                return userWishlistId;
+            }
+        }
+    } catch (e) {}
     let wishlistId = localStorage.getItem("vinnavar_wishlist_id");
     if (!wishlistId) {
         wishlistId = "wishlist_" + Math.random().toString(36).substring(2, 11);
         localStorage.setItem("vinnavar_wishlist_id", wishlistId);
     }
     return wishlistId;
+};
+
+export const getCartId = () => {
+    try {
+        const customerData = localStorage.getItem("vinnavar_customer");
+        if (customerData) {
+            const customer = JSON.parse(customerData);
+            if (customer && (customer.id || customer.mobileNumber)) {
+                const userCartId = `user_cart_${customer.id || customer.mobileNumber}`;
+                localStorage.setItem("vinnavar_cart_id", userCartId);
+                return userCartId;
+            }
+        }
+    } catch (e) {}
+    let cartId = localStorage.getItem("vinnavar_cart_id");
+    if (!cartId) {
+        cartId = "cart_" + Math.random().toString(36).substring(2, 11);
+        localStorage.setItem("vinnavar_cart_id", cartId);
+    }
+    return cartId;
 };
 
 export const fetchWishlist = async (wishlistId = getWishlistId()) => {
@@ -176,6 +207,25 @@ export const clearWishlist = async (wishlistId = getWishlistId()) => {
     });
     return res.ok;
 };
+
+export const mergeWishlist = async (guestWishlistId, userWishlistId) => {
+    if (!guestWishlistId || !userWishlistId || guestWishlistId === userWishlistId) return null;
+    const res = await fetch(`${API_BASE_URL}/wishlist/merge?guestWishlistId=${encodeURIComponent(guestWishlistId)}&userWishlistId=${encodeURIComponent(userWishlistId)}`, {
+        method: "POST"
+    });
+    if (!res.ok) return null;
+    return res.json();
+};
+
+export const mergeCart = async (guestCartId, userCartId) => {
+    if (!guestCartId || !userCartId || guestCartId === userCartId) return null;
+    const res = await fetch(`${API_BASE_URL}/cart/merge?guestCartId=${encodeURIComponent(guestCartId)}&userCartId=${encodeURIComponent(userCartId)}`, {
+        method: "POST"
+    });
+    if (!res.ok) return null;
+    return res.json();
+};
+
 
 // Checkout & Razorpay API Services
 export const processCodCheckout = async (checkoutData) => {

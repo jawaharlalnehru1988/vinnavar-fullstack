@@ -81,7 +81,7 @@ const AboutUs = () => {
 
                       {/* Text */}
                       <Slide direction="down">
-                      <h1 className="pb-2 pb-md-3">About Fresh Cart</h1>
+                      <h1 className="pb-2 pb-md-3">About Vinnavar Organics</h1>
                       <h3 className="pb-2 pb-md-3">The Future of Grocery Delivery:</h3>
                       <p
                         className="fs-xl pb-4 mb-1 mb-md-2 mb-lg-3"

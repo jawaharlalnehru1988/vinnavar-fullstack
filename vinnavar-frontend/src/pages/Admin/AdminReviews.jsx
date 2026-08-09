@@ -48,8 +48,8 @@ const AdminReviews = () => {
       text: "Are you sure you want to delete this customer review? This cannot be undone.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
+      confirmButtonColor: "#e11d48",
+      cancelButtonColor: "#64748b",
       confirmButtonText: "Yes, delete it!"
     });
 
@@ -71,19 +71,21 @@ const AdminReviews = () => {
   });
 
   return (
-    <div className="p-3">
-      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-slate-200">
         <div>
-          <h3 className="fw-bold text-success m-0">⭐ Customer Reviews & Photo Management</h3>
-          <p className="text-muted small m-0 mt-1">
+          <h2 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+            <span>⭐</span> Customer Reviews & Photo Management
+          </h2>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
             Review customer feedback, ratings, and uploaded product images. Moderate or delete reviews.
           </p>
         </div>
 
-        <div className="d-flex align-items-center gap-2">
-          <label className="small fw-bold text-muted mb-0">Status Filter:</label>
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-bold text-slate-500">Status Filter:</label>
           <select
-            className="form-select form-select-sm border-success fw-bold"
+            className="px-3.5 py-1.5 bg-white border border-emerald-300 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 cursor-pointer"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
           >
@@ -96,115 +98,120 @@ const AdminReviews = () => {
       </div>
 
       {loading ? (
-        <div className="text-center py-5">
-          <div className="spinner-border text-success" role="status"></div>
-          <p className="text-muted small mt-2">Loading customer reviews...</p>
+        <div className="text-center py-12">
+          <div className="inline-block w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-xs text-slate-500 font-bold mt-2">Loading customer reviews...</p>
         </div>
       ) : filteredReviews.length === 0 ? (
-        <div className="text-center py-5 bg-light rounded-4 border p-4">
-          <div className="fs-1 text-muted mb-2">⭐</div>
-          <h5 className="fw-bold text-dark">No Customer Reviews Found</h5>
-          <p className="text-muted small mb-0">No customer reviews match the selected filter status.</p>
+        <div className="text-center py-12 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+          <div className="text-4xl text-slate-300 mb-2">⭐</div>
+          <h4 className="font-extrabold text-slate-900 text-base">No Customer Reviews Found</h4>
+          <p className="text-xs text-slate-400 mt-1">No customer reviews match the selected filter status.</p>
         </div>
       ) : (
-        <div className="table-responsive shadow-sm rounded">
-          <table className="table table-hover align-middle bg-white m-0">
-            <thead className="table-success text-nowrap">
-              <tr>
-                <th>Customer</th>
-                <th>Product & Order</th>
-                <th>Rating</th>
-                <th>Review & Photo</th>
-                <th>Status</th>
-                <th className="text-center">Moderate</th>
-                <th className="text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredReviews.map((rev) => (
-                <tr key={rev.id}>
-                  <td style={{ minWidth: "180px" }}>
-                    <div className="fw-bold text-dark">{rev.customerName || "Anonymous"}</div>
-                    <div className="small text-muted">{rev.customerPhone || "No Phone"}</div>
-                    <div className="small text-secondary">{rev.customerEmail || ""}</div>
-                  </td>
-                  <td style={{ minWidth: "200px" }}>
-                    <div className="fw-bold text-success">{rev.productName || "Product #" + rev.productId}</div>
-                    {rev.orderNumber && (
-                      <span className="badge bg-light text-dark border">
-                        Order #{rev.orderNumber}
-                      </span>
-                    )}
-                  </td>
-                  <td className="text-nowrap">
-                    <span className="badge bg-warning text-dark fw-bold px-2 py-1 fs-6">
-                      {"★".repeat(rev.rating || 5)}
-                    </span>
-                  </td>
-                  <td style={{ minWidth: "280px" }}>
-                    {rev.reviewTitle && <div className="fw-bold text-dark mb-1">{rev.reviewTitle}</div>}
-                    <div className="small text-secondary mb-2">{rev.reviewComment}</div>
-
-                    {rev.imageUrl && (
-                      <div className="d-flex align-items-center gap-2">
-                        <img
-                          src={getImageUrl(rev.imageUrl)}
-                          alt="Customer Photo"
-                          className="img-thumbnail rounded shadow-xs cursor-pointer"
-                          style={{ height: "60px", width: "75px", objectFit: "cover" }}
-                          onClick={() => setPreviewImage(getImageUrl(rev.imageUrl))}
-                        />
-                        <span className="small text-success fw-bold">📸 Photo attached</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="text-nowrap">
-                    <span className={`badge ${rev.status === "APPROVED" ? "bg-success" : rev.status === "PENDING" ? "bg-warning text-dark" : "bg-secondary"}`}>
-                      {rev.status}
-                    </span>
-                  </td>
-                  <td className="text-nowrap text-center">
-                    <select
-                      className="form-select form-select-sm fw-bold border-success"
-                      value={rev.status}
-                      style={{ minWidth: "120px" }}
-                      onChange={(e) => handleStatusChange(rev.id, e.target.value)}
-                    >
-                      <option value="APPROVED">APPROVED</option>
-                      <option value="PENDING">PENDING</option>
-                      <option value="HIDDEN">HIDDEN</option>
-                    </select>
-                  </td>
-                  <td className="text-center text-nowrap">
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-danger rounded-circle p-0 d-inline-flex align-items-center justify-content-center shadow-sm"
-                      style={{ width: "34px", height: "34px" }}
-                      onClick={() => handleDelete(rev.id)}
-                      title="Delete Review"
-                    >
-                      🗑️
-                    </button>
-                  </td>
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider whitespace-nowrap">
+                  <th className="py-3.5 px-4">Customer</th>
+                  <th className="py-3.5 px-4">Product & Order</th>
+                  <th className="py-3.5 px-4">Rating</th>
+                  <th className="py-3.5 px-4">Review & Photo</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4 text-center">Moderate</th>
+                  <th className="py-3.5 px-4 text-center">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-sm">
+                {filteredReviews.map((rev) => (
+                  <tr key={rev.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 min-w-[180px]">
+                      <div className="font-bold text-slate-900">{rev.customerName || "Anonymous"}</div>
+                      <div className="text-xs text-slate-500">{rev.customerPhone || "No Phone"}</div>
+                      <div className="text-xs text-slate-400">{rev.customerEmail || ""}</div>
+                    </td>
+                    <td className="py-3 px-4 min-w-[200px]">
+                      <div className="font-bold text-emerald-700">{rev.productName || "Product #" + rev.productId}</div>
+                      {rev.orderNumber && (
+                        <span className="inline-block bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-md mt-0.5">
+                          Order #{rev.orderNumber}
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-0.5 bg-amber-100 text-amber-900 border border-amber-300 font-extrabold text-xs px-2.5 py-1 rounded-lg">
+                        {"★".repeat(rev.rating || 5)}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 min-w-[280px]">
+                      {rev.reviewTitle && <div className="font-bold text-slate-900 text-xs mb-0.5">{rev.reviewTitle}</div>}
+                      <div className="text-xs text-slate-600 mb-2">{rev.reviewComment}</div>
+
+                      {rev.imageUrl && (
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={getImageUrl(rev.imageUrl)}
+                            alt="Customer upload"
+                            className="w-16 h-14 object-cover rounded-xl border border-slate-200 shadow-xs cursor-pointer hover:opacity-90 transition-opacity"
+                            onClick={() => setPreviewImage(getImageUrl(rev.imageUrl))}
+                          />
+                          <span className="text-[11px] text-emerald-700 font-bold">📸 Photo attached</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 text-xs font-bold rounded-full ${
+                        rev.status === "APPROVED"
+                          ? "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20"
+                          : rev.status === "PENDING"
+                          ? "bg-amber-500/10 text-amber-700 border border-amber-500/20"
+                          : "bg-slate-100 text-slate-600 border border-slate-200"
+                      }`}>
+                        {rev.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <select
+                        className="px-2.5 py-1 bg-white border border-emerald-300 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                        value={rev.status}
+                        onChange={(e) => handleStatusChange(rev.id, e.target.value)}
+                      >
+                        <option value="APPROVED">APPROVED</option>
+                        <option value="PENDING">PENDING</option>
+                        <option value="HIDDEN">HIDDEN</option>
+                      </select>
+                    </td>
+                    <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <button
+                        type="button"
+                        className="w-8 h-8 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 flex items-center justify-center font-bold text-xs transition-all mx-auto"
+                        onClick={() => handleDelete(rev.id)}
+                        title="Delete Review"
+                      >
+                        🗑️
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {/* PHOTO PREVIEW MODAL */}
       {previewImage && (
-        <div className="modal d-block bg-dark bg-opacity-75" tabIndex="-1" onClick={() => setPreviewImage(null)}>
-          <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content bg-black border-0 rounded-4 overflow-hidden">
-              <div className="modal-header border-0 pb-0">
-                <button type="button" className="btn-close btn-close-white" onClick={() => setPreviewImage(null)}></button>
-              </div>
-              <div className="modal-body text-center p-3">
-                <img src={previewImage} alt="Customer Uploaded Review Photo" className="img-fluid rounded-3" style={{ maxHeight: "80vh" }} />
-              </div>
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4" onClick={() => setPreviewImage(null)}>
+          <div className="relative bg-slate-900 border border-slate-800 rounded-3xl p-3 shadow-2xl max-w-3xl max-h-[85vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 text-white font-bold flex items-center justify-center transition-all z-10"
+              onClick={() => setPreviewImage(null)}
+            >
+              &times;
+            </button>
+            <img src={previewImage} alt="Customer Uploaded Review" className="max-h-[80vh] w-auto max-w-full rounded-2xl object-contain mx-auto" />
           </div>
         </div>
       )}

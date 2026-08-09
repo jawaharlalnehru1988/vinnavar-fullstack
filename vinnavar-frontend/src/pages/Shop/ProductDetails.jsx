@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { API_BASE_URL, getImageUrl, fetchProductReviews, submitProductReview, uploadReviewImage } from "../../services/api";
+import { API_BASE_URL, getImageUrl, fetchProductReviews, submitProductReview, uploadReviewImage, getCartId } from "../../services/api";
+import AmazonProductMagnifier from "../../Component/AmazonProductMagnifier";
 
 const amazonpay = getImageUrl("/media/site/amazonpay.svg");
 const gpay = getImageUrl("/media/site/gpay.svg");
@@ -18,6 +19,13 @@ const ProductDetails = () => {
     const [quantity, setQuantity] = useState(1);
     const [showVideoModal, setShowVideoModal] = useState(false);
     const [addingToCart, setAddingToCart] = useState(false);
+
+    // Zoom Lightbox State
+    const [showZoomModal, setShowZoomModal] = useState(false);
+    const [zoomScale, setZoomScale] = useState(1);
+    const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const dragStartRef = useRef({ x: 0, y: 0 });
 
     // Reviews State
     const [reviewData, setReviewData] = useState({ totalReviews: 0, averageRating: 5.0, ratingBreakdown: {}, reviews: [] });
@@ -42,11 +50,9 @@ const ProductDetails = () => {
                 if (res.ok) {
                     const data = await res.json();
                     setProduct(data);
-                    // Set default variant
                     const defVar = data.variants?.find((v) => v.default) || data.variants?.[0] || null;
                     setSelectedVariant(defVar);
                 } else {
-                    // Fallback to searching all products
                     const allRes = await fetch(`${API_BASE_URL}/products`);
                     if (allRes.ok) {
                         const allData = await allRes.json();
@@ -135,7 +141,6 @@ const ProductDetails = () => {
                 submitting: false
             });
 
-            // Reload reviews
             const updated = await fetchProductReviews(product.id);
             setReviewData(updated);
         } catch (err) {
@@ -148,26 +153,25 @@ const ProductDetails = () => {
 
     if (loading) {
         return (
-            <div className="container py-5 text-center my-5">
-                <div className="spinner-border text-success" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-                <h5 className="mt-3 text-muted">Loading product details...</h5>
+            <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+                <h5 className="mt-4 font-medium text-slate-600">Loading product details...</h5>
             </div>
         );
     }
 
     if (!product) {
         return (
-            <div className="container py-5 text-center my-5">
-                <h3 className="text-danger fw-bold">Product Not Found</h3>
-                <p className="text-muted">The product you are looking for does not exist or has been removed.</p>
-                <Link to="/Shop" className="btn btn-success mt-3">Back to Store</Link>
+            <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center py-20 px-4 text-center">
+                <h3 className="text-2xl font-bold text-red-600">Product Not Found</h3>
+                <p className="text-slate-500 mt-2">The product you are looking for does not exist or has been removed.</p>
+                <Link to="/Shop" className="mt-6 px-6 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors shadow-md">
+                    Back to Store
+                </Link>
             </div>
         );
     }
 
-    // Build image list
     const galleryImages = (product.imageUrls && product.imageUrls.length > 0)
         ? product.imageUrls
         : (product.imageUrl ? [product.imageUrl] : []);
@@ -176,21 +180,20 @@ const ProductDetails = () => {
 
     const handlePrevImage = () => {
         setActiveImageIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1));
+        setZoomScale(1);
+        setPanOffset({ x: 0, y: 0 });
     };
 
     const handleNextImage = () => {
         setActiveImageIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1));
+        setZoomScale(1);
+        setPanOffset({ x: 0, y: 0 });
     };
 
     const handleAddToCart = async (buyNow = false) => {
         if (!selectedVariant) return;
 
-        let cartId = localStorage.getItem("vinnavar_cart_id");
-        if (!cartId) {
-            cartId = "cart_" + Math.random().toString(36).substring(2, 11);
-            localStorage.setItem("vinnavar_cart_id", cartId);
-        }
-
+        const cartId = getCartId();
         setAddingToCart(true);
         try {
             const res = await fetch(`${API_BASE_URL}/cart/items`, {
@@ -227,6 +230,77 @@ const ProductDetails = () => {
         }
     };
 
+    // Zoom Lightbox Handlers
+    const openZoomModal = () => {
+        setShowZoomModal(true);
+        setZoomScale(1);
+        setPanOffset({ x: 0, y: 0 });
+    };
+
+    const handleZoomIn = () => {
+        setZoomScale((prev) => Math.min(prev + 0.5, 3.5));
+    };
+
+    const handleZoomOut = () => {
+        setZoomScale((prev) => {
+            const next = Math.max(prev - 0.5, 1);
+            if (next === 1) setPanOffset({ x: 0, y: 0 });
+            return next;
+        });
+    };
+
+    const handleResetZoom = () => {
+        setZoomScale(1);
+        setPanOffset({ x: 0, y: 0 });
+    };
+
+    const handleToggleDoubleTapZoom = () => {
+        if (zoomScale > 1) {
+            handleResetZoom();
+        } else {
+            setZoomScale(2.2);
+        }
+    };
+
+    const handleMouseDown = (e) => {
+        if (zoomScale <= 1) return;
+        setIsDragging(true);
+        dragStartRef.current = { x: e.clientX - panOffset.x, y: e.clientY - panOffset.y };
+    };
+
+    const handleMouseMove = (e) => {
+        if (!isDragging || zoomScale <= 1) return;
+        setPanOffset({
+            x: e.clientX - dragStartRef.current.x,
+            y: e.clientY - dragStartRef.current.y
+        });
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const handleTouchStart = (e) => {
+        if (zoomScale <= 1 || e.touches.length !== 1) return;
+        setIsDragging(true);
+        dragStartRef.current = {
+            x: e.touches[0].clientX - panOffset.x,
+            y: e.touches[0].clientY - panOffset.y
+        };
+    };
+
+    const handleTouchMove = (e) => {
+        if (!isDragging || zoomScale <= 1 || e.touches.length !== 1) return;
+        setPanOffset({
+            x: e.touches[0].clientX - dragStartRef.current.x,
+            y: e.touches[0].clientY - dragStartRef.current.y
+        });
+    };
+
+    const handleTouchEnd = () => {
+        setIsDragging(false);
+    };
+
     const currentPrice = selectedVariant?.discountPrice || selectedVariant?.price || 0;
     const mrpPrice = selectedVariant?.price || 0;
     const hasDiscount = selectedVariant?.discountPrice && selectedVariant.discountPrice < selectedVariant.price;
@@ -235,576 +309,643 @@ const ProductDetails = () => {
         : 0;
 
     return (
-        <div className="bg-light py-4 min-vh-100">
-            <div className="container bg-white rounded shadow-sm p-3 p-md-4">
+        <div className="min-h-screen bg-slate-50/70 py-6 sm:py-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 
-                {/* BREADCRUMB */}
-                <nav aria-label="breadcrumb" className="mb-4">
-                    <ol className="breadcrumb small">
-                        <li className="breadcrumb-item"><Link to="/" className="text-decoration-none text-muted">Home</Link></li>
-                        <li className="breadcrumb-item"><Link to="/Shop" className="text-decoration-none text-muted">Shop</Link></li>
-                        {product.category && (
-                            <li className="breadcrumb-item text-muted">{product.category.name}</li>
-                        )}
-                        <li className="breadcrumb-item active fw-bold text-success" aria-current="page">{product.name}</li>
-                    </ol>
+                {/* BREADCRUMB - Tailwind CSS Clean Separators */}
+                <nav className="flex items-center space-x-2 text-xs sm:text-sm text-slate-500 mb-6 overflow-x-auto pb-1 scrollbar-none">
+                    <Link to="/" className="hover:text-emerald-600 transition-colors">Home</Link>
+                    <span className="text-slate-300">/</span>
+                    <Link to="/Shop" className="hover:text-emerald-600 transition-colors">Shop</Link>
+                    {product.category && (
+                        <>
+                            <span className="text-slate-300">/</span>
+                            <span className="text-slate-600 font-medium">{product.category.name}</span>
+                        </>
+                    )}
+                    <span className="text-slate-300">/</span>
+                    <span className="text-emerald-700 font-bold truncate max-w-[200px] sm:max-w-xs">{product.name}</span>
                 </nav>
 
-                <div className="row g-4">
-                    {/* LEFT COLUMN: FLIPKART STYLE IMAGE GALLERY */}
-                    <div className="col-lg-5 col-md-6">
-                        <div className="d-flex flex-column-reverse flex-md-row gap-3">
-                            
-                            {/* THUMBNAILS LIST */}
-                            {galleryImages.length > 1 && (
-                                <div
-                                    className="d-flex flex-md-column flex-row gap-2 overflow-auto align-items-center"
-                                    style={{ maxHeight: "480px", maxWidth: "100%" }}
-                                >
-                                    {galleryImages.map((img, idx) => (
-                                        <button
-                                            key={idx}
-                                            type="button"
-                                            className={`btn p-1 border rounded bg-white position-relative ${activeImageIndex === idx ? "border-2 border-success shadow-sm" : "border-light"}`}
-                                            onClick={() => setActiveImageIndex(idx)}
-                                            onMouseEnter={() => setActiveImageIndex(idx)}
-                                            style={{ width: "65px", height: "65px", flexShrink: 0 }}
-                                        >
-                                            <img
-                                                src={getImageUrl(img)}
-                                                alt={`Thumbnail ${idx + 1}`}
-                                                className="img-fluid rounded"
-                                                style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                                            />
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* MAIN FEATURED IMAGE VIEW & CAROUSEL */}
-                            <div className="flex-grow-1 position-relative border rounded p-3 text-center bg-white d-flex align-items-center justify-content-center" style={{ height: "450px" }}>
+                {/* MAIN PRODUCT CARD */}
+                <div className="bg-white rounded-3xl p-5 sm:p-8 border border-slate-200/80 shadow-sm">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+                        
+                        {/* LEFT COLUMN: FLIPKART STYLE IMAGE GALLERY */}
+                        <div className="lg:col-span-5 space-y-4">
+                            <div className="flex flex-col-reverse sm:flex-row gap-4">
                                 
-                                {product.featured && (
-                                    <span className="badge bg-success position-absolute top-0 start-0 m-3 px-3 py-2 fs-6 shadow-sm">
-                                        🌱 Organic Best Seller
-                                    </span>
-                                )}
-
-                                {galleryImages.length > 0 && (
-                                    <span className="badge bg-dark bg-opacity-75 position-absolute top-0 end-0 m-3 px-2 py-1 small">
-                                        {activeImageIndex + 1} / {galleryImages.length}
-                                    </span>
-                                )}
-
-                                <img
-                                    src={getImageUrl(activeImageUrl)}
-                                    alt={product.name}
-                                    className="img-fluid"
-                                    style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain", transition: "all 0.3s ease" }}
-                                />
-
-                                {/* NAVIGATION ARROWS */}
+                                {/* THUMBNAILS LIST */}
                                 {galleryImages.length > 1 && (
-                                    <>
-                                        <button
-                                            type="button"
-                                            className="btn btn-light btn-sm rounded-circle position-absolute top-50 start-0 translate-middle-y ms-2 shadow"
-                                            onClick={handlePrevImage}
-                                            title="Previous Image"
-                                            style={{ width: "36px", height: "36px" }}
-                                        >
-                                            &lsaquo;
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="btn btn-light btn-sm rounded-circle position-absolute top-50 end-0 translate-middle-y me-2 shadow"
-                                            onClick={handleNextImage}
-                                            title="Next Image"
-                                            style={{ width: "36px", height: "36px" }}
-                                        >
-                                            &rsaquo;
-                                        </button>
-                                    </>
+                                    <div className="flex sm:flex-col gap-2.5 overflow-x-auto sm:overflow-y-auto max-h-[460px] pb-2 sm:pb-0 scrollbar-thin">
+                                        {galleryImages.map((img, idx) => (
+                                            <button
+                                                key={idx}
+                                                type="button"
+                                                className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 p-1 bg-white transition-all shrink-0 overflow-hidden ${
+                                                    activeImageIndex === idx ? "border-emerald-600 shadow-md ring-2 ring-emerald-600/20" : "border-slate-200 hover:border-slate-300 opacity-70 hover:opacity-100"
+                                                }`}
+                                                onClick={() => setActiveImageIndex(idx)}
+                                                onMouseEnter={() => setActiveImageIndex(idx)}
+                                            >
+                                                <img
+                                                    src={getImageUrl(img)}
+                                                    alt={`Thumbnail ${idx + 1}`}
+                                                    className="w-full h-full object-contain"
+                                                />
+                                            </button>
+                                        ))}
+                                    </div>
                                 )}
 
-                                {/* VIDEO BUTTON IF AVAILABLE */}
-                                {product.videoUrl && (
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline-danger btn-sm position-absolute bottom-0 start-0 m-3 d-flex align-items-center gap-1 shadow-sm"
-                                        onClick={() => setShowVideoModal(true)}
-                                    >
-                                        ▶ Watch Product Video
-                                    </button>
-                                )}
+                                {/* MAIN FEATURED IMAGE VIEW WITH AMAZON LENS MAGNIFIER */}
+                                <AmazonProductMagnifier
+                                    imageUrl={activeImageUrl}
+                                    altText={product.name}
+                                    productName={product.name}
+                                    zoomLevel={2.8}
+                                    galleryImages={galleryImages}
+                                    activeImageIndex={activeImageIndex}
+                                    onPrevImage={handlePrevImage}
+                                    onNextImage={handleNextImage}
+                                    onOpenModal={openZoomModal}
+                                    featured={product.featured}
+                                    videoUrl={product.videoUrl}
+                                    onOpenVideo={() => setShowVideoModal(true)}
+                                />
                             </div>
-                        </div>
 
-                        {/* STICKY FLIPKART STYLE ACTION BUTTONS */}
-                        <div className="row g-2 mt-3">
-                            <div className="col-6">
+                            {/* FLIPKART STYLE ACTION BUTTONS */}
+                            <div className="grid grid-cols-2 gap-3 pt-2">
                                 <button
                                     type="button"
-                                    className="btn btn-warning btn-lg w-100 fw-bold text-dark d-flex align-items-center justify-content-center gap-2 py-3 shadow-sm"
+                                    className="w-full py-3.5 px-4 bg-amber-400 hover:bg-amber-500 active:bg-amber-600 text-slate-900 font-extrabold text-sm sm:text-base rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                                     onClick={() => handleAddToCart(false)}
                                     disabled={addingToCart}
                                 >
-                                    🛒 {addingToCart ? "Adding..." : "ADD TO CART"}
+                                    <span>🛒</span>
+                                    <span>{addingToCart ? "Adding..." : "ADD TO CART"}</span>
                                 </button>
-                            </div>
-                            <div className="col-6">
                                 <button
                                     type="button"
-                                    className="btn btn-success btn-lg w-100 fw-bold text-white d-flex align-items-center justify-content-center gap-2 py-3 shadow-sm"
+                                    className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-extrabold text-sm sm:text-base rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                                     onClick={() => handleAddToCart(true)}
                                     disabled={addingToCart}
                                 >
-                                    ⚡ BUY NOW
+                                    <span>⚡</span>
+                                    <span>BUY NOW</span>
                                 </button>
+                            </div>
+
+                            {/* Payment Partners */}
+                            <div className="p-4 bg-slate-50 rounded-2xl text-center border border-slate-200/80 mt-4">
+                                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">
+                                    100% Safe & Secure Payments
+                                </div>
+                                <div className="flex items-center justify-center gap-4">
+                                    <img src={amazonpay} alt="Amazon Pay" className="h-6 object-contain" />
+                                    <img src={gpay} alt="Google Pay" className="h-6 object-contain" />
+                                    <img src={paytm} alt="Paytm" className="h-6 object-contain" />
+                                </div>
                             </div>
                         </div>
 
-                        {/* Payment Partners */}
-                        <div className="mt-4 p-3 bg-light rounded-3 text-center border">
-                            <div className="small text-muted fw-bold mb-2">Accepting Payments via Partner Networks</div>
-                            <div className="d-flex align-items-center justify-content-center gap-3">
-                                <img src={amazonpay} alt="Amazon Pay" style={{ height: "26px", objectFit: "contain" }} />
-                                <img src={gpay} alt="Google Pay" style={{ height: "26px", objectFit: "contain" }} />
-                                <img src={paytm} alt="Paytm" style={{ height: "26px", objectFit: "contain" }} />
+                        {/* RIGHT COLUMN: PRODUCT INFO & VARIANT SELECTOR */}
+                        <div className="lg:col-span-7 space-y-6">
+                            <div>
+                                <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">
+                                    {product.category?.name || "Pure Organic Product"}
+                                </div>
+                                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
+                                    {product.name}
+                                </h1>
                             </div>
+
+                            {/* RATING & REVIEWS */}
+                            <div className="flex flex-wrap items-center gap-3">
+                                <div className="bg-emerald-600 text-white font-bold text-sm px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-sm">
+                                    <span>{reviewData.averageRating ? reviewData.averageRating.toFixed(1) : "5.0"}</span>
+                                    <span>★</span>
+                                </div>
+                                <a href="#ratings-and-reviews" className="text-slate-600 text-sm font-semibold hover:text-emerald-700 transition-colors">
+                                    {reviewData.totalReviews > 0 ? `${reviewData.totalReviews} Customer Review${reviewData.totalReviews > 1 ? 's' : ''}` : "Be the first to review"}
+                                </a>
+                                <span className="h-4 w-px bg-slate-300"></span>
+                                <span className="text-emerald-600 text-xs font-bold flex items-center gap-1">
+                                    <span>✓</span> 100% Authentic Organic
+                                </span>
+                            </div>
+
+                            {/* PRICE DISPLAY CARD */}
+                            <div className="p-4 sm:p-5 bg-slate-50 rounded-2xl border border-slate-200/80">
+                                <div className="flex items-baseline gap-3">
+                                    <span className="text-3xl sm:text-4xl font-black text-slate-900">
+                                        ₹{currentPrice.toLocaleString('en-IN')}
+                                    </span>
+                                    {hasDiscount && (
+                                        <>
+                                            <span className="line-through text-slate-400 text-lg sm:text-xl font-medium">
+                                                ₹{mrpPrice.toLocaleString('en-IN')}
+                                            </span>
+                                            <span className="bg-red-500 text-white font-extrabold text-xs px-2.5 py-1 rounded-full uppercase tracking-wide shadow-sm">
+                                                {discountPercent}% OFF
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
+                                <div className="text-xs font-semibold text-emerald-700 mt-2 flex items-center gap-1">
+                                    <span>✓</span> Inclusive of shipping charge + all taxes
+                                </div>
+                            </div>
+
+                            {/* VARIANT SELECTOR */}
+                            {product.variants && product.variants.length > 0 && (
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-900 mb-2.5">
+                                        Select Weight / Size Variation:
+                                    </label>
+                                    <div className="flex flex-wrap gap-2.5">
+                                        {product.variants.map((variant) => {
+                                            const isSelected = selectedVariant?.id === variant.id;
+                                            const priceVal = variant.discountPrice || variant.price;
+                                            return (
+                                                <button
+                                                    key={variant.id}
+                                                    type="button"
+                                                    className={`py-2 px-4 font-bold rounded-2xl text-sm transition-all flex items-center gap-2 border ${
+                                                        isSelected
+                                                            ? "bg-emerald-600 text-white border-emerald-600 shadow-md ring-2 ring-emerald-600/20"
+                                                            : "bg-white text-slate-700 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50"
+                                                    }`}
+                                                    onClick={() => setSelectedVariant(variant)}
+                                                >
+                                                    <span>{variant.variantName}</span>
+                                                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${isSelected ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"}`}>
+                                                        ₹{priceVal}
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* QUANTITY SELECTOR */}
+                            <div className="flex items-center gap-4">
+                                <label className="text-sm font-bold text-slate-900">Quantity:</label>
+                                <div className="flex items-center border border-slate-300 rounded-xl bg-white shadow-sm overflow-hidden">
+                                    <button
+                                        type="button"
+                                        className="w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-lg transition-colors"
+                                        onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                                    >
+                                        -
+                                    </button>
+                                    <span className="w-12 text-center font-bold text-slate-900 text-sm">
+                                        {quantity}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        className="w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-lg transition-colors"
+                                        onClick={() => setQuantity((prev) => prev + 1)}
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* SHORT DESCRIPTION */}
+                            {product.shortDescription && (
+                                <div>
+                                    <h3 className="text-sm font-bold text-slate-900 mb-1">Highlights & Key Details:</h3>
+                                    <p className="text-slate-600 text-sm leading-relaxed">{product.shortDescription}</p>
+                                </div>
+                            )}
+
+                            {/* HEALTH BENEFITS */}
+                            {product.benefits && (
+                                <div className="p-4 bg-emerald-50/70 rounded-2xl border-l-4 border-emerald-600">
+                                    <h3 className="text-sm font-bold text-emerald-800 mb-1 flex items-center gap-1.5">
+                                        <span>🌿</span> Health Benefits & Nutrition:
+                                    </h3>
+                                    <p className="text-slate-700 text-sm whitespace-pre-line leading-relaxed">
+                                        {product.benefits}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* SPECIFICATIONS TABLE */}
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-900 mb-3">Product Specifications:</h3>
+                                <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-200 text-xs sm:text-sm">
+                                    <div className="flex bg-slate-50">
+                                        <span className="w-1/3 p-3 font-semibold text-slate-600">Brand</span>
+                                        <span className="w-2/3 p-3 font-medium text-slate-800">Vinnavar Organic</span>
+                                    </div>
+                                    <div className="flex bg-white">
+                                        <span className="w-1/3 p-3 font-semibold text-slate-600">Category</span>
+                                        <span className="w-2/3 p-3 font-medium text-slate-800">{product.category?.name || "Organic Staples"}</span>
+                                    </div>
+                                    <div className="flex bg-slate-50">
+                                        <span className="w-1/3 p-3 font-semibold text-slate-600">Selected Pack Size</span>
+                                        <span className="w-2/3 p-3 font-medium text-slate-800">{selectedVariant?.variantName || "Standard"}</span>
+                                    </div>
+                                    <div className="flex bg-white">
+                                        <span className="w-1/3 p-3 font-semibold text-slate-600">Country of Origin</span>
+                                        <span className="w-2/3 p-3 font-medium text-slate-800">India (Tamil Nadu)</span>
+                                    </div>
+                                    <div className="flex bg-slate-50">
+                                        <span className="w-1/3 p-3 font-semibold text-slate-600">Form & Quality</span>
+                                        <span className="w-2/3 p-3 font-medium text-slate-800">100% Unpolished & Pure Natural</span>
+                                    </div>
+                                    <div className="flex bg-white">
+                                        <span className="w-1/3 p-3 font-semibold text-slate-600">Storage Instructions</span>
+                                        <span className="w-2/3 p-3 font-medium text-slate-800">Store in a cool and dry place. Keep container tightly closed.</span>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
-                    {/* RIGHT COLUMN: PRODUCT INFO & VARIANT SELECTOR */}
-                    <div className="col-lg-7 col-md-6 ps-lg-4">
-                        <div className="text-uppercase text-muted fw-bold small mb-1">
-                            {product.category?.name || "Pure Organic Product"}
-                        </div>
-
-                        <h2 className="fw-bold text-dark mb-2">{product.name}</h2>
-
-                        {/* RATING & REVIEWS */}
-                        <div className="d-flex align-items-center gap-2 mb-3">
-                            <span className="badge bg-success px-2.5 py-1 fs-6 fw-bold">
-                                {reviewData.averageRating ? reviewData.averageRating.toFixed(1) : "5.0"} ★
-                            </span>
-                            <a href="#ratings-and-reviews" className="text-muted small fw-bold text-decoration-none hover-underline">
-                                {reviewData.totalReviews > 0 ? `${reviewData.totalReviews} Customer Review${reviewData.totalReviews > 1 ? 's' : ''}` : "Be the first to review"}
-                            </a>
-                            <span className="text-success small fw-bold border-start ps-2">✓ 100% Authentic Organic</span>
-                        </div>
-
-                        {/* PRICE DISPLAY */}
-                        <div className="p-3 bg-light rounded mb-4">
-                            <div className="d-flex align-items-baseline gap-3">
-                                <span className="fs-2 fw-bold text-dark">
-                                    ₹{currentPrice.toLocaleString('en-IN')}
-                                </span>
-                                {hasDiscount && (
-                                    <>
-                                        <span className="text-decoration-line-through text-muted fs-5">
-                                            ₹{mrpPrice.toLocaleString('en-IN')}
-                                        </span>
-                                        <span className="badge bg-danger fs-6">
-                                            {discountPercent}% OFF
-                                        </span>
-                                    </>
-                                )}
-                            </div>
-                            <div className="small text-success mt-1 fw-semibold">
-                                ✓ Inclusive of shipping charge + all taxes
-                            </div>
-                        </div>
-
-                        {/* VARIANT SELECTOR (PILL BUTTONS: 500G, 5KG, 25KG) */}
-                        {product.variants && product.variants.length > 0 && (
-                            <div className="mb-4">
-                                <label className="form-label fw-bold text-dark mb-2">
-                                    Select Weight / Size Variation:
-                                </label>
-                                <div className="d-flex flex-wrap gap-2">
-                                    {product.variants.map((variant) => {
-                                        const isSelected = selectedVariant?.id === variant.id;
-                                        const priceVal = variant.discountPrice || variant.price;
-                                        return (
-                                            <button
-                                                key={variant.id}
-                                                type="button"
-                                                className={`btn py-2 px-3 fw-bold rounded-pill text-nowrap d-flex align-items-center gap-2 ${isSelected ? "btn-success shadow-sm" : "btn-outline-secondary bg-white"}`}
-                                                onClick={() => setSelectedVariant(variant)}
-                                            >
-                                                <span>{variant.variantName}</span>
-                                                <span className={`badge ${isSelected ? "bg-white text-success" : "bg-light text-dark"}`}>
-                                                    ₹{priceVal}
-                                                </span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* QUANTITY SELECTOR */}
-                        <div className="mb-4 d-flex align-items-center gap-3">
-                            <label className="form-label fw-bold text-dark mb-0">Quantity:</label>
-                            <div className="input-group" style={{ width: "130px" }}>
-                                <button
-                                    className="btn btn-outline-secondary btn-sm fw-bold"
-                                    type="button"
-                                    onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                                >
-                                    -
-                                </button>
-                                <input
-                                    type="text"
-                                    className="form-control text-center fw-bold form-control-sm"
-                                    value={quantity}
-                                    readOnly
-                                />
-                                <button
-                                    className="btn btn-outline-secondary btn-sm fw-bold"
-                                    type="button"
-                                    onClick={() => setQuantity((prev) => prev + 1)}
-                                >
-                                    +
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* SHORT DESCRIPTION */}
-                        {product.shortDescription && (
-                            <div className="mb-4">
-                                <h6 className="fw-bold text-dark">Highlights & Key Details:</h6>
-                                <p className="text-muted leading-relaxed">{product.shortDescription}</p>
-                            </div>
-                        )}
-
-                        {/* HEALTH BENEFITS */}
-                        {product.benefits && (
-                            <div className="mb-4 p-3 border-start border-4 border-success bg-light rounded">
-                                <h6 className="fw-bold text-success mb-2">🌿 Health Benefits & Nutrition:</h6>
-                                <p className="text-dark small mb-0" style={{ whiteSpace: "pre-line" }}>
-                                    {product.benefits}
+                    {/* RATINGS & CUSTOMER PHOTO REVIEWS SECTION */}
+                    <div id="ratings-and-reviews" className="mt-12 pt-8 border-t border-slate-200">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                            <div>
+                                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
+                                    ⭐ Customer Ratings & Photo Reviews
+                                </h2>
+                                <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
+                                    Real photos & authentic reviews from verified buyers of Vinnavar Organics.
                                 </p>
                             </div>
-                        )}
-
-                        {/* PRODUCT SPECIFICATIONS TABLE */}
-                        <div className="mt-4">
-                            <h6 className="fw-bold text-dark mb-3">Product Specifications:</h6>
-                            <div className="table-responsive">
-                                <table className="table table-bordered table-sm small text-muted">
-                                    <tbody>
-                                        <tr>
-                                            <td className="fw-bold bg-light" style={{ width: "35%" }}>Brand</td>
-                                            <td>Vinnavar Organic</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="fw-bold bg-light">Category</td>
-                                            <td>{product.category?.name || "Organic Staples"}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="fw-bold bg-light">Selected Pack Size</td>
-                                            <td>{selectedVariant?.variantName || "Standard"}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="fw-bold bg-light">Country of Origin</td>
-                                            <td>India (Tamil Nadu)</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="fw-bold bg-light">Form & Quality</td>
-                                            <td>100% Unpolished & Pure Natural</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="fw-bold bg-light">Storage Instructions</td>
-                                            <td>Store in a cool and dry place. Keep container tightly closed.</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                            <button
+                                type="button"
+                                className="self-start sm:self-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md transition-colors flex items-center gap-2"
+                                onClick={() => setShowWriteReviewModal(true)}
+                            >
+                                ✏️ Write a Review
+                            </button>
                         </div>
 
-                    </div>
-                </div>
-
-                {/* RATINGS & CUSTOMER PHOTO REVIEWS SECTION */}
-                <div id="ratings-and-reviews" className="mt-5 pt-4 border-top">
-                    <div className="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
-                        <div>
-                            <h3 className="fw-bold text-dark mb-1">⭐ Customer Ratings & Photo Reviews</h3>
-                            <p className="text-muted small mb-0">Real photos & authentic reviews from verified buyers of Vinnavar Organics.</p>
-                        </div>
-                        <button
-                            type="button"
-                            className="btn btn-success fw-bold rounded-pill px-4 py-2 shadow-sm d-flex align-items-center gap-2"
-                            onClick={() => setShowWriteReviewModal(true)}
-                        >
-                            ✏️ Write a Product Review
-                        </button>
-                    </div>
-
-                    <div className="row g-4 mb-4">
-                        {/* Rating Stats Summary Box */}
-                        <div className="col-md-4">
-                            <div className="p-4 bg-light rounded-4 border text-center">
-                                <div className="display-4 fw-bold text-dark mb-0">
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                            {/* Rating Stats Summary Box */}
+                            <div className="md:col-span-4 bg-slate-50 p-6 rounded-3xl border border-slate-200/80 text-center">
+                                <div className="text-5xl font-black text-slate-900">
                                     {reviewData.averageRating ? reviewData.averageRating.toFixed(1) : "5.0"}
                                 </div>
-                                <div className="text-warning fs-4 mb-1">
+                                <div className="text-amber-400 text-xl my-1">
                                     {"★".repeat(Math.round(reviewData.averageRating || 5))}
                                     {"☆".repeat(5 - Math.round(reviewData.averageRating || 5))}
                                 </div>
-                                <div className="text-muted small fw-bold">
+                                <div className="text-slate-500 text-xs font-semibold">
                                     Based on {reviewData.totalReviews || 0} customer reviews
                                 </div>
 
-                                {/* Star Bars Breakdown */}
-                                <div className="mt-3 pt-3 border-top text-start">
+                                <div className="mt-4 pt-4 border-t border-slate-200 space-y-2 text-xs">
                                     {[5, 4, 3, 2, 1].map((star) => {
                                         const count = (reviewData.ratingBreakdown && reviewData.ratingBreakdown[star]) || 0;
                                         const percent = reviewData.totalReviews > 0 ? Math.round((count / reviewData.totalReviews) * 100) : 0;
                                         return (
-                                            <div key={star} className="d-flex align-items-center gap-2 mb-1.5 small">
-                                                <span className="fw-bold text-dark" style={{ width: "32px" }}>{star} ★</span>
-                                                <div className="progress flex-grow-1" style={{ height: "8px" }}>
-                                                    <div
-                                                        className="progress-bar bg-success"
-                                                        role="progressbar"
-                                                        style={{ width: `${percent}%` }}
-                                                    ></div>
+                                            <div key={star} className="flex items-center gap-2">
+                                                <span className="w-8 font-bold text-slate-700">{star} ★</span>
+                                                <div className="flex-1 bg-slate-200 h-2 rounded-full overflow-hidden">
+                                                    <div className="bg-emerald-600 h-full rounded-full" style={{ width: `${percent}%` }}></div>
                                                 </div>
-                                                <span className="text-muted" style={{ width: "35px", textAlign: "right" }}>{count}</span>
+                                                <span className="w-8 text-right text-slate-400 font-medium">{count}</span>
                                             </div>
                                         );
                                     })}
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Customer Reviews List */}
-                        <div className="col-md-8">
-                            {reviewData.reviews && reviewData.reviews.length > 0 ? (
-                                <div className="row g-3">
-                                    {reviewData.reviews.map((rev) => (
-                                        <div key={rev.id} className="col-12">
-                                            <div className="p-3.5 bg-white border rounded-4 shadow-xs">
-                                                <div className="d-flex align-items-center justify-content-between mb-2">
-                                                    <div className="d-flex align-items-center gap-2">
-                                                        <div className="bg-success text-white rounded-circle fw-bold d-flex align-items-center justify-content-center" style={{ width: "36px", height: "36px" }}>
-                                                            {rev.customerName ? rev.customerName.charAt(0).toUpperCase() : "U"}
-                                                        </div>
-                                                        <div>
-                                                            <div className="fw-bold text-dark lh-sm">{rev.customerName || "Verified Buyer"}</div>
-                                                            <div className="text-muted" style={{ fontSize: "0.75rem" }}>
-                                                                {new Date(rev.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                                                                {rev.verifiedPurchase && <span className="text-success fw-bold ms-2">✓ Verified Purchase</span>}
-                                                            </div>
-                                                        </div>
+                            {/* Customer Reviews List */}
+                            <div className="md:col-span-8 space-y-4">
+                                {reviewData.reviews && reviewData.reviews.length > 0 ? (
+                                    reviewData.reviews.map((rev) => (
+                                        <div key={rev.id} className="p-4 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-9 h-9 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm">
+                                                        {rev.customerName ? rev.customerName.charAt(0).toUpperCase() : "U"}
                                                     </div>
-
-                                                    <div className="text-warning small">
-                                                        {"★".repeat(rev.rating || 5)}
-                                                        {"☆".repeat(5 - (rev.rating || 5))}
+                                                    <div>
+                                                        <div className="font-bold text-slate-900 text-sm">{rev.customerName || "Verified Buyer"}</div>
+                                                        <div className="text-[11px] text-slate-400">
+                                                            {new Date(rev.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                                                            {rev.verifiedPurchase && <span className="text-emerald-600 font-bold ml-2">✓ Verified Purchase</span>}
+                                                        </div>
                                                     </div>
                                                 </div>
-
-                                                {rev.reviewTitle && <h6 className="fw-bold text-dark mb-1">{rev.reviewTitle}</h6>}
-                                                <p className="text-secondary small mb-2 leading-relaxed">{rev.reviewComment}</p>
-
-                                                {/* Customer Product Photo Preview */}
-                                                {rev.imageUrl && (
-                                                    <div className="mt-2">
-                                                        <img
-                                                            src={getImageUrl(rev.imageUrl)}
-                                                            alt="Customer Product Photo"
-                                                            className="img-thumbnail rounded-3 cursor-pointer"
-                                                            style={{ maxHeight: "110px", maxWidth: "150px", objectFit: "cover" }}
-                                                            onClick={() => setReviewImagePreview(getImageUrl(rev.imageUrl))}
-                                                        />
-                                                    </div>
-                                                )}
+                                                <div className="text-amber-400 text-sm">
+                                                    {"★".repeat(rev.rating || 5)}
+                                                    {"☆".repeat(5 - (rev.rating || 5))}
+                                                </div>
                                             </div>
+
+                                            {rev.reviewTitle && <h4 className="font-bold text-slate-900 text-sm">{rev.reviewTitle}</h4>}
+                                            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">{rev.reviewComment}</p>
+
+                                            {rev.imageUrl && (
+                                                <div className="pt-1">
+                                                    <img
+                                                        src={getImageUrl(rev.imageUrl)}
+                                                        alt="Customer Product Photo"
+                                                        className="w-24 h-24 object-cover rounded-xl border border-slate-200 cursor-pointer hover:opacity-90 transition-opacity"
+                                                        onClick={() => setReviewImagePreview(getImageUrl(rev.imageUrl))}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="p-5 text-center bg-light rounded-4 border border-dashed">
-                                    <div className="fs-2 text-muted mb-2">🌿</div>
-                                    <h6 className="fw-bold text-dark">No customer reviews yet</h6>
-                                    <p className="text-muted small mb-3">Be the first customer to rate and upload a photo of this organic product!</p>
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline-success btn-sm fw-bold rounded-pill px-4"
-                                        onClick={() => setShowWriteReviewModal(true)}
-                                    >
-                                        ⭐ Write First Review
-                                    </button>
-                                </div>
-                            )}
+                                    ))
+                                ) : (
+                                    <div className="p-8 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-300">
+                                        <div className="text-3xl mb-2">🌿</div>
+                                        <h3 className="font-bold text-slate-900">No customer reviews yet</h3>
+                                        <p className="text-slate-500 text-xs sm:text-sm mt-1 mb-4">Be the first customer to rate and upload a photo of this organic product!</p>
+                                        <button
+                                            type="button"
+                                            className="px-4 py-2 border border-emerald-600 text-emerald-700 font-bold text-xs rounded-xl hover:bg-emerald-50 transition-colors"
+                                            onClick={() => setShowWriteReviewModal(true)}
+                                        >
+                                            ⭐ Write First Review
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {/* WRITE REVIEW MODAL */}
-            {showWriteReviewModal && (
-                <div className="modal d-block bg-dark bg-opacity-75" tabIndex="-1">
-                    <div className="modal-dialog modal-dialog-centered modal-lg">
-                        <div className="modal-content rounded-4 border-0 shadow-lg overflow-hidden">
-                            <div className="modal-header bg-success text-white py-3 px-4">
-                                <h5 className="modal-title fw-bold text-white mb-0">
-                                    ⭐ Review & Upload Photo for {product.name}
-                                </h5>
-                                <button type="button" className="btn-close btn-close-white" onClick={() => setShowWriteReviewModal(false)}></button>
+                </div>
+
+                {/* FLIPKART STYLE INTERACTIVE FULLSCREEN IMAGE ZOOM LIGHTBOX MODAL */}
+                {showZoomModal && (
+                    <div
+                        className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col justify-between select-none animate-fadeIn"
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUp}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                    >
+                        {/* TOP CONTROLS BAR */}
+                        <div className="p-4 flex items-center justify-between text-white border-b border-slate-800 bg-slate-900/80 z-20">
+                            <div className="flex items-center gap-3">
+                                <span className="font-bold text-sm text-slate-200">
+                                    {activeImageIndex + 1} / {galleryImages.length}
+                                </span>
+                                <span className="text-xs text-slate-400 hidden sm:inline">
+                                    (Double click/tap to toggle zoom • Drag to pan)
+                                </span>
                             </div>
 
-                            <form onSubmit={handleProductReviewSubmit}>
-                                <div className="modal-body p-4">
-                                    {/* Star Rating */}
-                                    <div className="mb-4 text-center">
-                                        <label className="form-label fw-bold text-dark d-block mb-2">Your Rating:</label>
-                                        <div className="d-inline-flex gap-2 p-2 bg-light rounded-pill border">
-                                            {[1, 2, 3, 4, 5].map((star) => (
-                                                <button
-                                                    key={star}
-                                                    type="button"
-                                                    className="btn btn-link p-1 text-decoration-none fs-3"
-                                                    onClick={() => setNewReview(prev => ({ ...prev, rating: star }))}
-                                                >
-                                                    <span className={star <= newReview.rating ? "text-warning" : "text-secondary opacity-25"}>★</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
+                            {/* ZOOM CONTROLS */}
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={handleZoomOut}
+                                    disabled={zoomScale <= 1}
+                                    className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold text-lg disabled:opacity-40 transition-colors"
+                                    title="Zoom Out (-)"
+                                >
+                                    -
+                                </button>
+                                <span className="text-xs font-mono w-12 text-center text-emerald-400 font-bold">
+                                    {Math.round(zoomScale * 100)}%
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={handleZoomIn}
+                                    disabled={zoomScale >= 3.5}
+                                    className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold text-lg disabled:opacity-40 transition-colors"
+                                    title="Zoom In (+)"
+                                >
+                                    +
+                                </button>
+                                {zoomScale > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={handleResetZoom}
+                                        className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors"
+                                    >
+                                        Reset
+                                    </button>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => setShowZoomModal(false)}
+                                    className="w-9 h-9 rounded-xl bg-red-600 hover:bg-red-700 text-white flex items-center justify-center font-bold text-lg ml-3 transition-colors"
+                                    title="Close Lightbox"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
 
-                                    {/* Your Name */}
-                                    <div className="row g-3 mb-3">
-                                        <div className="col-md-6">
-                                            <label className="form-label fw-bold text-dark mb-1">Your Name:</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                placeholder="Enter your name"
-                                                value={newReview.customerName}
-                                                onChange={(e) => setNewReview(prev => ({ ...prev, customerName: e.target.value }))}
-                                            />
-                                        </div>
-                                        <div className="col-md-6">
-                                            <label className="form-label fw-bold text-dark mb-1">Mobile Number (Optional):</label>
-                                            <input
-                                                type="tel"
-                                                className="form-control"
-                                                placeholder="Mobile for verified buyer badge"
-                                                value={newReview.customerPhone}
-                                                onChange={(e) => setNewReview(prev => ({ ...prev, customerPhone: e.target.value }))}
-                                            />
-                                        </div>
-                                    </div>
+                        {/* INTERACTIVE IMAGE DISPLAY AREA */}
+                        <div
+                            className="flex-1 relative overflow-hidden flex items-center justify-center p-4 cursor-grab active:cursor-grabbing"
+                            onDoubleClick={handleToggleDoubleTapZoom}
+                            onMouseDown={handleMouseDown}
+                            onTouchStart={handleTouchStart}
+                        >
+                            <img
+                                src={getImageUrl(activeImageUrl)}
+                                alt={product.name}
+                                className="max-h-full max-w-full object-contain pointer-events-none transition-transform duration-200 ease-out"
+                                style={{
+                                    transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomScale})`
+                                }}
+                            />
 
-                                    {/* Headline */}
-                                    <div className="mb-3">
-                                        <label className="form-label fw-bold text-dark mb-1">Review Title / Headline:</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            placeholder="e.g., Pure aroma & great taste!"
-                                            value={newReview.title}
-                                            onChange={(e) => setNewReview(prev => ({ ...prev, title: e.target.value }))}
+                            {/* NEXT / PREVIOUS ARROWS */}
+                            {galleryImages.length > 1 && (
+                                <>
+                                    <button
+                                        type="button"
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-slate-900/80 hover:bg-slate-800 text-white border border-slate-700 flex items-center justify-center text-2xl font-bold shadow-xl transition-all"
+                                        onClick={(e) => { e.stopPropagation(); handlePrevImage(); }}
+                                        title="Previous Image"
+                                    >
+                                        ‹
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-slate-900/80 hover:bg-slate-800 text-white border border-slate-700 flex items-center justify-center text-2xl font-bold shadow-xl transition-all"
+                                        onClick={(e) => { e.stopPropagation(); handleNextImage(); }}
+                                        title="Next Image"
+                                    >
+                                        ›
+                                    </button>
+                                </>
+                            )}
+                        </div>
+
+                        {/* BOTTOM THUMBNAILS CAROUSEL */}
+                        {galleryImages.length > 1 && (
+                            <div className="p-4 bg-slate-900/90 border-t border-slate-800 flex justify-center gap-3 overflow-x-auto z-20">
+                                {galleryImages.map((img, idx) => (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        className={`w-16 h-16 rounded-xl border-2 p-1 bg-slate-950 transition-all shrink-0 overflow-hidden ${
+                                            activeImageIndex === idx ? "border-emerald-500 ring-2 ring-emerald-500/30 opacity-100" : "border-slate-800 opacity-50 hover:opacity-100"
+                                        }`}
+                                        onClick={() => {
+                                            setActiveImageIndex(idx);
+                                            handleResetZoom();
+                                        }}
+                                    >
+                                        <img
+                                            src={getImageUrl(img)}
+                                            alt={`Thumbnail ${idx + 1}`}
+                                            className="w-full h-full object-contain"
                                         />
-                                    </div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
 
-                                    {/* Comment */}
-                                    <div className="mb-3">
-                                        <label className="form-label fw-bold text-dark mb-1">Detailed Review:</label>
-                                        <textarea
-                                            rows={3}
-                                            className="form-control"
-                                            placeholder="Tell us what you loved about this organic product..."
-                                            value={newReview.comment}
-                                            onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
-                                            required
-                                        />
-                                    </div>
+                {/* WRITE REVIEW MODAL */}
+                {showWriteReviewModal && (
+                    <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+                        <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden border border-slate-200 my-8">
+                            <div className="bg-emerald-700 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 className="font-bold text-lg text-white">⭐ Review & Upload Photo for {product.name}</h3>
+                                <button type="button" className="text-white hover:text-slate-200 text-2xl font-bold" onClick={() => setShowWriteReviewModal(false)}>✕</button>
+                            </div>
 
-                                    {/* Photo Upload */}
-                                    <div className="mb-3">
-                                        <label className="form-label fw-bold text-dark mb-1">📸 Upload Product Photo (Optional):</label>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            className="form-control"
-                                            onChange={(e) => {
-                                                const file = e.target.files[0];
-                                                if (file) {
-                                                    setNewReview(prev => ({
-                                                        ...prev,
-                                                        imageFile: file,
-                                                        imagePreview: URL.createObjectURL(file)
-                                                    }));
-                                                }
-                                            }}
-                                        />
-                                        {newReview.imagePreview && (
-                                            <div className="mt-2 text-center p-2 border rounded bg-light">
-                                                <img src={newReview.imagePreview} alt="Preview" className="img-thumbnail" style={{ maxHeight: "130px" }} />
-                                            </div>
-                                        )}
+                            <form onSubmit={handleProductReviewSubmit} className="p-6 space-y-4">
+                                {/* Star Rating */}
+                                <div className="text-center space-y-2">
+                                    <label className="block text-sm font-bold text-slate-800">Your Rating:</label>
+                                    <div className="inline-flex gap-2 p-2 bg-slate-50 rounded-full border border-slate-200">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <button
+                                                key={star}
+                                                type="button"
+                                                className="text-2xl p-1 focus:outline-none transition-transform hover:scale-125"
+                                                onClick={() => setNewReview(prev => ({ ...prev, rating: star }))}
+                                            >
+                                                <span className={star <= newReview.rating ? "text-amber-400" : "text-slate-300"}>★</span>
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
 
-                                <div className="modal-footer bg-light py-3 px-4 justify-content-between">
-                                    <button type="button" className="btn btn-outline-secondary rounded-pill px-4" onClick={() => setShowWriteReviewModal(false)}>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-700 mb-1">Your Name:</label>
+                                        <input
+                                            type="text"
+                                            className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none"
+                                            placeholder="Enter your name"
+                                            value={newReview.customerName}
+                                            onChange={(e) => setNewReview(prev => ({ ...prev, customerName: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-700 mb-1">Mobile Number (Optional):</label>
+                                        <input
+                                            type="tel"
+                                            className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none"
+                                            placeholder="Mobile for verified buyer badge"
+                                            value={newReview.customerPhone}
+                                            onChange={(e) => setNewReview(prev => ({ ...prev, customerPhone: e.target.value }))}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1">Review Title / Headline:</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none"
+                                        placeholder="e.g., Pure aroma & great taste!"
+                                        value={newReview.title}
+                                        onChange={(e) => setNewReview(prev => ({ ...prev, title: e.target.value }))}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1">Detailed Review:</label>
+                                    <textarea
+                                        rows={3}
+                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none"
+                                        placeholder="Tell us what you loved about this organic product..."
+                                        value={newReview.comment}
+                                        onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1">📸 Upload Product Photo (Optional):</label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                setNewReview(prev => ({
+                                                    ...prev,
+                                                    imageFile: file,
+                                                    imagePreview: URL.createObjectURL(file)
+                                                }));
+                                            }
+                                        }}
+                                    />
+                                    {newReview.imagePreview && (
+                                        <div className="mt-2 text-center p-2 border border-slate-200 rounded-xl bg-slate-50">
+                                            <img src={newReview.imagePreview} alt="Preview" className="max-h-32 mx-auto rounded-lg" />
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="pt-3 flex items-center justify-between border-t border-slate-200">
+                                    <button type="button" className="px-5 py-2 border border-slate-300 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50" onClick={() => setShowWriteReviewModal(false)}>
                                         Cancel
                                     </button>
-                                    <button type="submit" className="btn btn-success fw-bold rounded-pill px-5 shadow-sm" disabled={newReview.submitting}>
+                                    <button type="submit" className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md text-sm transition-colors" disabled={newReview.submitting}>
                                         {newReview.submitting ? "Posting..." : "Submit Review ⭐"}
                                     </button>
                                 </div>
                             </form>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* REVIEW PHOTO MODAL PREVIEW */}
-            {reviewImagePreview && (
-                <div className="modal d-block bg-dark bg-opacity-75" tabIndex="-1" onClick={() => setReviewImagePreview(null)}>
-                    <div className="modal-dialog modal-dialog-centered modal-lg">
-                        <div className="modal-content bg-black border-0 rounded-4 overflow-hidden">
-                            <div className="modal-header border-0 pb-0">
-                                <button type="button" className="btn-close btn-close-white" onClick={() => setReviewImagePreview(null)}></button>
-                            </div>
-                            <div className="modal-body text-center p-3">
-                                <img src={reviewImagePreview} alt="Review Customer Photo" className="img-fluid rounded-3" style={{ maxHeight: "80vh" }} />
-                            </div>
+                {/* REVIEW PHOTO PREVIEW MODAL */}
+                {reviewImagePreview && (
+                    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setReviewImagePreview(null)}>
+                        <div className="relative max-w-4xl max-h-[90vh]">
+                            <button type="button" className="absolute -top-10 right-0 text-white text-2xl font-bold" onClick={() => setReviewImagePreview(null)}>✕</button>
+                            <img src={reviewImagePreview} alt="Review Customer Photo" className="max-h-[85vh] rounded-2xl object-contain" />
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* VIDEO MODAL IF PRESENT */}
-            {showVideoModal && product.videoUrl && (
-                <div className="modal d-block bg-dark bg-opacity-75" tabIndex="-1">
-                    <div className="modal-dialog modal-dialog-centered modal-lg">
-                        <div className="modal-content bg-black text-white">
-                            <div className="modal-header border-secondary">
-                                <h5 className="modal-title fw-bold">Product Video: {product.name}</h5>
-                                <button
-                                    type="button"
-                                    className="btn-close btn-close-white"
-                                    onClick={() => setShowVideoModal(false)}
-                                ></button>
+                {/* VIDEO MODAL */}
+                {showVideoModal && product.videoUrl && (
+                    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setShowVideoModal(false)}>
+                        <div className="bg-slate-950 rounded-3xl max-w-4xl w-full overflow-hidden border border-slate-800" onClick={(e) => e.stopPropagation()}>
+                            <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
+                                <h3 className="font-bold text-sm sm:text-base">Product Video: {product.name}</h3>
+                                <button type="button" className="text-white text-xl font-bold" onClick={() => setShowVideoModal(false)}>✕</button>
                             </div>
-                            <div className="modal-body text-center p-0">
-                                <video controls autoPlay className="w-100" style={{ maxHeight: "500px" }}>
+                            <div className="p-2 text-center bg-black">
+                                <video controls autoPlay className="w-full max-h-[500px] rounded-2xl">
                                     <source src={getImageUrl(product.videoUrl)} type="video/mp4" />
                                     Your browser does not support video playback.
                                 </video>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+
+            </div>
         </div>
     );
 };
