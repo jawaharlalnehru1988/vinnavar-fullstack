@@ -2,12 +2,12 @@ import { fetchSettings, getImageUrl } from "../services/api";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import { useLanguage } from "../context/LanguageContext";
+import { useTranslation } from "react-i18next";
 
 const groceryshop = getImageUrl("/media/site/Grocerylogo.png");
 
 const Footer = () => {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   let date = new Date();
   let year = date.getFullYear();
   const [logoUrl, setLogoUrl] = useState(groceryshop);

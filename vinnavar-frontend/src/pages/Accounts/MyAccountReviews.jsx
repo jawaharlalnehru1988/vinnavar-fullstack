@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { API_BASE_URL, getImageUrl, fetchUserReviews } from "../../services/api";
+import { API_BASE_URL, getImageUrl, fetchUserReviews, updateProductReview, uploadReviewImages } from "../../services/api";
+import Swal from "sweetalert2";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { MagnifyingGlass } from "react-loader-spinner";
 import ScrollToTop from "../ScrollToTop";
@@ -9,6 +10,18 @@ const MyAccountReviews = () => {
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
+  
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editData, setEditData] = useState({
+      id: null,
+      rating: 5,
+      title: "",
+      comment: "",
+      imageFiles: [],
+      imagePreviews: [],
+      existingImageUrls: [],
+      submitting: false
+  });
 
   const currentUser = (() => {
     try {
@@ -51,6 +64,63 @@ const MyAccountReviews = () => {
       );
     }
     return stars;
+  };
+
+  const openEditModal = (rev) => {
+      setEditData({
+          id: rev.id,
+          rating: rev.rating || 5,
+          title: rev.reviewTitle || "",
+          comment: rev.reviewComment || "",
+          existingImageUrls: rev.imageUrls && rev.imageUrls.length > 0 ? rev.imageUrls : (rev.imageUrl ? [rev.imageUrl] : []),
+          imageFiles: [],
+          imagePreviews: [],
+          submitting: false
+      });
+      setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+      e.preventDefault();
+      if (!editData.comment.trim()) {
+          Swal.fire("Missing Field", "Please write your review comment", "warning");
+          return;
+      }
+
+      setEditData(prev => ({ ...prev, submitting: true }));
+      try {
+          let finalImageUrls = [...editData.existingImageUrls];
+
+          if (editData.imageFiles && editData.imageFiles.length > 0) {
+              const uploadRes = await uploadReviewImages(editData.imageFiles);
+              if (uploadRes.imageUrls && uploadRes.imageUrls.length > 0) {
+                  finalImageUrls = [...finalImageUrls, ...uploadRes.imageUrls];
+              }
+          }
+
+          await updateProductReview(editData.id, {
+              rating: editData.rating,
+              reviewTitle: editData.title,
+              reviewComment: editData.comment,
+              imageUrls: finalImageUrls,
+              imageUrl: finalImageUrls.length > 0 ? finalImageUrls[0] : null
+          });
+
+          Swal.fire({
+              title: "Review Updated! ⭐",
+              icon: "success",
+              confirmButtonColor: "#198754",
+              timer: 1500,
+              showConfirmButton: false
+          });
+          setShowEditModal(false);
+          loadReviews();
+      } catch (err) {
+          console.error("Edit submission error:", err);
+          Swal.fire("Error", err.message || "Failed to update review", "error");
+      } finally {
+          setEditData(prev => ({ ...prev, submitting: false }));
+      }
   };
 
   return (
@@ -167,6 +237,9 @@ const MyAccountReviews = () => {
                               <span className={`badge ${rev.status === "APPROVED" ? "bg-success" : rev.status === "PENDING" ? "bg-warning text-dark" : "bg-secondary"}`}>
                                 {rev.status}
                               </span>
+                              <button onClick={() => openEditModal(rev)} className="btn btn-sm btn-outline-secondary rounded-pill ms-2">
+                                <i className="fas fa-edit me-1"></i> Edit
+                              </button>
                             </div>
                           </div>
 
@@ -176,17 +249,22 @@ const MyAccountReviews = () => {
 
                           <p className="text-secondary leading-relaxed mb-3">{rev.reviewComment}</p>
 
-                          {/* Customer Uploaded Photo */}
-                          {rev.imageUrl && (
+                          {/* Customer Uploaded Photos */}
+                          {((rev.imageUrls && rev.imageUrls.length > 0) || rev.imageUrl) && (
                             <div className="mt-3">
-                              <div className="small text-muted fw-bold mb-1">📸 Your Uploaded Photo:</div>
-                              <img
-                                src={getImageUrl(rev.imageUrl)}
-                                alt="Product Customer Review"
-                                className="img-thumbnail rounded-3 shadow-xs cursor-pointer"
-                                style={{ maxHeight: "140px", maxWidth: "180px", objectFit: "cover" }}
-                                onClick={() => setPreviewImage(getImageUrl(rev.imageUrl))}
-                              />
+                              <div className="small text-muted fw-bold mb-1">📸 Your Uploaded Photos:</div>
+                              <div className="d-flex flex-wrap gap-2">
+                                  {(rev.imageUrls && rev.imageUrls.length > 0 ? rev.imageUrls : [rev.imageUrl]).map((url, idx) => (
+                                      <img
+                                        key={idx}
+                                        src={getImageUrl(url)}
+                                        alt={`Product Customer Review ${idx+1}`}
+                                        className="img-thumbnail rounded-3 shadow-xs cursor-pointer"
+                                        style={{ maxHeight: "140px", maxWidth: "180px", objectFit: "cover" }}
+                                        onClick={() => setPreviewImage(getImageUrl(url))}
+                                      />
+                                  ))}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -211,6 +289,121 @@ const MyAccountReviews = () => {
               <div className="modal-body text-center p-3">
                 <img src={previewImage} alt="Review Preview" className="img-fluid rounded-3" style={{ maxHeight: "80vh" }} />
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Review Modal */}
+      {showEditModal && (
+        <div className="modal d-block bg-dark bg-opacity-75" tabIndex="-1">
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 rounded-4 shadow">
+              <div className="modal-header bg-success text-white border-0">
+                <h5 className="modal-title fw-bold">✏️ Edit Your Review</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setShowEditModal(false)}></button>
+              </div>
+              <form onSubmit={handleEditSubmit}>
+                  <div className="modal-body p-4">
+                      {/* Rating */}
+                      <div className="text-center mb-4">
+                          <label className="form-label fw-bold small text-muted">Your Rating:</label>
+                          <div className="d-flex justify-content-center gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                  <button
+                                      key={star}
+                                      type="button"
+                                      className="btn btn-link text-decoration-none p-0 fs-3"
+                                      onClick={() => setEditData(prev => ({ ...prev, rating: star }))}
+                                  >
+                                      <i className={`fas fa-star ${star <= editData.rating ? "text-warning" : "text-secondary opacity-25"}`} />
+                                  </button>
+                              ))}
+                          </div>
+                      </div>
+
+                      <div className="mb-3">
+                          <label className="form-label fw-bold small text-muted">Review Title:</label>
+                          <input
+                              type="text"
+                              className="form-control rounded-3"
+                              value={editData.title}
+                              onChange={(e) => setEditData(prev => ({ ...prev, title: e.target.value }))}
+                          />
+                      </div>
+
+                      <div className="mb-3">
+                          <label className="form-label fw-bold small text-muted">Detailed Review:</label>
+                          <textarea
+                              className="form-control rounded-3"
+                              rows={3}
+                              value={editData.comment}
+                              onChange={(e) => setEditData(prev => ({ ...prev, comment: e.target.value }))}
+                              required
+                          ></textarea>
+                      </div>
+
+                      <div className="mb-3">
+                          <label className="form-label fw-bold small text-muted">📸 Add More Photos (Optional):</label>
+                          <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              className="form-control form-control-sm rounded-3"
+                              onChange={(e) => {
+                                  const files = Array.from(e.target.files).slice(0, 5);
+                                  if (files.length > 0) {
+                                      const previews = files.map(file => URL.createObjectURL(file));
+                                      setEditData(prev => ({
+                                          ...prev,
+                                          imageFiles: files,
+                                          imagePreviews: previews
+                                      }));
+                                  }
+                              }}
+                          />
+                          
+                          {/* Previews of newly added photos */}
+                          {editData.imagePreviews.length > 0 && (
+                              <div className="d-flex gap-2 mt-2 overflow-x-auto">
+                                  {editData.imagePreviews.map((preview, idx) => (
+                                      <img key={idx} src={preview} alt="New Preview" className="img-thumbnail" style={{ maxHeight: "60px" }} />
+                                  ))}
+                              </div>
+                          )}
+
+                          {/* Existing Photos */}
+                          {editData.existingImageUrls.length > 0 && (
+                              <div className="mt-2 pt-2 border-top">
+                                  <div className="small text-muted mb-1">Existing Photos:</div>
+                                  <div className="d-flex flex-wrap gap-2">
+                                      {editData.existingImageUrls.map((url, idx) => (
+                                          <div key={idx} className="position-relative">
+                                            <img src={getImageUrl(url)} alt="Existing" className="img-thumbnail" style={{ maxHeight: "60px" }} />
+                                            <button 
+                                                type="button" 
+                                                className="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle py-0 px-1 m-1"
+                                                onClick={() => setEditData(prev => ({
+                                                    ...prev,
+                                                    existingImageUrls: prev.existingImageUrls.filter((_, i) => i !== idx)
+                                                }))}
+                                            >
+                                                &times;
+                                            </button>
+                                          </div>
+                                      ))}
+                                  </div>
+                              </div>
+                          )}
+                      </div>
+                  </div>
+                  <div className="modal-footer border-0 pt-0">
+                      <button type="button" className="btn btn-light fw-medium rounded-pill" onClick={() => setShowEditModal(false)}>Cancel</button>
+                      <button type="submit" className="btn btn-success fw-bold rounded-pill px-4" disabled={editData.submitting}>
+                          {editData.submitting ? "Saving..." : "Save Changes"}
+                      </button>
+                  </div>
+              </form>
             </div>
           </div>
         </div>

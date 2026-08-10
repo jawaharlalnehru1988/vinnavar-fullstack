@@ -415,6 +415,17 @@ export const submitProductReview = async (reviewData) => {
     return data;
 };
 
+export const updateProductReview = async (id, reviewData) => {
+    const res = await fetch(`${API_BASE_URL}/reviews/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reviewData)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Failed to update review.");
+    return data;
+};
+
 export const uploadReviewImage = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -424,6 +435,20 @@ export const uploadReviewImage = async (file) => {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Failed to upload image.");
+    return data;
+};
+
+export const uploadReviewImages = async (files) => {
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]);
+    }
+    const res = await fetch(`${API_BASE_URL}/reviews/upload-images`, {
+        method: "POST",
+        body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to upload images.");
     return data;
 };
 

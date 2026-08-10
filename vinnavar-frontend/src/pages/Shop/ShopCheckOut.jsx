@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from 'sweetalert2';
 import ScrollToTop from "../ScrollToTop";
+import { useTranslation } from "react-i18next";
 
 const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -19,6 +20,7 @@ const loadRazorpayScript = () => {
 };
 
 const ShopCheckOut = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [loaderStatus, setLoaderStatus] = useState(true);
     const [cart, setCart] = useState(null);
@@ -308,7 +310,7 @@ const ShopCheckOut = () => {
             {loaderStatus ? (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 font-medium">
                     <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                    <span>Initializing Secure Checkout...</span>
+                    <span>{t("initializing_checkout")}</span>
                 </div>
             ) : (
                 <div className="max-w-7xl mx-auto space-y-8">
@@ -318,18 +320,18 @@ const ShopCheckOut = () => {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
                                 <span className="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-200 text-xs font-extrabold rounded-full border border-emerald-400/30 uppercase tracking-widest mb-2">
-                                    Trusted Razorpay Gateway
+                                    {t("trusted_gateway")}
                                 </span>
-                                <h1 className="text-2xl sm:text-3xl font-black">🛍️ Secure Checkout</h1>
+                                <h1 className="text-2xl sm:text-3xl font-black">{t("secure_checkout")}</h1>
                                 <p className="text-emerald-100 text-xs sm:text-sm mt-1">
-                                    100% Pure Organic Staples. Delivered directly to your home across India.
+                                    {t("checkout_desc")}
                                 </p>
                             </div>
                             <Link
                                 to="/ShopCart"
                                 className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-full border border-white/20 transition-all self-start sm:self-auto"
                             >
-                                ← Edit Shopping Cart
+                                {t("edit_cart")}
                             </Link>
                         </div>
                     </div>
@@ -347,18 +349,18 @@ const ShopCheckOut = () => {
                                             1
                                         </span>
                                         <h2 className="font-extrabold text-slate-900 text-base">
-                                            Shipping &amp; Delivery Address
+                                            {t("shipping_delivery_addr")}
                                         </h2>
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">Full Name *</label>
+                                            <label className="block font-bold text-slate-700 mb-1">{t("full_name")}</label>
                                             <input
                                                 type="text"
                                                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
                                                 name="name"
-                                                placeholder="e.g. Lokesh Rajan"
+                                                placeholder={t("name_placeholder")}
                                                 value={shippingForm.name}
                                                 onChange={handleShippingChange}
                                                 required
@@ -366,12 +368,12 @@ const ShopCheckOut = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">Mobile Phone Number *</label>
+                                            <label className="block font-bold text-slate-700 mb-1">{t("mobile_phone")}</label>
                                             <input
                                                 type="tel"
                                                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
                                                 name="phone"
-                                                placeholder="+91 9876543210"
+                                                placeholder={t("phone_placeholder")}
                                                 value={shippingForm.phone}
                                                 onChange={handleShippingChange}
                                                 required
@@ -379,19 +381,19 @@ const ShopCheckOut = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">Email Address (Optional)</label>
+                                            <label className="block font-bold text-slate-700 mb-1">{t("email_optional")}</label>
                                             <input
                                                 type="email"
                                                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
                                                 name="email"
-                                                placeholder="you@example.com"
+                                                placeholder={t("email_placeholder")}
                                                 value={shippingForm.email}
                                                 onChange={handleShippingChange}
                                             />
                                         </div>
 
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">User GSTIN (Optional)</label>
+                                            <label className="block font-bold text-slate-700 mb-1">{t("gstin_optional")}</label>
                                             <input
                                                 type="text"
                                                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 uppercase font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
@@ -403,7 +405,7 @@ const ShopCheckOut = () => {
                                         </div>
 
                                         <div className="sm:col-span-2">
-                                            <label className="block font-bold text-slate-700 mb-1">House / Flat / Street Address *</label>
+                                            <label className="block font-bold text-slate-700 mb-1">{t("street_addr")}</label>
                                             <textarea
                                                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
                                                 name="street"
@@ -416,7 +418,7 @@ const ShopCheckOut = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">City / Town</label>
+                                            <label className="block font-bold text-slate-700 mb-1">{t("city_town")}</label>
                                             <input
                                                 type="text"
                                                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
@@ -428,7 +430,7 @@ const ShopCheckOut = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">State</label>
+                                            <label className="block font-bold text-slate-700 mb-1">{t("state_label")}</label>
                                             <input
                                                 type="text"
                                                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
@@ -439,7 +441,7 @@ const ShopCheckOut = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">Pincode *</label>
+                                            <label className="block font-bold text-slate-700 mb-1">{t("pincode")}</label>
                                             <input
                                                 type="text"
                                                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
@@ -460,7 +462,7 @@ const ShopCheckOut = () => {
                                             2
                                         </span>
                                         <h2 className="font-extrabold text-slate-900 text-base">
-                                            Billing Address
+                                            {t("billing_addr")}
                                         </h2>
                                     </div>
 
@@ -473,7 +475,7 @@ const ShopCheckOut = () => {
                                                 className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                                             />
                                             <span className="text-xs font-bold text-slate-900">
-                                                Billing Address is same as Shipping Address
+                                                {t("billing_same_as_shipping")}
                                             </span>
                                         </label>
                                     </div>
@@ -481,7 +483,7 @@ const ShopCheckOut = () => {
                                     {!sameAsShipping && (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                                             <div>
-                                                <label className="block font-bold text-slate-700 mb-1">Billing Full Name *</label>
+                                                <label className="block font-bold text-slate-700 mb-1">{t("billing_full_name")}</label>
                                                 <input
                                                     type="text"
                                                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
@@ -493,7 +495,7 @@ const ShopCheckOut = () => {
                                             </div>
 
                                             <div>
-                                                <label className="block font-bold text-slate-700 mb-1">Billing Phone Number *</label>
+                                                <label className="block font-bold text-slate-700 mb-1">{t("billing_phone")}</label>
                                                 <input
                                                     type="tel"
                                                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
@@ -505,7 +507,7 @@ const ShopCheckOut = () => {
                                             </div>
 
                                             <div className="sm:col-span-2">
-                                                <label className="block font-bold text-slate-700 mb-1">Billing Address *</label>
+                                                <label className="block font-bold text-slate-700 mb-1">{t("billing_street")}</label>
                                                 <textarea
                                                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
                                                     name="street"
@@ -517,7 +519,7 @@ const ShopCheckOut = () => {
                                             </div>
 
                                             <div>
-                                                <label className="block font-bold text-slate-700 mb-1">City / Town</label>
+                                                <label className="block font-bold text-slate-700 mb-1">{t("city_town")}</label>
                                                 <input
                                                     type="text"
                                                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
@@ -528,7 +530,7 @@ const ShopCheckOut = () => {
                                             </div>
 
                                             <div>
-                                                <label className="block font-bold text-slate-700 mb-1">Pincode *</label>
+                                                <label className="block font-bold text-slate-700 mb-1">{t("pincode")}</label>
                                                 <input
                                                     type="text"
                                                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
@@ -549,7 +551,7 @@ const ShopCheckOut = () => {
                                             3
                                         </span>
                                         <h2 className="font-extrabold text-slate-900 text-base">
-                                            Payment Method
+                                            {t("payment_method")}
                                         </h2>
                                     </div>
 
@@ -558,15 +560,15 @@ const ShopCheckOut = () => {
                                             <div className="w-4 h-4 rounded-full bg-emerald-700 border-2 border-white shadow-xs"></div>
                                             <div>
                                                 <div className="font-bold text-slate-900 text-xs sm:text-sm">
-                                                    Razorpay Payment Gateway (UPI, Cards, NetBanking)
+                                                    {t("razorpay_title")}
                                                 </div>
                                                 <div className="text-slate-500 text-[11px] mt-0.5">
-                                                    Pay securely via GPay, PhonePe, Paytm, Credit/Debit Cards, &amp; NetBanking.
+                                                    {t("razorpay_desc")}
                                                 </div>
                                             </div>
                                         </div>
                                         <span className="px-2.5 py-1 bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-xs">
-                                            Instant &amp; 100% Safe
+                                            {t("instant_safe")}
                                         </span>
                                     </div>
                                 </div>
@@ -577,14 +579,14 @@ const ShopCheckOut = () => {
                             <div className="lg:col-span-1">
                                 <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-6 sticky top-24">
                                     <h2 className="font-black text-slate-900 text-lg border-b border-slate-100 pb-3">
-                                        Order Summary
+                                        {t("order_summary")}
                                     </h2>
 
                                     {(!cart || !cart.items || cart.items.length === 0) ? (
                                         <div className="text-center py-6 text-slate-400 space-y-3">
-                                            <p className="text-xs">Your cart is empty.</p>
+                                            <p className="text-xs">{t("cart_empty_checkout")}</p>
                                             <Link to="/Shop" className="inline-block px-4 py-2 bg-emerald-700 text-white text-xs font-bold rounded-full">
-                                                Browse Products
+                                                {t("browse_products")}
                                             </Link>
                                         </div>
                                     ) : (
@@ -627,24 +629,24 @@ const ShopCheckOut = () => {
                                                     <span className="font-black text-slate-900">₹{(cart.subtotal || 0).toFixed(2)}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center text-slate-700">
-                                                    <span className="font-bold text-slate-900">Shipment</span>
+                                                    <span className="font-bold text-slate-900">{t("shipment")}</span>
                                                     <span className="text-right">
-                                                        <span className="text-[10px] text-slate-500 block">Weight Based ({(cart.totalWeightKg || 0).toFixed(1)} kg):</span>
+                                                        <span className="text-[10px] text-slate-500 block">{t("weight_based")} ({(cart.totalWeightKg || 0).toFixed(1)} kg):</span>
                                                         <span className="font-black text-emerald-700">₹{(cart.shippingFee ?? 48).toFixed(2)}</span>
                                                     </span>
                                                 </div>
                                                 <div className="flex justify-between text-slate-700">
-                                                    <span className="font-bold text-slate-900">GST Tax</span>
+                                                    <span className="font-bold text-slate-900">{t("tax_gst")}</span>
                                                     <span className="font-black text-emerald-700">₹{(cart.gstTax ?? 0).toFixed(2)}</span>
                                                 </div>
                                                 {cart?.roundOff !== undefined && cart?.roundOff !== null && cart.roundOff !== 0 && (
                                                     <div className="flex justify-between text-slate-700">
-                                                        <span className="font-bold text-slate-900">Round Off</span>
+                                                        <span className="font-bold text-slate-900">{t("round_off")}</span>
                                                         <span className="font-black text-emerald-700">{cart.roundOff > 0 ? `+₹${cart.roundOff.toFixed(2)}` : `-₹${Math.abs(cart.roundOff).toFixed(2)}`}</span>
                                                     </div>
                                                 )}
                                                 <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-sm font-black text-slate-900">
-                                                    <span>Total Payable</span>
+                                                    <span>{t("total_payable")}</span>
                                                     <span className="text-xl text-emerald-700">
                                                         ₹{(cart.totalAmount ?? ((cart.subtotal || 0) + (cart.shippingFee ?? 48) + ((cart.subtotal || 0) * 0.05))).toFixed(2)}
                                                     </span>
@@ -657,15 +659,15 @@ const ShopCheckOut = () => {
                                                 disabled={isProcessing}
                                             >
                                                 {isProcessing ? (
-                                                    "Processing Secure Payment..."
+                                                    t("processing_payment")
                                                 ) : (
-                                                    `🔒 Pay ₹${(cart.totalAmount ?? ((cart.subtotal || 0) + (cart.shippingFee ?? 48) + ((cart.subtotal || 0) * 0.05))).toFixed(2)} via Razorpay`
+                                                    t("pay_via_razorpay", { amount: (cart.totalAmount ?? ((cart.subtotal || 0) + (cart.shippingFee ?? 48) + ((cart.subtotal || 0) * 0.05))).toFixed(2) })
                                                 )}
                                             </button>
 
                                             <div className="text-center">
                                                 <p className="text-[11px] text-slate-400 font-semibold">
-                                                    🛡️ 100% Encrypted &amp; Verified by Razorpay
+                                                    {t("encrypted_verified")}
                                                 </p>
                                             </div>
                                         </>

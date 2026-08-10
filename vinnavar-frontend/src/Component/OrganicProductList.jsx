@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import { API_BASE_URL, fetchProducts, getImageUrl, toggleWishlist, getCartId } from "../services/api";
-import { useLanguage } from "../context/LanguageContext";
+import { useTranslation } from "react-i18next";
 
 import { ProductSkeleton } from "./Skeleton";
 
 const OrganicProductList = ({ categoryId, limit = 8 }) => {
-    const { currentLang, t } = useLanguage();
+    const { t, i18n } = useTranslation();
+    const currentLang = i18n.language || 'en';
     const [products, setProducts] = useState([]);
     const [selectedVariants, setSelectedVariants] = useState({});
     const [loading, setLoading] = useState(true);
@@ -122,10 +123,10 @@ const OrganicProductList = ({ categoryId, limit = 8 }) => {
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 pb-4 border-b border-slate-100">
                     <div>
                         <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/50">
-                            100% Certified Organic
+                            {t("cert_organic")}
                         </span>
                         <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-tight">
-                            Pure Organic Staples &amp; Products
+                            {t("pure_organic_staples")}
                         </h2>
                     </div>
                     <div>
@@ -133,7 +134,7 @@ const OrganicProductList = ({ categoryId, limit = 8 }) => {
                             to="/Shop"
                             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-all shadow-xs active:scale-95"
                         >
-                            <span>View All Products</span>
+                            <span>{t("view_all_products")}</span>
                             <span>➔</span>
                         </Link>
                     </div>

@@ -28604,20 +28604,7 @@ select {
 
 
 
-.section-head h1:after {
-  color: hsla(0, 0%, 82%, 0.3);
-  content: attr(data-title);
-  font-size: 48px;
-  font-weight: 900;
-  left: 50%;
-  position: absolute;
-  text-transform: uppercase;
-  top: 580px;
-  -webkit-transform: translateX(-50%);
-  transform: translateX(-50%);
-  width: 100%;
-  z-index: -1;
-}
+
 .separator {
   align-items: center;
   height: 35px;

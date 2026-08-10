@@ -1,8 +1,8 @@
 import { getImageUrl, fetchCategories, fetchProducts, API_BASE_URL, toggleWishlist } from "../services/api";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
-import { Zoom } from "react-awesome-reveal";
 import { MagnifyingGlass } from "react-loader-spinner";
 import Swal from "sweetalert2";
 import FAQ from "./FooterElements/Faq";
@@ -14,12 +14,9 @@ import "slick-carousel/slick/slick-theme.css";
 
 const bannerdeal = getImageUrl("/media/site/banner-deal1.jpg");
 const product11 = getImageUrl("/media/products/product-img-11.jpg");
-const refresh = getImageUrl("/media/site/refresh-cw.svg");
-const clock = getImageUrl("/media/site/clock.svg");
-const gift = getImageUrl("/media/site/gift.svg");
-const package1 = getImageUrl("/media/site/package.svg");
 
 const Home = () => {
+  const { t } = useTranslation();
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [categories, setCategories] = useState([]);
   const [offerProducts, setOfferProducts] = useState([]);
@@ -289,9 +286,9 @@ const Home = () => {
                         <div className="section-head text-center mt-8">
                           <h3
                             className="h3style"
-                            data-title="Shop Popular Categories"
+                            data-title={t("shop_categories")}
                           >
-                            Shop Popular Categories
+                            {t("shop_categories")}
                           </h3>
                           <div className="wt-separator bg-primarys"></div>
                           <div className="wt-separator2 bg-primarys"></div>
@@ -386,105 +383,6 @@ const Home = () => {
               <OrganicProductList categoryId={selectedCategoryId} limit={8} />
             </>
 
-            <>
-              <section className="my-lg-14 my-8">
-                <div className="container" style={{ marginTop: 50 }}>
-                  <div
-                    className="row justify-content-center  g-4"
-                    style={{ textAlign: "center" }}
-                  >
-                    <div className="col-md-3 col-sm-6 fade-zoom ">
-                      <Zoom>
-                        <div className="shadow-effect">
-                          <div className="wt-icon-box-wraper center p-a25 p-b50 m-b30 bdr-1 bdr-gray bdr-solid corner-radius step-icon-box bg-white v-icon-effect">
-                            <div className="icon-lg m-b20">
-                              <div className="mb-6">
-                                <img src={refresh} alt="refresh" />
-                              </div>
-                            </div>
-                            <div className="icon-content">
-                              <h3 className="h5 mb-3">Easy Returns</h3>
-                              <p>
-                                Not satisfied with a product? Return it at the
-                                doorstep &amp; get a refund within hours. No
-                                questions asked
-                                <Link to="#!">policy</Link>.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </Zoom>
-                    </div>
-                    <div className="col-md-3 col-sm-12 fade-zoom">
-                      <Zoom>
-                        <div className="shadow-effect">
-                          <div className="wt-icon-box-wraper center p-a25 p-b50 m-b30 bdr-1 bdr-gray bdr-solid corner-radius step-icon-box bg-white v-icon-effect">
-                            <div className="icon-lg m-b20">
-                              <div className="mb-6">
-                                <img src={package1} alt="package" />
-                              </div>
-                            </div>
-                            <div className="icon-content">
-                              <h3 className="h5 mb-3">Wide Assortment</h3>
-                              <p>
-                                Choose from 5000+ products across food, personal
-                                care, household, bakery, veg and non-veg &amp;
-                                other categories.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </Zoom>
-                    </div>
-                    <div className="col-md-3 col-sm-12 fade-zoom">
-                      <Zoom>
-                        <div className="shadow-effect">
-                          <div className="wt-icon-box-wraper center p-a25 p-b50 m-b30 bdr-1 bdr-gray bdr-solid corner-radius step-icon-box bg-white v-icon-effect">
-                            <div className="icon-lg m-b20">
-                              <div className="mb-6">
-                                <img src={gift} alt="gift" />
-                              </div>
-                            </div>
-                            <div className="icon-content">
-                              <h3 className="h5 mb-3">
-                                Best Prices &amp; Offers
-                              </h3>
-                              <p>
-                                Cheaper prices than your local supermarket,
-                                great cashback offers to top it off. Get best
-                                pricess &amp; offers.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </Zoom>
-                    </div>
-                    <div className="col-md-3 col-sm-12 fade-zoom">
-                      <Zoom>
-                        <div className="shadow-effect">
-                          <div className="wt-icon-box-wraper center p-a25 p-b50 m-b30 bdr-1 bdr-gray bdr-solid corner-radius step-icon-box bg-white v-icon-effect">
-                            <div className="icon-lg m-b20">
-                              <div className="mb-6">
-                                <img src={clock} alt="clock" />
-                              </div>
-                            </div>
-                            <div className="icon-content">
-                              {/* <h4 className="wt-tilte">Reports</h4> */}
-                              <h3 className="h5 mb-3">10 minute grocery now</h3>
-                              <p>
-                                Get your order delivered to your doorstep at the
-                                earliest from Vinnavar Organics pickup
-                                <p> stores near you.</p>
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </Zoom>
-                    </div>
-                  </div>
-                </div>
-              </section>
-            </>
             <>
               <TestimonialsCarousel />
               <FAQ />

@@ -36,6 +36,21 @@ public class ReviewController {
 
     @PostMapping("/reviews/upload-image")
     public ResponseEntity<?> uploadReviewImage(@RequestParam("file") MultipartFile file) {
+        return handleImageUpload(file);
+    }
+
+    @PostMapping("/reviews/upload-images")
+    public ResponseEntity<?> uploadReviewImages(@RequestParam("files") List<MultipartFile> files) {
+        List<String> imageUrls = files.stream()
+            .map(this::handleImageUpload)
+            .filter(response -> response.getStatusCode().is2xxSuccessful())
+            .map(response -> (Map<String, String>) response.getBody())
+            .map(body -> body.get("imageUrl"))
+            .toList();
+        return ResponseEntity.ok(Map.of("imageUrls", imageUrls));
+    }
+
+    private ResponseEntity<?> handleImageUpload(MultipartFile file) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Uploaded file is empty"));
         }
@@ -66,6 +81,12 @@ public class ReviewController {
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body(Map.of("error", "Failed to save review image: " + e.getMessage()));
         }
+    }
+
+    @PutMapping("/reviews/{id}")
+    public ResponseEntity<Review> updateReview(@PathVariable Long id, @RequestBody Review review) {
+        Review updated = reviewService.updateReview(id, review);
+        return ResponseEntity.ok(updated);
     }
 
     @GetMapping("/reviews/product/{productId}")

@@ -5,8 +5,10 @@ import Swal from "sweetalert2";
 import ScrollToTop from "../ScrollToTop";
 import { API_BASE_URL, getImageUrl, fetchWishlist, removeFromWishlist, clearWishlist } from "../../services/api";
 import { CartSkeleton } from "../../Component/Skeleton";
+import { useTranslation } from "react-i18next";
 
 const ShopWishList = () => {
+  const { t } = useTranslation();
   const [loaderStatus, setLoaderStatus] = useState(true);
   const [wishlist, setWishlist] = useState({ items: [], totalItemCount: 0 });
   const [selectedItems, setSelectedItems] = useState([]);
@@ -179,13 +181,13 @@ const ShopWishList = () => {
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="inline-block px-3 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-full border border-red-200/60 mb-2">
-                ❤️ Saved Favorites
+                ❤️ {t("saved_favorites")}
               </span>
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900">My Wishlist</h1>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900">{t("my_wishlist")}</h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
                 {wishlist.items.length === 1
-                  ? "There is 1 saved organic product in your wishlist."
-                  : `There are ${wishlist.items.length} saved organic products in your wishlist.`}
+                  ? t("wishlist_one_item")
+                  : t("wishlist_multi_items", { count: wishlist.items.length })}
               </p>
             </div>
 
@@ -194,7 +196,7 @@ const ShopWishList = () => {
                 className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-full border border-red-200/80 transition-all self-start sm:self-auto flex items-center gap-1.5"
                 onClick={handleClearAll}
               >
-                <span>🗑️</span> Clear Wishlist
+                <span>🗑️</span> {t("clear_wishlist")}
               </button>
             )}
           </div>
@@ -203,16 +205,16 @@ const ShopWishList = () => {
           {wishlist.items.length === 0 ? (
             <div className="bg-white rounded-3xl p-12 sm:p-16 border border-slate-100 shadow-sm text-center space-y-4 max-w-xl mx-auto">
               <div className="text-5xl">❤️</div>
-              <h2 className="text-xl font-black text-slate-900">Your Wishlist is Empty</h2>
+              <h2 className="text-xl font-black text-slate-900">{t("wishlist_empty_title")}</h2>
               <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                Save your favorite traditional organic rice, cold-pressed oils, and spices here for quick access later!
+                {t("wishlist_empty_desc")}
               </p>
               <div className="pt-2">
                 <Link
                   to="/Shop"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-full shadow-lg shadow-emerald-700/20 transition-all active:scale-95"
                 >
-                  <span>Explore Products</span>
+                  <span>{t("explore_products")}</span>
                   <span>➔</span>
                 </Link>
               </div>
@@ -233,12 +235,12 @@ const ShopWishList = () => {
                           onChange={handleSelectAll}
                         />
                       </th>
-                      <th scope="col" className="py-4 px-4">Product</th>
-                      <th scope="col" className="py-4 px-4">Variant / Unit</th>
-                      <th scope="col" className="py-4 px-4">Price</th>
-                      <th scope="col" className="py-4 px-4">Stock Status</th>
-                      <th scope="col" className="py-4 px-4 text-center">Action</th>
-                      <th scope="col" className="py-4 px-4 text-center">Remove</th>
+                      <th scope="col" className="py-4 px-4">{t("th_product")}</th>
+                      <th scope="col" className="py-4 px-4">{t("th_variant")}</th>
+                      <th scope="col" className="py-4 px-4">{t("th_price")}</th>
+                      <th scope="col" className="py-4 px-4">{t("th_stock")}</th>
+                      <th scope="col" className="py-4 px-4 text-center">{t("th_action")}</th>
+                      <th scope="col" className="py-4 px-4 text-center">{t("th_remove")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -290,7 +292,7 @@ const ShopWishList = () => {
                           {/* Variant */}
                           <td className="py-4 px-4">
                             <span className="inline-block px-2.5 py-1 bg-slate-100 text-slate-800 text-[11px] font-bold rounded-full border border-slate-200/60">
-                              {variant?.variantName || "Standard Pack"}
+                              {variant?.variantName || t("standard_pack")}
                             </span>
                           </td>
 
@@ -310,11 +312,11 @@ const ShopWishList = () => {
                           <td className="py-4 px-4">
                             {inStock ? (
                               <span className="inline-block px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-extrabold uppercase tracking-wider rounded-full border border-emerald-200/60">
-                                In Stock
+                                {t("in_stock")}
                               </span>
                             ) : (
                               <span className="inline-block px-2.5 py-1 bg-red-50 text-red-600 text-[10px] font-extrabold uppercase tracking-wider rounded-full border border-red-200/60">
-                                Out of Stock
+                                {t("out_of_stock")}
                               </span>
                             )}
                           </td>
@@ -333,7 +335,7 @@ const ShopWishList = () => {
                                 ) : (
                                   <span>🛒</span>
                                 )}
-                                <span>Add to Cart</span>
+                                <span>{t("add_to_cart")}</span>
                               </button>
                             ) : (
                               <button
@@ -341,7 +343,7 @@ const ShopWishList = () => {
                                 className="px-4 py-2 bg-slate-100 text-slate-400 font-bold text-xs rounded-full cursor-not-allowed"
                                 disabled
                               >
-                                Out of Stock
+                                {t("out_of_stock")}
                               </button>
                             )}
                           </td>

@@ -1,16 +1,17 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { API_BASE_URL, getImageUrl, fetchProductReviews, submitProductReview, uploadReviewImage, getCartId } from "../../services/api";
+import { API_BASE_URL, getImageUrl, fetchProductReviews, submitProductReview, uploadReviewImage, uploadReviewImages, updateProductReview, getCartId } from "../../services/api";
 import AmazonProductMagnifier from "../../Component/AmazonProductMagnifier";
-import { useLanguage } from "../../context/LanguageContext";
+import { useTranslation } from "react-i18next";
 
 const amazonpay = getImageUrl("/media/site/amazonpay.svg");
 const gpay = getImageUrl("/media/site/gpay.svg");
 const paytm = getImageUrl("/media/site/paytm.svg");
 
 const ProductDetails = () => {
-    const { currentLang, t } = useLanguage();
+    const { t, i18n } = useTranslation();
+    const currentLang = i18n.language || 'en';
     const { slug } = useParams();
     const navigate = useNavigate();
 
@@ -40,10 +41,48 @@ const ProductDetails = () => {
         customerName: "",
         customerLocation: "",
         customerPhone: "",
-        imageFile: null,
-        imagePreview: "",
+        imageFiles: [],
+        imagePreviews: [],
         submitting: false
     });
+
+    const [showEditReviewModal, setShowEditReviewModal] = useState(false);
+    const [editData, setEditData] = useState({
+        id: null,
+        rating: 5,
+        title: "",
+        comment: "",
+        customerName: "",
+        customerLocation: "",
+        customerPhone: "",
+        imageFiles: [],
+        imagePreviews: [],
+        existingImageUrls: [],
+        submitting: false
+    });
+
+    const currentUser = (() => {
+        try {
+            const saved = localStorage.getItem("vinnavar_customer");
+            return saved ? JSON.parse(saved) : null;
+        } catch (e) {
+            return null;
+        }
+    })();
+
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem("vinnavar_customer");
+            if (saved) {
+                const user = JSON.parse(saved);
+                setNewReview(prev => ({
+                    ...prev,
+                    customerName: user.fullName || user.name || "",
+                    customerPhone: user.mobileNumber || "",
+                }));
+            }
+        } catch (e) {}
+    }, []);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -99,9 +138,14 @@ const ProductDetails = () => {
         setNewReview(prev => ({ ...prev, submitting: true }));
         try {
             let uploadedImageUrl = null;
-            if (newReview.imageFile) {
-                const uploadRes = await uploadReviewImage(newReview.imageFile);
-                uploadedImageUrl = uploadRes.imageUrl;
+            let uploadedImageUrls = [];
+            
+            if (newReview.imageFiles && newReview.imageFiles.length > 0) {
+                const uploadRes = await uploadReviewImages(newReview.imageFiles);
+                uploadedImageUrls = uploadRes.imageUrls || [];
+                if (uploadedImageUrls.length > 0) {
+                    uploadedImageUrl = uploadedImageUrls[0];
+                }
             }
 
             const currentUser = (() => {
@@ -123,6 +167,7 @@ const ProductDetails = () => {
                 reviewTitle: newReview.title,
                 reviewComment: newReview.comment,
                 imageUrl: uploadedImageUrl,
+                imageUrls: uploadedImageUrls,
                 verifiedPurchase: true,
                 status: "APPROVED"
             });
@@ -134,17 +179,15 @@ const ProductDetails = () => {
                 confirmButtonColor: "#047857"
             });
             setShowWriteReviewModal(false);
-            setNewReview({
+            setNewReview(prev => ({
+                ...prev,
                 rating: 5,
                 title: "",
                 comment: "",
-                customerName: "",
-                customerLocation: "",
-                customerPhone: "",
-                imageFile: null,
-                imagePreview: "",
+                imageFiles: [],
+                imagePreviews: [],
                 submitting: false
-            });
+            }));
 
             const updated = await fetchProductReviews(product.id);
             setReviewData(updated);
@@ -153,6 +196,70 @@ const ProductDetails = () => {
             Swal.fire("Error", err.message || "Failed to submit review", "error");
         } finally {
             setNewReview(prev => ({ ...prev, submitting: false }));
+        }
+    };
+
+    const openEditModal = (rev) => {
+        setEditData({
+            id: rev.id,
+            rating: rev.rating || 5,
+            title: rev.reviewTitle || "",
+            comment: rev.reviewComment || "",
+            customerName: rev.customerName || "",
+            customerLocation: rev.customerLocation || "",
+            customerPhone: rev.customerPhone || "",
+            existingImageUrls: rev.imageUrls && rev.imageUrls.length > 0 ? rev.imageUrls : (rev.imageUrl ? [rev.imageUrl] : []),
+            imageFiles: [],
+            imagePreviews: [],
+            submitting: false
+        });
+        setShowEditReviewModal(true);
+    };
+
+    const handleEditReviewSubmit = async (e) => {
+        e.preventDefault();
+        if (!editData.comment.trim()) {
+            Swal.fire("Missing Field", "Please write your review comment", "warning");
+            return;
+        }
+
+        setEditData(prev => ({ ...prev, submitting: true }));
+        try {
+            let finalImageUrls = [...editData.existingImageUrls];
+
+            if (editData.imageFiles && editData.imageFiles.length > 0) {
+                const uploadRes = await uploadReviewImages(editData.imageFiles);
+                if (uploadRes.imageUrls && uploadRes.imageUrls.length > 0) {
+                    finalImageUrls = [...finalImageUrls, ...uploadRes.imageUrls];
+                }
+            }
+
+            await updateProductReview(editData.id, {
+                rating: editData.rating,
+                reviewTitle: editData.title,
+                reviewComment: editData.comment,
+                customerName: editData.customerName,
+                customerLocation: editData.customerLocation,
+                customerPhone: editData.customerPhone,
+                imageUrls: finalImageUrls,
+                imageUrl: finalImageUrls.length > 0 ? finalImageUrls[0] : null
+            });
+
+            Swal.fire({
+                title: "Review Updated! ⭐",
+                icon: "success",
+                timer: 1500,
+                showConfirmButton: false
+            });
+            setShowEditReviewModal(false);
+            
+            const updated = await fetchProductReviews(product.id);
+            setReviewData(updated);
+        } catch (err) {
+            console.error("Edit submission error:", err);
+            Swal.fire("Error", err.message || "Failed to update review", "error");
+        } finally {
+            setEditData(prev => ({ ...prev, submitting: false }));
         }
     };
 
@@ -647,11 +754,39 @@ const ProductDetails = () => {
                                                     {"☆".repeat(5 - (rev.rating || 5))}
                                                 </div>
                                             </div>
+                                            
+                                            {/* Show Edit Button if it's the current user's review */}
+                                            {currentUser && (
+                                                (currentUser.mobileNumber && currentUser.mobileNumber === rev.customerPhone) ||
+                                                (currentUser.email && currentUser.email === rev.customerEmail) ||
+                                                (currentUser.id && currentUser.id === rev.customerId)
+                                            ) && (
+                                                <div className="mt-1">
+                                                    <button 
+                                                        onClick={() => openEditModal(rev)}
+                                                        className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200 transition-colors"
+                                                    >
+                                                        ✏️ Edit Review
+                                                    </button>
+                                                </div>
+                                            )}
 
                                             {rev.reviewTitle && <h4 className="font-bold text-slate-900 text-sm">{rev.reviewTitle}</h4>}
                                             <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">{rev.reviewComment}</p>
 
-                                            {rev.imageUrl && (
+                                            {(rev.imageUrls && rev.imageUrls.length > 0) ? (
+                                                <div className="pt-1 flex flex-wrap gap-2">
+                                                    {rev.imageUrls.map((url, idx) => (
+                                                        <img
+                                                            key={idx}
+                                                            src={getImageUrl(url)}
+                                                            alt={`Customer Product Photo ${idx+1}`}
+                                                            className="w-24 h-24 object-cover rounded-xl border border-slate-200 cursor-pointer hover:opacity-90 transition-opacity"
+                                                            onClick={() => setReviewImagePreview(getImageUrl(url))}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            ) : rev.imageUrl ? (
                                                 <div className="pt-1">
                                                     <img
                                                         src={getImageUrl(rev.imageUrl)}
@@ -660,7 +795,7 @@ const ProductDetails = () => {
                                                         onClick={() => setReviewImagePreview(getImageUrl(rev.imageUrl))}
                                                     />
                                                 </div>
-                                            )}
+                                            ) : null}
                                         </div>
                                     ))
                                 ) : (
@@ -896,25 +1031,29 @@ const ProductDetails = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-700 mb-1">📸 Upload Product Photo (Optional):</label>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1">📸 Upload Product Photos (Optional, max 5):</label>
                                     <input
                                         type="file"
                                         accept="image/*"
+                                        multiple
                                         className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
                                         onChange={(e) => {
-                                            const file = e.target.files[0];
-                                            if (file) {
+                                            const files = Array.from(e.target.files).slice(0, 5);
+                                            if (files.length > 0) {
+                                                const previews = files.map(file => URL.createObjectURL(file));
                                                 setNewReview(prev => ({
                                                     ...prev,
-                                                    imageFile: file,
-                                                    imagePreview: URL.createObjectURL(file)
+                                                    imageFiles: files,
+                                                    imagePreviews: previews
                                                 }));
                                             }
                                         }}
                                     />
-                                    {newReview.imagePreview && (
-                                        <div className="mt-2 text-center p-2 border border-slate-200 rounded-xl bg-slate-50">
-                                            <img src={newReview.imagePreview} alt="Preview" className="max-h-32 mx-auto rounded-lg" />
+                                    {newReview.imagePreviews && newReview.imagePreviews.length > 0 && (
+                                        <div className="mt-2 flex gap-2 overflow-x-auto p-2 border border-slate-200 rounded-xl bg-slate-50">
+                                            {newReview.imagePreviews.map((preview, idx) => (
+                                                <img key={idx} src={preview} alt={`Preview ${idx+1}`} className="max-h-24 rounded-lg object-contain" />
+                                            ))}
                                         </div>
                                     )}
                                 </div>
@@ -925,6 +1064,117 @@ const ProductDetails = () => {
                                     </button>
                                     <button type="submit" className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md text-sm transition-colors" disabled={newReview.submitting}>
                                         {newReview.submitting ? "Posting..." : "Submit Review ⭐"}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* EDIT REVIEW MODAL */}
+                {showEditReviewModal && (
+                    <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+                        <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden border border-slate-200 my-8">
+                            <div className="bg-emerald-700 text-white px-6 py-4 flex items-center justify-between">
+                                <h3 className="font-bold text-lg text-white">✏️ Edit Review for {product.name}</h3>
+                                <button type="button" className="text-white hover:text-slate-200 text-2xl font-bold" onClick={() => setShowEditReviewModal(false)}>✕</button>
+                            </div>
+
+                            <form onSubmit={handleEditReviewSubmit} className="p-6 space-y-4">
+                                <div className="text-center space-y-2">
+                                    <label className="block text-sm font-bold text-slate-800">Your Rating:</label>
+                                    <div className="inline-flex gap-2 p-2 bg-slate-50 rounded-full border border-slate-200">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <button
+                                                key={star}
+                                                type="button"
+                                                className="text-2xl p-1 focus:outline-none transition-transform hover:scale-125"
+                                                onClick={() => setEditData(prev => ({ ...prev, rating: star }))}
+                                            >
+                                                <span className={star <= editData.rating ? "text-amber-400" : "text-slate-300"}>★</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1">Review Title / Headline:</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-600 outline-none"
+                                        value={editData.title}
+                                        onChange={(e) => setEditData(prev => ({ ...prev, title: e.target.value }))}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1">Detailed Review:</label>
+                                    <textarea
+                                        rows={3}
+                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-600 outline-none"
+                                        value={editData.comment}
+                                        onChange={(e) => setEditData(prev => ({ ...prev, comment: e.target.value }))}
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1">📸 Add More Photos (Optional, max 5):</label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+                                        onChange={(e) => {
+                                            const files = Array.from(e.target.files).slice(0, 5);
+                                            if (files.length > 0) {
+                                                const previews = files.map(file => URL.createObjectURL(file));
+                                                setEditData(prev => ({
+                                                    ...prev,
+                                                    imageFiles: files,
+                                                    imagePreviews: previews
+                                                }));
+                                            }
+                                        }}
+                                    />
+                                    {editData.imagePreviews && editData.imagePreviews.length > 0 && (
+                                        <div className="mt-2 flex gap-2 overflow-x-auto p-2 border border-slate-200 rounded-xl bg-slate-50">
+                                            {editData.imagePreviews.map((preview, idx) => (
+                                                <img key={idx} src={preview} alt={`Preview ${idx+1}`} className="max-h-24 rounded-lg object-contain" />
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {editData.existingImageUrls.length > 0 && (
+                                        <div className="mt-4 pt-2 border-t border-slate-200">
+                                            <label className="block text-xs font-bold text-slate-500 mb-2">Existing Photos:</label>
+                                            <div className="flex flex-wrap gap-3">
+                                                {editData.existingImageUrls.map((url, idx) => (
+                                                    <div key={idx} className="relative">
+                                                      <img src={getImageUrl(url)} alt="Existing" className="w-20 h-20 object-cover rounded-xl border border-slate-300 shadow-sm" />
+                                                      <button 
+                                                          type="button" 
+                                                          className="absolute -top-2 -right-2 bg-rose-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-md hover:bg-rose-600 transition-colors"
+                                                          onClick={() => setEditData(prev => ({
+                                                              ...prev,
+                                                              existingImageUrls: prev.existingImageUrls.filter((_, i) => i !== idx)
+                                                          }))}
+                                                      >
+                                                          ✕
+                                                      </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="pt-3 flex items-center justify-between border-t border-slate-200">
+                                    <button type="button" className="px-5 py-2 border border-slate-300 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50" onClick={() => setShowEditReviewModal(false)}>
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md text-sm transition-colors" disabled={editData.submitting}>
+                                        {editData.submitting ? "Saving..." : "Save Changes"}
                                     </button>
                                 </div>
                             </form>

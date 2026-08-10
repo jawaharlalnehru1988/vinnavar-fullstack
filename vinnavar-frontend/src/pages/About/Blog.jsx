@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import ScrollToTop from "../ScrollToTop";
 import { fetchBlogs, fetchBlogCategories, getImageUrl } from "../../services/api";
 import { BlogSkeleton } from "../../Component/Skeleton";
+import { useTranslation } from "react-i18next";
 
 const Blog = () => {
+  const { t } = useTranslation();
   const [loaderStatus, setLoaderStatus] = useState(true);
   const [blogs, setBlogs] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -53,11 +55,11 @@ const Blog = () => {
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200/60 mb-2">
-                Organic Living &amp; Recipes
+                {t("organic_living_recipes")}
               </span>
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900">Vinnavar Organic Journal</h1>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900">{t("journal_title")}</h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-xl">
-                Explore healthy organic recipes, natural lifestyle guides, and traditional farming wisdom.
+                {t("journal_desc")}
               </p>
             </div>
 
@@ -72,7 +74,7 @@ const Blog = () => {
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
-                All Articles
+                {t("all_articles")}
               </button>
               {categories.map((cat, idx) => (
                 <button
@@ -126,7 +128,7 @@ const Blog = () => {
                     to={`/blog/${heroBlog.slug}`}
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-full shadow-md shadow-emerald-700/20 transition-all active:scale-95"
                   >
-                    <span>Read Full Article</span>
+                    <span>{t("read_full_article")}</span>
                     <span>➔</span>
                   </Link>
                 </div>
@@ -138,8 +140,8 @@ const Blog = () => {
           {gridBlogs.length === 0 && !heroBlog ? (
             <div className="bg-white rounded-3xl p-12 border border-slate-100 text-center space-y-3">
               <div className="text-4xl">📝</div>
-              <h3 className="font-bold text-slate-900 text-base">No articles found</h3>
-              <p className="text-xs text-slate-500">There are currently no articles in this category.</p>
+              <h3 className="font-bold text-slate-900 text-base">{t("no_articles_found")}</h3>
+              <p className="text-xs text-slate-500">{t("no_articles_desc")}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -180,7 +182,7 @@ const Blog = () => {
                       to={`/blog/${blog.slug}`}
                       className="text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors inline-flex items-center gap-1"
                     >
-                      <span>Read Article</span>
+                      <span>{t("read_article")}</span>
                       <span>➔</span>
                     </Link>
                   </div>

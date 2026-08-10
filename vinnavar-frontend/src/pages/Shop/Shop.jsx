@@ -5,10 +5,12 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import ScrollToTop from "../ScrollToTop";
 import { API_BASE_URL, fetchCategories, fetchProducts, getImageUrl, toggleWishlist } from "../../services/api";
 import { ProductSkeleton } from "../../Component/Skeleton";
+import { useTranslation } from "react-i18next";
 
 const assortment = getImageUrl("/media/site/assortment-citrus-fruits.png");
 
 const Shop = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
@@ -159,10 +161,10 @@ const Shop = () => {
           {/* Breadcrumb Navigation */}
           <nav aria-label="Breadcrumb" className="flex items-center text-xs sm:text-sm font-medium text-slate-500 space-x-2">
             <Link to="/" className="text-emerald-600 hover:text-emerald-700 font-bold transition-colors">
-              Home
+              {t("nav_home")}
             </Link>
             <span>/</span>
-            <span className="text-slate-900 font-semibold">Shop Catalog</span>
+            <span className="text-slate-900 font-semibold">{t("nav_shop_catalog")}</span>
           </nav>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -174,7 +176,7 @@ const Shop = () => {
               <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <h3 className="font-extrabold text-slate-900 text-base uppercase tracking-wider">
-                    Categories
+                    {t("categories")}
                   </h3>
                   <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/50">
                     {activeCategories.length}
@@ -190,7 +192,7 @@ const Shop = () => {
                     }`}
                     onClick={() => setSelectedCategoryId(null)}
                   >
-                    🌱 All Categories
+                    🌱 {t("all_categories")}
                   </button>
                   {activeCategories.map((cat) => (
                     <button
@@ -212,14 +214,14 @@ const Shop = () => {
               {/* Product Search Card */}
               <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-3">
                 <h3 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider pb-2 border-b border-slate-100">
-                  Search Catalog
+                  {t("search_catalog")}
                 </h3>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
                   <input
                     type="text"
                     className="w-full pl-10 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-xs font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400"
-                    placeholder="Search organic products..."
+                    placeholder={t("search_placeholder")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -243,17 +245,17 @@ const Shop = () => {
                 <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]"></div>
                 <div className="relative z-10 space-y-3">
                   <span className="inline-block px-3 py-1 bg-emerald-500/30 text-emerald-200 text-[10px] font-extrabold uppercase tracking-widest rounded-full border border-emerald-400/30">
-                    Farm Fresh Guaranteed
+                    {t("farm_fresh")}
                   </span>
-                  <h4 className="text-xl font-black">100% Pure Organic</h4>
-                  <p className="text-xs text-slate-200">Certified Grains &amp; Cold-Pressed Oils</p>
+                  <h4 className="text-xl font-black">{t("pure_organic")}</h4>
+                  <p className="text-xs text-slate-200">{t("cert_grains_oils")}</p>
                   <div>
                     <button
                       type="button"
                       className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-full shadow-lg shadow-emerald-600/30 transition-all active:scale-95"
                       onClick={() => { setSelectedCategoryId(null); setSearchTerm(""); }}
                     >
-                      Shop All Items
+                      {t("shop_all_items")}
                     </button>
                   </div>
                 </div>
@@ -269,13 +271,13 @@ const Shop = () => {
                 <div className="absolute -right-8 -bottom-8 w-48 h-48 bg-emerald-400/10 rounded-full blur-2xl pointer-events-none"></div>
                 <div className="relative z-10 space-y-2">
                   <span className="inline-block px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-emerald-400/20 text-emerald-200 border border-emerald-400/30">
-                    Catalog View
+                    {t("catalog_view")}
                   </span>
                   <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-                    {selectedCategoryObj ? selectedCategoryObj.name : "All Organic Products"}
+                    {selectedCategoryObj ? selectedCategoryObj.name : t("all_organic_products")}
                   </h1>
                   <p className="text-emerald-100 text-xs sm:text-sm max-w-xl">
-                    {selectedCategoryObj?.description || "Browse our complete range of certified organic grains, cold-pressed oils, and healthy natural staples."}
+                    {selectedCategoryObj?.description || t("browse_complete_range")}
                   </p>
                 </div>
               </div>
@@ -283,7 +285,7 @@ const Shop = () => {
               {/* Filter Controls & Products Count Bar */}
               <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex flex-wrap items-center justify-between gap-4">
                 <div className="text-xs font-medium text-slate-600">
-                  Showing <span className="font-extrabold text-slate-900">{filteredProducts.length}</span> organic products
+                  {t("showing")} <span className="font-extrabold text-slate-900">{filteredProducts.length}</span> {t("organic_products_count")}
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -292,9 +294,9 @@ const Shop = () => {
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                   >
-                    <option value="Featured">Sort by: Featured</option>
-                    <option value="Low to High">Price: Low to High</option>
-                    <option value="High to Low">Price: High to Low</option>
+                    <option value="Featured">{t("sort_featured")}</option>
+                    <option value="Low to High">{t("price_low_high")}</option>
+                    <option value="High to Low">{t("price_high_low")}</option>
                   </select>
                 </div>
               </div>
@@ -365,7 +367,7 @@ const Shop = () => {
                           <div className="relative bg-slate-50 rounded-2xl p-4 h-48 flex items-center justify-center overflow-hidden">
                             {product.featured && (
                               <span className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white uppercase tracking-wider shadow-sm">
-                                Featured
+                                {t("featured_badge")}
                               </span>
                             )}
                             <button
@@ -409,7 +411,7 @@ const Shop = () => {
                           {product.variants && product.variants.length > 0 && (
                             <div className="space-y-1 mt-2">
                               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                WEIGHT:
+                                {t("weight")}
                               </label>
                               <div className="flex flex-wrap gap-1.5 pt-0.5">
                                 {product.variants.map((v) => {

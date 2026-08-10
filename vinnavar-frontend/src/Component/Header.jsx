@@ -3,12 +3,16 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import Swal from "sweetalert2";
-import { useLanguage } from "../context/LanguageContext";
+import { useTranslation } from "react-i18next";
+import { LANGUAGES } from "../i18n";
 
 const Grocerylogo = getImageUrl("/media/site/Grocerylogo.png");
 
 const Header = () => {
-  const { currentLang, setLanguage, t, languages } = useLanguage();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
+  const languages = LANGUAGES;
+  const setLanguage = (lng) => i18n.changeLanguage(lng);
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -619,7 +623,7 @@ const Header = () => {
                           to="/MyAccountOrder"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
-                          <span>📦</span> <span>My Orders</span>
+                          <span>📦</span> <span>{t("my_orders")}</span>
                         </Link>
                       </li>
                       <li>
@@ -628,7 +632,7 @@ const Header = () => {
                           to="/MyAccountSetting"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
-                          <span>⚙️</span> <span>Account Settings</span>
+                          <span>⚙️</span> <span>{t("acc_settings")}</span>
                         </Link>
                       </li>
                       <li>
@@ -637,7 +641,7 @@ const Header = () => {
                           to="/MyAccountAddress"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
-                          <span>📍</span> <span>Saved Addresses</span>
+                          <span>📍</span> <span>{t("saved_addresses")}</span>
                         </Link>
                       </li>
                       <li>
@@ -646,7 +650,7 @@ const Header = () => {
                           to="/MyAcconutPaymentMethod"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
-                          <span>💳</span> <span>Payment Methods</span>
+                          <span>💳</span> <span>{t("payment_methods")}</span>
                         </Link>
                       </li>
                       <li>
@@ -655,7 +659,7 @@ const Header = () => {
                           to="/MyAccountComplaint"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
-                          <span>📢</span> <span>Complaints &amp; Support</span>
+                          <span>📢</span> <span>{t("complaints")}</span>
                         </Link>
                       </li>
                       <li>
@@ -664,7 +668,7 @@ const Header = () => {
                           to="/MyAccountReview"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
-                          <span>⭐</span> <span>Reviews &amp; Feedback</span>
+                          <span>⭐</span> <span>{t("reviews_feedback")}</span>
                         </Link>
                       </li>
                       <li>
@@ -673,7 +677,7 @@ const Header = () => {
                           to="/MyAcconutNotification"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
-                          <span>🔔</span> <span>Notifications</span>
+                          <span>🔔</span> <span>{t("notifications")}</span>
                         </Link>
                       </li>
                       <li><hr className="dropdown-divider my-1" /></li>
@@ -685,7 +689,7 @@ const Header = () => {
                             handleLogout();
                           }}
                         >
-                          <span>🚪</span> <span>Sign Out</span>
+                          <span>🚪</span> <span>{t("logout")}</span>
                         </button>
                       </li>
                     </ul>
@@ -700,7 +704,7 @@ const Header = () => {
                   onClick={() => setAuthMode("SIGN_IN")}
                 >
                   <span className="text-sm">👤</span>
-                  <span>Login</span>
+                  <span>{t("sign_in")}</span>
                 </button>
               )}
 
@@ -829,7 +833,7 @@ const Header = () => {
                     style={{ backgroundColor: "#2d6a4f", borderColor: "#2d6a4f" }}
                     disabled={authLoading}
                   >
-                    {authLoading ? "Signing In..." : "Sign In"}
+                    {authLoading ? "Signing In..." : t("sign_in")}
                   </button>
                 </form>
               )}
@@ -949,7 +953,7 @@ const Header = () => {
                     style={{ backgroundColor: "#2d6a4f", borderColor: "#2d6a4f" }}
                     disabled={authLoading}
                   >
-                    {authLoading ? "Creating Account..." : "Create Account & Sign In"}
+                    {authLoading ? "Creating Account..." : t("sign_up")}
                   </button>
                 </form>
               )}

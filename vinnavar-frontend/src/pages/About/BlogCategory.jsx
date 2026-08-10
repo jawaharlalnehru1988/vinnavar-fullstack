@@ -3,8 +3,10 @@ import { Link, useLocation } from "react-router-dom";
 import ScrollToTop from "../ScrollToTop";
 import { fetchBlogsByCategory, fetchBlogs, fetchBlogCategories, getImageUrl } from "../../services/api";
 import { BlogSkeleton } from "../../Component/Skeleton";
+import { useTranslation } from "react-i18next";
 
 const BlogCategory = () => {
+  const { t } = useTranslation();
   const [loaderStatus, setLoaderStatus] = useState(true);
   const [blogs, setBlogs] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -48,11 +50,11 @@ const BlogCategory = () => {
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200/60 mb-2">
-                Category Articles
+                {t("category_articles")}
               </span>
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900">{selectedCategory}</h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-xl">
-                Discover our curated organic articles and recipes for {selectedCategory}.
+                {t("discover_curated", { category: selectedCategory })}
               </p>
             </div>
 
@@ -66,7 +68,7 @@ const BlogCategory = () => {
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
-                All
+                {t("all_label")}
               </Link>
               {categories.map((cat, idx) => (
                 <Link
@@ -88,14 +90,14 @@ const BlogCategory = () => {
           {blogs.length === 0 ? (
             <div className="bg-white rounded-3xl p-12 border border-slate-100 text-center space-y-4 max-w-md mx-auto">
               <div className="text-4xl">📚</div>
-              <h3 className="font-bold text-slate-900 text-base">No articles found in {selectedCategory}</h3>
-              <p className="text-xs text-slate-500">Check back soon or explore other blog categories!</p>
+              <h3 className="font-bold text-slate-900 text-base">{t("no_articles_in_cat", { category: selectedCategory })}</h3>
+              <p className="text-xs text-slate-500">{t("check_back_soon")}</p>
               <div className="pt-2">
                 <Link
                   to="/Blog"
                   className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-700 text-white text-xs font-bold rounded-full shadow-md"
                 >
-                  Back to All Blogs ➔
+                  {t("back_to_all")}
                 </Link>
               </div>
             </div>
@@ -135,7 +137,7 @@ const BlogCategory = () => {
                       to={`/blog/${blog.slug}`}
                       className="text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors inline-flex items-center gap-1"
                     >
-                      <span>Read Article</span>
+                      <span>{t("read_article")}</span>
                       <span>➔</span>
                     </Link>
                   </div>

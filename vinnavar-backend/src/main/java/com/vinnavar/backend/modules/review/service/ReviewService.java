@@ -88,6 +88,29 @@ public class ReviewService {
     }
 
     @Transactional
+    public Review updateReview(Long id, Review reviewDetails) {
+        Review review = reviewRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Review not found with ID: " + id));
+
+        if (reviewDetails.getRating() != null) review.setRating(reviewDetails.getRating());
+        if (reviewDetails.getReviewTitle() != null) review.setReviewTitle(reviewDetails.getReviewTitle());
+        if (reviewDetails.getReviewComment() != null) review.setReviewComment(reviewDetails.getReviewComment());
+        if (reviewDetails.getCustomerName() != null) review.setCustomerName(reviewDetails.getCustomerName());
+        if (reviewDetails.getCustomerLocation() != null) review.setCustomerLocation(reviewDetails.getCustomerLocation());
+        if (reviewDetails.getCustomerPhone() != null) review.setCustomerPhone(reviewDetails.getCustomerPhone());
+        
+        // Ensure backward compatibility and multiple image support
+        if (reviewDetails.getImageUrl() != null && !reviewDetails.getImageUrl().isEmpty()) {
+            review.setImageUrl(reviewDetails.getImageUrl());
+        }
+        if (reviewDetails.getImageUrls() != null && !reviewDetails.getImageUrls().isEmpty()) {
+            review.setImageUrls(reviewDetails.getImageUrls());
+        }
+
+        return reviewRepository.save(review);
+    }
+
+    @Transactional
     public void deleteReview(Long id) {
         reviewRepository.deleteById(id);
     }

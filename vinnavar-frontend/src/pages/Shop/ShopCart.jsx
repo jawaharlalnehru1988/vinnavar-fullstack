@@ -5,8 +5,10 @@ import ScrollToTop from "../ScrollToTop";
 import Swal from "sweetalert2";
 
 import { CartSkeleton } from "../../Component/Skeleton";
+import { useTranslation } from "react-i18next";
 
 const ShopCart = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [loaderStatus, setLoaderStatus] = useState(true);
   const [cart, setCart] = useState(null);
@@ -170,13 +172,13 @@ const ShopCart = () => {
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200/60 mb-2">
-                Shopping Bag
+                {t("shopping_bag")}
               </span>
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900">My Organic Cart</h1>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900">{t("my_cart")}</h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
                 {items.length > 0
-                  ? `You have ${cart?.totalItemCount || items.length} pure organic item(s) ready for checkout.`
-                  : "Your shopping cart is currently empty."}
+                  ? (cart?.totalItemCount || items.length) === 1 ? t("cart_one_item") : t("cart_multi_items", { count: cart?.totalItemCount || items.length })
+                  : t("cart_empty_msg")}
               </p>
             </div>
             {items.length > 0 && (
@@ -185,7 +187,7 @@ const ShopCart = () => {
                 className="px-4 py-2 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 font-bold text-xs rounded-full border border-slate-200/80 transition-all self-start sm:self-auto"
                 onClick={handleClearCart}
               >
-                🗑️ Clear Cart
+                🗑️ {t("clear_cart_btn")}
               </button>
             )}
           </div>
@@ -194,16 +196,16 @@ const ShopCart = () => {
           {items.length === 0 ? (
             <div className="bg-white rounded-3xl p-12 sm:p-16 border border-slate-100 shadow-sm text-center space-y-4 max-w-xl mx-auto">
               <div className="text-5xl">🛒</div>
-              <h2 className="text-xl font-black text-slate-900">Your Cart is Empty</h2>
+              <h2 className="text-xl font-black text-slate-900">{t("cart_empty_title")}</h2>
               <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                Explore our certified organic grains, traditional rice varieties, and cold-pressed oils.
+                {t("cart_empty_desc")}
               </p>
               <div className="pt-2">
                 <Link
                   to="/Shop"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-full shadow-lg shadow-emerald-700/20 transition-all active:scale-95"
                 >
-                  <span>Explore Organic Catalog</span>
+                  <span>{t("explore_catalog")}</span>
                   <span>➔</span>
                 </Link>
               </div>
@@ -218,13 +220,13 @@ const ShopCart = () => {
                 <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 rounded-2xl p-4 border border-emerald-200/80 flex flex-wrap items-center justify-between gap-3 shadow-xs">
                   <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
                     <span className="text-base">🌱</span>
-                    <span>Free Delivery Unlocked! Inclusive of shipping charges &amp; all GST taxes.</span>
+                    <span>{t("free_delivery")}</span>
                   </div>
                   <Link
                     to="/ShopCheckOut"
                     className="px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-full transition-all shadow-sm"
                   >
-                    Checkout Now ➔
+                    {t("checkout_now")} ➔
                   </Link>
                 </div>
 
@@ -253,9 +255,9 @@ const ShopCart = () => {
                             </h3>
                             <div className="flex items-center gap-2">
                               <span className="inline-block px-2.5 py-0.5 bg-slate-100 text-emerald-800 text-[10px] font-extrabold rounded-full border border-slate-200/60">
-                                {variant.variantName || "Standard"}
+                                {variant.variantName || t("standard_pack")}
                               </span>
-                              <span className="text-xs font-medium text-slate-500">₹{item.unitPrice} / unit</span>
+                              <span className="text-xs font-medium text-slate-500">₹{item.unitPrice} / {t("unit")}</span>
                             </div>
                             <button
                               type="button"
@@ -263,7 +265,7 @@ const ShopCart = () => {
                               onClick={() => handleRemoveItem(item.id)}
                               disabled={updatingItemId === item.id}
                             >
-                              🗑️ Remove
+                              🗑️ {t("remove_btn")}
                             </button>
                           </div>
                         </div>
@@ -311,7 +313,7 @@ const ShopCart = () => {
                     to="/Shop"
                     className="inline-flex items-center gap-2 text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors"
                   >
-                    <span>← Continue Shopping</span>
+                    <span>← {t("continue_shopping")}</span>
                   </Link>
                 </div>
 
@@ -321,14 +323,14 @@ const ShopCart = () => {
               <div className="lg:col-span-1">
                 <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-6 sticky top-24">
                   <h2 className="font-black text-slate-900 text-center text-lg border-b border-slate-100 pb-3 uppercase tracking-wider">
-                    YOUR ORDER
+                    {t("your_order")}
                   </h2>
 
                   {/* Itemized List in Summary */}
                   <div className="space-y-3 pb-3 border-b border-slate-100">
                     <div className="flex justify-between text-xs font-bold text-slate-900 uppercase pb-1 border-b border-slate-100">
-                      <span>PRODUCT</span>
-                      <span>SUBTOTAL</span>
+                      <span>{t("product_col")}</span>
+                      <span>{t("subtotal_col")}</span>
                     </div>
                     {items.map((item, idx) => {
                       const p = item.product || {};
@@ -350,32 +352,32 @@ const ShopCart = () => {
 
                   <div className="space-y-3 text-xs font-medium">
                     <div className="flex justify-between text-slate-700">
-                      <span className="font-bold text-slate-900">Subtotal</span>
+                      <span className="font-bold text-slate-900">{t("subtotal_label")}</span>
                       <span className="font-black text-emerald-700">₹{subtotal.toFixed(2)}</span>
                     </div>
 
                     <div className="flex justify-between items-center text-slate-700">
-                      <span className="font-bold text-slate-900">Shipment</span>
+                      <span className="font-bold text-slate-900">{t("shipment")}</span>
                       <span className="text-right">
-                        <span className="text-[11px] text-slate-500 block">Weight Based Shipping ({(cart?.totalWeightKg || 0).toFixed(1)} kg):</span>
+                        <span className="text-[11px] text-slate-500 block">{t("weight_shipping", { weight: (cart?.totalWeightKg || 0).toFixed(1) })}</span>
                         <span className="font-black text-emerald-700">₹{(cart?.shippingFee ?? 48).toFixed(2)}</span>
                       </span>
                     </div>
 
                     <div className="flex justify-between text-slate-700">
-                      <span className="font-bold text-slate-900">Tax (GST)</span>
+                      <span className="font-bold text-slate-900">{t("tax_gst")}</span>
                       <span className="font-black text-emerald-700">₹{(cart?.gstTax ?? 0).toFixed(2)}</span>
                     </div>
 
                     {cart?.roundOff !== undefined && cart?.roundOff !== null && cart.roundOff !== 0 && (
                       <div className="flex justify-between text-slate-700">
-                        <span className="font-bold text-slate-900">Round Off</span>
+                        <span className="font-bold text-slate-900">{t("round_off")}</span>
                         <span className="font-black text-emerald-700">{cart.roundOff > 0 ? `+₹${cart.roundOff.toFixed(2)}` : `-₹${Math.abs(cart.roundOff).toFixed(2)}`}</span>
                       </div>
                     )}
 
                     <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-sm font-black text-slate-900">
-                      <span>Total</span>
+                      <span>{t("total")}</span>
                       <span className="text-2xl text-emerald-700">
                         ₹{(cart?.totalAmount ?? (subtotal + (cart?.shippingFee ?? 48) + (subtotal * 0.05))).toFixed(2)}
                       </span>
@@ -387,20 +389,20 @@ const ShopCart = () => {
                     className="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-full shadow-lg shadow-emerald-700/20 transition-all active:scale-95 flex items-center justify-between px-6"
                     onClick={() => navigate("/ShopCheckOut")}
                   >
-                    <span>Proceed to Checkout</span>
+                    <span>{t("proceed_to_checkout")}</span>
                     <span>₹{(cart?.totalAmount ?? (subtotal + (cart?.shippingFee ?? 48) + (subtotal * 0.05))).toFixed(2)} ➔</span>
                   </button>
 
                   <div className="text-center pt-3 border-t border-slate-100 space-y-2">
                     <p className="text-[11px] text-slate-400 font-semibold">
-                      🔒 Safe &amp; Secure Checkout • 100% Organic Guarantee
+                      🔒 {t("safe_checkout")}
                     </p>
                     <div className="flex flex-wrap justify-center gap-2 text-[11px] font-bold text-emerald-700">
-                      <button type="button" onClick={() => openPolicy("REFUND")} className="hover:underline cursor-pointer border-0 bg-transparent text-emerald-700 p-0 font-bold">Refund Policy</button>
+                      <button type="button" onClick={() => openPolicy("REFUND")} className="hover:underline cursor-pointer border-0 bg-transparent text-emerald-700 p-0 font-bold">{t("refund_policy")}</button>
                       <span>•</span>
-                      <button type="button" onClick={() => openPolicy("PRIVACY")} className="hover:underline cursor-pointer border-0 bg-transparent text-emerald-700 p-0 font-bold">Privacy Policy</button>
+                      <button type="button" onClick={() => openPolicy("PRIVACY")} className="hover:underline cursor-pointer border-0 bg-transparent text-emerald-700 p-0 font-bold">{t("privacy_policy")}</button>
                       <span>•</span>
-                      <button type="button" onClick={() => openPolicy("TERMS")} className="hover:underline cursor-pointer border-0 bg-transparent text-emerald-700 p-0 font-bold">Terms &amp; Conditions</button>
+                      <button type="button" onClick={() => openPolicy("TERMS")} className="hover:underline cursor-pointer border-0 bg-transparent text-emerald-700 p-0 font-bold">{t("terms_conditions")}</button>
                     </div>
                   </div>
                 </div>
@@ -426,7 +428,7 @@ const ShopCart = () => {
               </div>
               <div className="modal-footer border-0 pt-0">
                 <button type="button" className="btn btn-sm btn-success font-bold rounded-pill px-4" onClick={() => setPolicyModal(null)}>
-                  Close
+                  {t("close_btn")}
                 </button>
               </div>
             </div>

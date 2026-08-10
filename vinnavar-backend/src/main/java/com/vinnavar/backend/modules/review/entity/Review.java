@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "reviews")
@@ -43,6 +45,12 @@ public class Review {
     private String reviewComment;
 
     private String imageUrl;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "review_images", joinColumns = @JoinColumn(name = "review_id"))
+    @Column(name = "image_url")
+    @Builder.Default
+    private List<String> imageUrls = new ArrayList<>();
 
     @Builder.Default
     private Boolean verifiedPurchase = false;

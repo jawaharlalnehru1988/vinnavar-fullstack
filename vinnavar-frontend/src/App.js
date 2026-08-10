@@ -42,7 +42,6 @@ import ProductDetails from "./pages/Shop/ProductDetails";
 import FloatingWhatsApp from "./Component/FloatingWhatsApp";
 import TrackOrder from "./pages/TrackOrder";
 import SEO from "./Component/SEO";
-import { LanguageProvider } from "./context/LanguageContext";
 
 const ScrollToTopOnNavigation = () => {
   const { pathname, search } = useLocation();
@@ -116,11 +115,9 @@ const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || "";
 const App = () => {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <LanguageProvider>
         <Router>
           <AppContent />
         </Router>
-      </LanguageProvider>
     </GoogleOAuthProvider>
   );
 };
