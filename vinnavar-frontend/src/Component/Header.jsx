@@ -717,7 +717,7 @@ const Header = () => {
                 title="Shopping Cart"
               >
                 <span className="text-sm">🛒</span>
-                <span className="hidden sm:inline">Cart</span>
+                <span className="hidden sm:inline">{t("sliding_cart_btn_label")}</span>
                 <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white">
                   {cart?.totalItemCount || cart?.items?.length || 0}
                 </span>
@@ -1086,10 +1086,10 @@ const Header = () => {
         <div className="offcanvas-header border-bottom">
           <div className="text-start">
             <h5 id="offcanvasRightLabel" className="mb-0 fs-4">
-              Shop Cart
+              {t("sliding_cart_title")}
             </h5>
             <small className="text-muted fw-bold">
-              {cart?.items?.length || 0} Unique Products ({cart?.totalItemCount || 0} Items Total)
+              {t("sliding_cart_unique_products", { count: cart?.items?.length || 0, total: cart?.totalItemCount || 0 })}
             </small>
           </div>
           <button
@@ -1101,20 +1101,20 @@ const Header = () => {
         </div>
         <div className="offcanvas-body">
           <div className="alert alert-success p-2 small mb-3" role="alert">
-            🌱 <strong>Free Delivery:</strong> All prices inclusive of shipping & taxes!
+            🌱 <strong>{t("sliding_cart_free_delivery_label")}</strong> {t("sliding_cart_free_delivery_desc")}
           </div>
 
           {(!cart || !cart.items || cart.items.length === 0) ? (
             <div className="text-center py-5">
               <div className="fs-1 mb-2">🛒</div>
-              <h6>Your Organic Cart is empty</h6>
-              <p className="text-muted small">Add your favorite traditional rice & organic staples.</p>
+              <h6>{t("sliding_cart_empty_title")}</h6>
+              <p className="text-muted small">{t("sliding_cart_empty_desc")}</p>
               <button
                 type="button"
                 className="btn btn-sm btn-success fw-bold"
                 onClick={() => handleNavigateFromCart("/Shop")}
               >
-                Shop Products
+                {t("sliding_cart_shop_products")}
               </button>
             </div>
           ) : (
@@ -1129,7 +1129,11 @@ const Header = () => {
 
                     return (
                       <li key={item.id} className="list-group-item py-3 px-0 border-top">
-                        <div className="row align-items-center g-2">
+                        <div 
+                          className="row align-items-center g-2" 
+                          style={{ cursor: "pointer" }}
+                          onClick={() => handleNavigateFromCart(`/product/${product.slug || product.id}`)}
+                        >
                           <div className="col-3">
                             <img
                               src={imgUrl}
@@ -1156,11 +1160,14 @@ const Header = () => {
                             <button
                               type="button"
                               className="btn btn-link text-danger p-0 mt-1 border-0 small text-decoration-none"
-                              onClick={() => handleRemoveCartItem(item.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveCartItem(item.id);
+                              }}
                               title="Remove item"
                               style={{ fontSize: "12px" }}
                             >
-                              🗑️ Remove
+                              🗑️ {t("sliding_cart_remove")}
                             </button>
                           </div>
                         </div>
@@ -1172,7 +1179,7 @@ const Header = () => {
 
               <div className="border-top pt-3 mt-2">
                 <div className="d-flex justify-content-between align-items-center mb-3">
-                  <span className="fw-bold fs-6">Total Amount:</span>
+                  <span className="fw-bold fs-6">{t("sliding_cart_total_amount")}</span>
                   <span className="fw-bold fs-5 text-success">
                     ₹{(cart.subtotal || 0).toLocaleString('en-IN')}
                   </span>
@@ -1183,14 +1190,14 @@ const Header = () => {
                     className="btn btn-outline-success fw-bold py-2"
                     onClick={() => handleNavigateFromCart("/ShopCart")}
                   >
-                    View Full Cart
+                    {t("sliding_cart_view_full")}
                   </button>
                   <button
                     type="button"
                     className="btn btn-success btn-lg fw-bold d-flex justify-content-between align-items-center py-2.5 px-3"
                     onClick={() => handleNavigateFromCart("/ShopCheckOut")}
                   >
-                    <span>Proceed to Checkout</span>
+                    <span>{t("sliding_cart_proceed_checkout")}</span>
                     <span>₹{(cart.subtotal || 0).toLocaleString('en-IN')} &rsaquo;</span>
                   </button>
                 </div>
@@ -1200,18 +1207,18 @@ const Header = () => {
 
           {/* Customer Support & Policy Links */}
           <div className="border-top pt-3 mt-4 text-center">
-            <div className="small text-muted fw-semibold mb-2">Store Guarantees &amp; Policies</div>
+            <div className="small text-muted fw-semibold mb-2">{t("sliding_cart_guarantees")}</div>
             <div className="d-flex justify-content-center gap-2 small font-semibold">
               <button type="button" className="btn btn-link text-success text-decoration-none fw-bold p-0 border-0" onClick={() => openPolicyHeader("REFUND")}>
-                Refund Policy
+                {t("sliding_cart_refund")}
               </button>
               <span className="text-muted">•</span>
               <button type="button" className="btn btn-link text-success text-decoration-none fw-bold p-0 border-0" onClick={() => openPolicyHeader("PRIVACY")}>
-                Privacy Policy
+                {t("sliding_cart_privacy")}
               </button>
               <span className="text-muted">•</span>
               <button type="button" className="btn btn-link text-success text-decoration-none fw-bold p-0 border-0" onClick={() => openPolicyHeader("TERMS")}>
-                Terms &amp; Conditions
+                {t("sliding_cart_terms")}
               </button>
             </div>
           </div>

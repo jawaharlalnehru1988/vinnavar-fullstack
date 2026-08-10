@@ -148,5 +148,21 @@
   "all_label": "सभी",
   "no_articles_in_cat": "{{category}} में कोई लेख नहीं मिला",
   "check_back_soon": "जल्द ही वापस देखें या अन्य ब्लॉग श्रेणियों का पता लगाएं!",
-  "back_to_all": "सभी ब्लॉग पर वापस जाएं ➔"
+  "back_to_all": "सभी ब्लॉग पर वापस जाएं ➔",
+  "sliding_cart_title": "शॉपिंग कार्ट",
+  "sliding_cart_unique_products": "{{count}} अद्वितीय उत्पाद ({{total}} कुल आइटम)",
+  "sliding_cart_free_delivery_label": "मुफ़्त डिलीवरी:",
+  "sliding_cart_free_delivery_desc": "सभी मूल्यों में शिपिंग और कर शामिल हैं!",
+  "sliding_cart_empty_title": "आपका जैविक कार्ट खाली है",
+  "sliding_cart_empty_desc": "अपने पसंदीदा पारंपरिक चावल और जैविक उत्पाद जोड़ें।",
+  "sliding_cart_shop_products": "उत्पाद खरीदें",
+  "sliding_cart_remove": "हटाएं",
+  "sliding_cart_total_amount": "कुल राशि:",
+  "sliding_cart_view_full": "पूरा कार्ट देखें",
+  "sliding_cart_proceed_checkout": "चेकआउट के लिए आगे बढ़ें",
+  "sliding_cart_guarantees": "स्टोर गारंटी और नीतियां",
+  "sliding_cart_refund": "रिफंड नीति",
+  "sliding_cart_privacy": "गोपनीयता नीति",
+  "sliding_cart_terms": "नियम और शर्तें",
+  "sliding_cart_btn_label": "कार्ट"
 }

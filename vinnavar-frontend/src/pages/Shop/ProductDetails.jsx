@@ -4,6 +4,14 @@ import Swal from "sweetalert2";
 import { API_BASE_URL, getImageUrl, fetchProductReviews, submitProductReview, uploadReviewImage, uploadReviewImages, updateProductReview, getCartId } from "../../services/api";
 import AmazonProductMagnifier from "../../Component/AmazonProductMagnifier";
 import { useTranslation } from "react-i18next";
+import {
+    WhatsappShareButton, WhatsappIcon,
+    FacebookShareButton, FacebookIcon,
+    TwitterShareButton, XIcon,
+    TelegramShareButton, TelegramIcon,
+    LinkedinShareButton, LinkedinIcon,
+    EmailShareButton, EmailIcon
+} from "react-share";
 
 const amazonpay = getImageUrl("/media/site/amazonpay.svg");
 const gpay = getImageUrl("/media/site/gpay.svg");
@@ -22,6 +30,8 @@ const ProductDetails = () => {
     const [quantity, setQuantity] = useState(1);
     const [showVideoModal, setShowVideoModal] = useState(false);
     const [addingToCart, setAddingToCart] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [linkCopied, setLinkCopied] = useState(false);
 
     // Zoom Lightbox State
     const [showZoomModal, setShowZoomModal] = useState(false);
@@ -528,9 +538,50 @@ const ProductDetails = () => {
                                 <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">
                                     {product.category?.nameTranslations?.[currentLang] || product.category?.name || "Pure Organic Product"}
                                 </div>
-                                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
-                                    {product.nameTranslations?.[currentLang] || product.name}
-                                </h1>
+                                <div className="flex items-start gap-2">
+                                    <h1 className="flex-1 text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
+                                        {product.nameTranslations?.[currentLang] || product.name}
+                                    </h1>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowShareModal(true)}
+                                        title="Share this product"
+                                        style={{
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            flexShrink: 0,
+                                            marginTop: "4px",
+                                            padding: "8px",
+                                            borderRadius: "12px",
+                                            border: "1.5px solid #e2e8f0",
+                                            background: "#ffffff",
+                                            color: "#64748b",
+                                            cursor: "pointer",
+                                            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                                            transition: "all 0.2s"
+                                        }}
+                                        onMouseEnter={e => { e.currentTarget.style.background="#f0fdf4"; e.currentTarget.style.borderColor="#34d399"; e.currentTarget.style.color="#059669"; }}
+                                        onMouseLeave={e => { e.currentTarget.style.background="#ffffff"; e.currentTarget.style.borderColor="#e2e8f0"; e.currentTarget.style.color="#64748b"; }}
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="#64748b"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            style={{ width: "20px", height: "20px", display: "block" }}
+                                        >
+                                            <circle cx="18" cy="5" r="3"/>
+                                            <circle cx="6" cy="12" r="3"/>
+                                            <circle cx="18" cy="19" r="3"/>
+                                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
 
                             {/* RATING & REVIEWS */}
@@ -1209,6 +1260,158 @@ const ProductDetails = () => {
                         </div>
                     </div>
                 )}
+
+                {/* SHARE MODAL */}
+                {showShareModal && (() => {
+                    const shareUrl = `${window.location.origin}/product/${product.slug || product.id}`;
+                    const shareTitle = product.name;
+                    const shareDesc = product.shortDescription || `Buy ${product.name} from Vinnavar Organics — 100% pure & authentic organic products.`;
+                    const firstImage = getImageUrl(galleryImages[0] || product.imageUrl || "");
+
+                    const handleCopyLink = () => {
+                        navigator.clipboard.writeText(shareUrl).then(() => {
+                            setLinkCopied(true);
+                            setTimeout(() => setLinkCopied(false), 2500);
+                        });
+                    };
+
+                    return (
+                        <div
+                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                            style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)" }}
+                            onClick={() => setShowShareModal(false)}
+                        >
+                            <div
+                                className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {/* Header */}
+                                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                                    <h3 className="font-extrabold text-slate-900 text-lg">Share this Product</h3>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowShareModal(false)}
+                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 text-sm font-bold transition-colors"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+
+                                {/* Product preview strip */}
+                                <div className="flex items-center gap-3 px-6 py-4 bg-slate-50 border-b border-slate-100">
+                                    {firstImage && (
+                                        <img
+                                            src={firstImage}
+                                            alt={shareTitle}
+                                            className="w-16 h-16 rounded-xl object-contain border border-slate-200 bg-white p-1 shrink-0"
+                                        />
+                                    )}
+                                    <div className="min-w-0">
+                                        <p className="font-bold text-slate-900 text-sm truncate">{shareTitle}</p>
+                                        <p className="text-slate-500 text-xs mt-0.5 line-clamp-2">{shareDesc}</p>
+                                    </div>
+                                </div>
+
+                                {/* Share Buttons Grid */}
+                                <div className="px-6 py-5">
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Share via</p>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="flex flex-col items-center gap-1.5 group cursor-pointer">
+                                            <WhatsappShareButton
+                                                url={shareUrl}
+                                                title={`🌿 ${shareTitle}\n\n${shareDesc}\n\nBuy Now → `}
+                                                separator=""
+                                                className="focus:outline-none"
+                                            >
+                                                <WhatsappIcon size={52} round className="shadow-md group-hover:scale-110 transition-transform" />
+                                            </WhatsappShareButton>
+                                            <span className="text-xs font-semibold text-slate-600">WhatsApp</span>
+                                        </div>
+
+                                        <div className="flex flex-col items-center gap-1.5 group cursor-pointer">
+                                            <FacebookShareButton
+                                                url={shareUrl}
+                                                quote={shareTitle}
+                                                hashtag="#VinnavarOrganics"
+                                                className="focus:outline-none"
+                                            >
+                                                <FacebookIcon size={52} round className="shadow-md group-hover:scale-110 transition-transform" />
+                                            </FacebookShareButton>
+                                            <span className="text-xs font-semibold text-slate-600">Facebook</span>
+                                        </div>
+
+                                        <div className="flex flex-col items-center gap-1.5 group cursor-pointer">
+                                            <TwitterShareButton
+                                                url={shareUrl}
+                                                title={`🌿 ${shareTitle} — 100% Organic!`}
+                                                hashtags={["VinnavarOrganics", "OrganicFood"]}
+                                                className="focus:outline-none"
+                                            >
+                                                <XIcon size={52} round className="shadow-md group-hover:scale-110 transition-transform" />
+                                            </TwitterShareButton>
+                                            <span className="text-xs font-semibold text-slate-600">X / Twitter</span>
+
+                                        </div>
+
+                                        <div className="flex flex-col items-center gap-1.5 group cursor-pointer">
+                                            <TelegramShareButton
+                                                url={shareUrl}
+                                                title={`🌿 ${shareTitle} — ${shareDesc}`}
+                                                className="focus:outline-none"
+                                            >
+                                                <TelegramIcon size={52} round className="shadow-md group-hover:scale-110 transition-transform" />
+                                            </TelegramShareButton>
+                                            <span className="text-xs font-semibold text-slate-600">Telegram</span>
+                                        </div>
+
+                                        <div className="flex flex-col items-center gap-1.5 group cursor-pointer">
+                                            <LinkedinShareButton
+                                                url={shareUrl}
+                                                title={shareTitle}
+                                                summary={shareDesc}
+                                                source="Vinnavar Organics"
+                                                className="focus:outline-none"
+                                            >
+                                                <LinkedinIcon size={52} round className="shadow-md group-hover:scale-110 transition-transform" />
+                                            </LinkedinShareButton>
+                                            <span className="text-xs font-semibold text-slate-600">LinkedIn</span>
+                                        </div>
+
+                                        <div className="flex flex-col items-center gap-1.5 group cursor-pointer">
+                                            <EmailShareButton
+                                                url={shareUrl}
+                                                subject={`Check out: ${shareTitle}`}
+                                                body={`Hi! I found this amazing organic product for you:\n\n${shareTitle}\n${shareDesc}\n\nBuy it here: `}
+                                                className="focus:outline-none"
+                                            >
+                                                <EmailIcon size={52} round className="shadow-md group-hover:scale-110 transition-transform" />
+                                            </EmailShareButton>
+                                            <span className="text-xs font-semibold text-slate-600">Email</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Copy Link */}
+                                <div className="px-6 pb-5">
+                                    <div className="flex items-center gap-2 border border-slate-200 rounded-2xl bg-slate-50 p-2 pl-3">
+                                        <span className="flex-1 text-xs text-slate-500 truncate font-mono">{shareUrl}</span>
+                                        <button
+                                            type="button"
+                                            onClick={handleCopyLink}
+                                            className={`shrink-0 px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                                                linkCopied
+                                                    ? "bg-emerald-600 text-white"
+                                                    : "bg-slate-200 hover:bg-slate-300 text-slate-700"
+                                            }`}
+                                        >
+                                            {linkCopied ? "✓ Copied!" : "Copy Link"}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })()}
 
             </div>
         </div>

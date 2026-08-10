@@ -26,6 +26,10 @@ import FAQ from "./pages/FooterElements/Faq";
 import Coupons from "./pages/FooterElements/Coupons";
 import Careers from "./pages/FooterElements/Careers";
 import HelpCenter from "./pages/FooterElements/HelpCenter";
+import TermsConditions from "./pages/FooterElements/TermsConditions";
+import PrivacyPolicy from "./pages/FooterElements/PrivacyPolicy";
+import ReturnPolicy from "./pages/FooterElements/ReturnPolicy";
+import RefundPolicy from "./pages/FooterElements/RefundPolicy";
 import AdminLogin from "./pages/Admin/AdminLogin";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 // react 
@@ -104,6 +108,11 @@ const AppContent = () => {
         <Route path="/Coupons" element={<Coupons />} />
         <Route path="/Careers" element={<Careers />} />
         <Route path="/helpcenter" element={<HelpCenter />} />
+        {/* Legal Policy Pages */}
+        <Route path="/terms-conditions" element={<TermsConditions />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/return-policy" element={<ReturnPolicy />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
       </Routes>
       {!isAdminRoute && <Footer />}
     </div>

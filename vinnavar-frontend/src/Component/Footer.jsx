@@ -168,8 +168,29 @@ const Footer = () => {
                   </div>
                 </div>
 
+                {/* Legal Policy Links — required by Consumer Protection (E-Commerce) Rules 2020 */}
+                <div className="border-top mt-4 pt-4">
+                  <div className="d-flex flex-wrap justify-content-center gap-2 mb-3">
+                    <Link to="/terms-conditions" className="text-muted small text-decoration-none px-2 py-1 rounded hover-text-success" style={{ transition: "color 0.2s" }}>
+                      Terms &amp; Conditions
+                    </Link>
+                    <span className="text-muted small">|</span>
+                    <Link to="/privacy-policy" className="text-muted small text-decoration-none px-2 py-1 rounded">
+                      Privacy Policy
+                    </Link>
+                    <span className="text-muted small">|</span>
+                    <Link to="/return-policy" className="text-muted small text-decoration-none px-2 py-1 rounded">
+                      Return Policy
+                    </Link>
+                    <span className="text-muted small">|</span>
+                    <Link to="/refund-policy" className="text-muted small text-decoration-none px-2 py-1 rounded">
+                      Refund Policy
+                    </Link>
+                  </div>
+                </div>
+
                 {/* Unified Footer Copyright line inside the same container */}
-                <div className="border-top mt-4 pt-4 text-center">
+                <div className="border-top pt-3 text-center">
                   <div className="text-muted small">
                     © {year} {t("footer_rights")} <span className="fw-bold text-success">LP Traders</span>
                   </div>

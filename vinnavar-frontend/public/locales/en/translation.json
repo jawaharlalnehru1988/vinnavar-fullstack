@@ -148,5 +148,21 @@
   "all_label": "All",
   "no_articles_in_cat": "No articles found in {{category}}",
   "check_back_soon": "Check back soon or explore other blog categories!",
-  "back_to_all": "Back to All Blogs ➔"
+  "back_to_all": "Back to All Blogs ➔",
+  "sliding_cart_title": "Shop Cart",
+  "sliding_cart_unique_products": "{{count}} Unique Products ({{total}} Items Total)",
+  "sliding_cart_free_delivery_label": "Free Delivery:",
+  "sliding_cart_free_delivery_desc": "All prices inclusive of shipping & taxes!",
+  "sliding_cart_empty_title": "Your Organic Cart is empty",
+  "sliding_cart_empty_desc": "Add your favorite traditional rice & organic staples.",
+  "sliding_cart_shop_products": "Shop Products",
+  "sliding_cart_remove": "Remove",
+  "sliding_cart_total_amount": "Total Amount:",
+  "sliding_cart_view_full": "View Full Cart",
+  "sliding_cart_proceed_checkout": "Proceed to Checkout",
+  "sliding_cart_guarantees": "Store Guarantees & Policies",
+  "sliding_cart_refund": "Refund Policy",
+  "sliding_cart_privacy": "Privacy Policy",
+  "sliding_cart_terms": "Terms & Conditions",
+  "sliding_cart_btn_label": "Cart"
 }
