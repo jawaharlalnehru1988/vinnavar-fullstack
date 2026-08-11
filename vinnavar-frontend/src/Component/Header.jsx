@@ -749,6 +749,57 @@ const Header = () => {
           </div>
         </div>
       </header>
+
+      {/* Sub-Header Brand Bar */}
+      <div
+        className="w-full sticky top-0 z-40"
+        style={{
+          background: "linear-gradient(90deg, #064e3b 0%, #065f46 40%, #047857 70%, #059669 100%)",
+          boxShadow: "0 2px 8px rgba(6,78,59,0.18)"
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center gap-2 py-1.5">
+            <span style={{ fontSize: "15px" }}>🌿</span>
+            <span
+              style={{
+                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontSize: "13px",
+                fontWeight: "600",
+                letterSpacing: "0.08em",
+                color: "#d1fae5",
+                textTransform: "none"
+              }}
+            >
+              Vinnavar
+            </span>
+            <span
+              style={{
+                fontSize: "11px",
+                color: "#6ee7b7",
+                fontWeight: "400",
+                letterSpacing: "0.04em"
+              }}
+            >
+              —
+            </span>
+            <span
+              style={{
+                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontSize: "13px",
+                fontWeight: "400",
+                letterSpacing: "0.06em",
+                color: "#a7f3d0",
+                fontStyle: "italic"
+              }}
+            >
+              Organic E-Commerce
+            </span>
+            <span style={{ fontSize: "15px" }}>🌿</span>
+          </div>
+        </div>
+      </div>
+
       {/* Customer User Authentication Modal */}
       <div
         className="modal fade"

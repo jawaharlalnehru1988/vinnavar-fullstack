@@ -11,7 +11,11 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import com.vinnavar.backend.modules.shipping.service.ShippingService;
 
+import javax.imageio.ImageIO;
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
@@ -24,12 +28,52 @@ public class PdfInvoiceService {
 
     private final ShippingService shippingService;
 
+    /**
+     * Resizes an image file to max dimensions and returns compressed JPEG bytes.
+     * Keeps embedded image data tiny to minimize PDF file size.
+     */
+    private byte[] resizeImageToJpeg(java.io.File file, int maxWidth, int maxHeight, float jpegQuality) {
+        try {
+            BufferedImage src = ImageIO.read(file);
+            if (src == null) return null;
+            int srcW = src.getWidth();
+            int srcH = src.getHeight();
+            double scale = Math.min((double) maxWidth / srcW, (double) maxHeight / srcH);
+            int targetW = Math.max(1, (int) (srcW * scale));
+            int targetH = Math.max(1, (int) (srcH * scale));
+            BufferedImage resized = new BufferedImage(targetW, targetH, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = resized.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.setColor(java.awt.Color.WHITE);
+            g.fillRect(0, 0, targetW, targetH);
+            g.drawImage(src, 0, 0, targetW, targetH, null);
+            g.dispose();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            javax.imageio.ImageWriter jpegWriter = ImageIO.getImageWritersByFormatName("jpeg").next();
+            javax.imageio.stream.ImageOutputStream ios = ImageIO.createImageOutputStream(baos);
+            jpegWriter.setOutput(ios);
+            javax.imageio.IIOImage iioImage = new javax.imageio.IIOImage(resized, null, null);
+            javax.imageio.ImageWriteParam param = jpegWriter.getDefaultWriteParam();
+            param.setCompressionMode(javax.imageio.ImageWriteParam.MODE_EXPLICIT);
+            param.setCompressionQuality(jpegQuality);
+            jpegWriter.write(null, iioImage, param);
+            jpegWriter.dispose();
+            ios.close();
+            return baos.toByteArray();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public ByteArrayInputStream generateOrderInvoicePdf(Order order) {
         Document document = new Document(PageSize.A4, 28, 28, 28, 28);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         try {
             PdfWriter writer = PdfWriter.getInstance(document, out);
+            // Enable maximum PDF-level compression to minimize file size
+            writer.setFullCompression();
+            writer.setCompressionLevel(9);
             document.open();
 
             // Background Mild Watermark (Dead Center)
@@ -44,13 +88,17 @@ public class PdfInvoiceService {
                     gstate.setStrokeOpacity(0.10f);
                     canvas.setGState(gstate);
 
-                    Image watermark = Image.getInstance(logoPath);
-                    watermark.scaleToFit(320f, 320f);
-                    float x = (PageSize.A4.getWidth() - watermark.getScaledWidth()) / 2;
-                    float y = (PageSize.A4.getHeight() - watermark.getScaledHeight()) / 2;
-                    watermark.setAbsolutePosition(x, y);
-
-                    canvas.addImage(watermark);
+                    // Resize watermark to 100x100px at 30% quality — tiny embedded data
+                    byte[] watermarkBytes = resizeImageToJpeg(logoFile, 100, 100, 0.30f);
+                    if (watermarkBytes != null) {
+                        Image watermark = Image.getInstance(watermarkBytes);
+                        // Visually scaled up on page while data stays tiny
+                        watermark.scaleToFit(320f, 320f);
+                        float x = (PageSize.A4.getWidth() - watermark.getScaledWidth()) / 2;
+                        float y = (PageSize.A4.getHeight() - watermark.getScaledHeight()) / 2;
+                        watermark.setAbsolutePosition(x, y);
+                        canvas.addImage(watermark);
+                    }
                     canvas.restoreState();
                 }
             } catch (Exception watermarkEx) {
@@ -161,7 +209,7 @@ public class PdfInvoiceService {
             itemTable.setWidthPercentage(100);
             itemTable.setWidths(new float[]{0.4f, 3.1f, 0.9f, 0.5f, 1.0f, 1.0f, 1.1f, 1.2f});
 
-            String[] headers = {"#", "Product Description", "HSN Code", "Qty", "MRP", "Discount %", "Unit Price", "Total (₹)"};
+            String[] headers = {"#", "Product Description", "HSN Code", "Qty", "MRP", "Discount %", "Unit Price", "Total (Rs.)"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell();
                 cell.setBackgroundColor(emeraldDark);
@@ -212,7 +260,7 @@ public class PdfInvoiceService {
                     c4.setHorizontalAlignment(Element.ALIGN_CENTER);
                     itemTable.addCell(c4);
 
-                    PdfPCell c5 = new PdfPCell(new Phrase("₹" + String.format("%.2f", mrp), fontRegular));
+                    PdfPCell c5 = new PdfPCell(new Phrase("Rs." + String.format("%.2f", mrp), fontRegular));
                     c5.setPadding(4);
                     c5.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     itemTable.addCell(c5);
@@ -222,12 +270,12 @@ public class PdfInvoiceService {
                     c6.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     itemTable.addCell(c6);
 
-                    PdfPCell c7 = new PdfPCell(new Phrase("₹" + String.format("%.2f", unitPrice), fontRegular));
+                    PdfPCell c7 = new PdfPCell(new Phrase("Rs." + String.format("%.2f", unitPrice), fontRegular));
                     c7.setPadding(4);
                     c7.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     itemTable.addCell(c7);
 
-                    PdfPCell c8 = new PdfPCell(new Phrase("₹" + String.format("%.2f", lineTotal), fontBold));
+                    PdfPCell c8 = new PdfPCell(new Phrase("Rs." + String.format("%.2f", lineTotal), fontBold));
                     c8.setPadding(4);
                     c8.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     itemTable.addCell(c8);
@@ -281,26 +329,26 @@ public class PdfInvoiceService {
             summaryTable.setWidths(new float[]{1.7f, 1.3f});
 
             summaryTable.addCell(createSummaryLabelCell("MRP Total:", fontRegular));
-            summaryTable.addCell(createSummaryValueCell("₹" + String.format("%.2f", calculatedTotalMrp), fontRegular));
+            summaryTable.addCell(createSummaryValueCell("Rs." + String.format("%.2f", calculatedTotalMrp), fontRegular));
 
             summaryTable.addCell(createSummaryLabelCell("Discount Amount Total:", fontRegular));
-            summaryTable.addCell(createSummaryValueCell("- ₹" + String.format("%.2f", calculatedTotalSavings), fontRegular));
+            summaryTable.addCell(createSummaryValueCell("- Rs." + String.format("%.2f", calculatedTotalSavings), fontRegular));
 
             summaryTable.addCell(createSummaryLabelCell("Base Price / Subtotal:", fontRegular));
-            summaryTable.addCell(createSummaryValueCell("₹" + String.format("%.2f", subtotal), fontRegular));
+            summaryTable.addCell(createSummaryValueCell("Rs." + String.format("%.2f", subtotal), fontRegular));
 
             String shippingLabel = "Weight Based Shipping (" + String.format("%.1f", weight) + " kg, " + totalQty + " Qty):";
             summaryTable.addCell(createSummaryLabelCell(shippingLabel, fontRegular));
-            summaryTable.addCell(createSummaryValueCell("₹" + String.format("%.2f", shippingFee), fontRegular));
+            summaryTable.addCell(createSummaryValueCell("Rs." + String.format("%.2f", shippingFee), fontRegular));
 
             summaryTable.addCell(createSummaryLabelCell("Product GST Tax (5%):", fontRegular));
-            summaryTable.addCell(createSummaryValueCell("₹" + String.format("%.2f", productGst), fontRegular));
+            summaryTable.addCell(createSummaryValueCell("Rs." + String.format("%.2f", productGst), fontRegular));
 
             summaryTable.addCell(createSummaryLabelCell("Shipping GST Tax (18%):", fontRegular));
-            summaryTable.addCell(createSummaryValueCell("₹" + String.format("%.2f", shippingGst), fontRegular));
+            summaryTable.addCell(createSummaryValueCell("Rs." + String.format("%.2f", shippingGst), fontRegular));
 
             summaryTable.addCell(createSummaryLabelCell("Total GST Tax:", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, emeraldDark)));
-            summaryTable.addCell(createSummaryValueCell("₹" + String.format("%.2f", totalGst), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, emeraldDark)));
+            summaryTable.addCell(createSummaryValueCell("Rs." + String.format("%.2f", totalGst), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, emeraldDark)));
 
             if (roundOff.compareTo(BigDecimal.ZERO) != 0) {
                 summaryTable.addCell(createSummaryLabelCell("Round Off:", fontRegular));
@@ -311,7 +359,7 @@ public class PdfInvoiceService {
             totalLblCell.setBackgroundColor(emeraldBg);
             summaryTable.addCell(totalLblCell);
 
-            PdfPCell totalValCell = createSummaryValueCell("₹" + String.format("%.2f", grandTotal), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, emeraldDark));
+            PdfPCell totalValCell = createSummaryValueCell("Rs." + String.format("%.2f", grandTotal), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, emeraldDark));
             totalValCell.setBackgroundColor(emeraldBg);
             summaryTable.addCell(totalValCell);
 
@@ -330,9 +378,9 @@ public class PdfInvoiceService {
             document.add(disclaimerHeader);
 
             Paragraph disclaimerBody = new Paragraph(
-                    "• Transport & Transit damages are not responsible by Seller. (Transit issues)\n" +
-                    "• Goods Once Cannot be Return or Refund.\n" +
-                    "• If Quality issue proved by Suitable evidence via Supporting Email Conversation, Valid Returns or Refunds Are Applied according to Refund policy.",
+                    "* Transport & Transit damages are not responsible by Seller. (Transit issues)\n" +
+                    "* Goods Once Cannot be Return or Refund.\n" +
+                    "* If Quality issue proved by Suitable evidence via Supporting Email Conversation, Valid Returns or Refunds Are Applied according to Refund policy.",
                     fontItalic
             );
             disclaimerBody.setSpacingAfter(6f);
@@ -358,15 +406,18 @@ public class PdfInvoiceService {
             pFor.setAlignment(Element.ALIGN_RIGHT);
             footRight.addElement(pFor);
 
-            // Embed Signature Image
+            // Embed Signature Image — resized to 150x55px at 50% quality to keep file size tiny
             try {
                 String sigPath = "/var/www/vinnavar-fullstack/vinnavar-backend/media/site/signature.png";
                 java.io.File sigFile = new java.io.File(sigPath);
                 if (sigFile.exists()) {
-                    Image sigImage = Image.getInstance(sigPath);
-                    sigImage.scaleToFit(100f, 45f);
-                    sigImage.setAlignment(Element.ALIGN_RIGHT);
-                    footRight.addElement(sigImage);
+                    byte[] sigBytes = resizeImageToJpeg(sigFile, 150, 55, 0.50f);
+                    if (sigBytes != null) {
+                        Image sigImage = Image.getInstance(sigBytes);
+                        sigImage.scaleToFit(100f, 45f);
+                        sigImage.setAlignment(Element.ALIGN_RIGHT);
+                        footRight.addElement(sigImage);
+                    }
                 }
             } catch (Exception sigEx) {
                 // Signature image fallback
@@ -379,7 +430,7 @@ public class PdfInvoiceService {
 
             document.add(footerTable);
 
-            Paragraph thankYouLine = new Paragraph("Thank you for choosing Vinnavar Organics! Visit Again! ✨", FontFactory.getFont(FontFactory.HELVETICA_BOLDOBLIQUE, 10, emeraldDark));
+            Paragraph thankYouLine = new Paragraph("Thank you for choosing Vinnavar Organics! Visit Again!", FontFactory.getFont(FontFactory.HELVETICA_BOLDOBLIQUE, 10, emeraldDark));
             thankYouLine.setAlignment(Element.ALIGN_CENTER);
             thankYouLine.setSpacingBefore(10f);
             document.add(thankYouLine);

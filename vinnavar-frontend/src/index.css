@@ -2,13 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =============================================
+   GLOBAL THEME TOKENS
+   Background : Mild Sandal-Ivory  #f8f3ec
+   Font Color : Dark Indigo-Blue   #1e2a5a
+============================================= */
+:root {
+  --site-bg:   #f8f3ec;   /* mild sandal-ivory */
+  --site-text: #1e2a5a;   /* dark indigo-blue  */
+}
+
+html,
 body {
   margin: 0;
+  background-color: var(--site-bg) !important;
+  color: var(--site-text) !important;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Propagate text colour to every common content element */
+h1, h2, h3, h4, h5, h6,
+p, span, li, a, label,
+td, th, caption,
+blockquote, figcaption,
+div, section, article, aside, main {
+  color: inherit;
+}
+
+/* Ensure page-level wrappers pick up the ivory background */
+#root,
+.app-wrapper {
+  background-color: var(--site-bg);
+  min-height: 100vh;
 }
 
 code {

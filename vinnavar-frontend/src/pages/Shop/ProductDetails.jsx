@@ -616,8 +616,12 @@ const ProductDetails = () => {
                                         </>
                                     )}
                                 </div>
-                                <div className="text-xs font-semibold text-emerald-700 mt-2 flex items-center gap-1">
-                                    <span>✓</span> Inclusive of shipping charge + all taxes
+                                <div className="text-xs text-slate-500 mt-2 flex items-start gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                                    <span className="text-amber-500 mt-0.5">ℹ️</span>
+                                    <span>
+                                        <span className="font-semibold text-slate-700">Base Price of Item Shown Here.</span>{" "}
+                                        <span className="text-slate-500">Price Break up Available in Cart / Check Out Section.</span>
+                                    </span>
                                 </div>
                             </div>
 

@@ -1,4 +1,10 @@
+/* ── Global Theme Override ───────────────────────────────
+   Background: Mild Sandal-Ivory  #f8f3ec
+   Text:       Dark Indigo-Blue   #1e2a5a
+────────────────────────────────────────────────────────── */
 html {
+  background-color: #f8f3ec !important;
+  color: #1e2a5a !important;
   scroll-behavior: smooth;
 }
 
