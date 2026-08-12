@@ -1,4 +1,4 @@
-import { API_BASE_URL, fetchSettings, getImageUrl, customerLogin, customerRegister, customerForgotPassword, customerGoogleLogin, getCartId, getWishlistId, mergeCart, mergeWishlist } from "../services/api";
+import { API_BASE_URL, fetchSettings, getImageUrl, customerLogin, customerRegister, customerForgotPassword, customerGoogleLogin, getCartId, getWishlistId, mergeCart, mergeWishlist, fetchProducts, fetchCategories } from "../services/api";
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
@@ -18,6 +18,24 @@ const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const langMenuRef = useRef(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [allSearchProducts, setAllSearchProducts] = useState([]);
+  const [allSearchCategories, setAllSearchCategories] = useState([]);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const searchDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const loadSearchData = async () => {
+      try {
+        const [cats, prods] = await Promise.all([fetchCategories(), fetchProducts()]);
+        setAllSearchCategories(cats || []);
+        setAllSearchProducts(prods || []);
+      } catch (err) {
+        console.error("Error loading search data", err);
+      }
+    };
+    loadSearchData();
+  }, []);
 
   const handleGoogleSuccess = async (credentialResponse) => {
     if (!credentialResponse?.credential) return;
@@ -55,6 +73,9 @@ const Header = () => {
       }
       if (langMenuRef.current && !langMenuRef.current.contains(event.target)) {
         setIsLangMenuOpen(false);
+      }
+      if (searchDropdownRef.current && !searchDropdownRef.current.contains(event.target)) {
+        setShowSearchDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -411,6 +432,14 @@ const Header = () => {
   const handleClick = () => {
     setIsOpen(!isOpen);
   };
+  const filteredProducts = allSearchProducts.filter(p => 
+    p.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    p.shortDescription?.toLowerCase().includes(searchQuery.toLowerCase())
+  ).slice(0, 5);
+
+  const filteredCategories = allSearchCategories.filter(c => 
+    c.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  ).slice(0, 3);
 
   return (
     <>
@@ -455,25 +484,25 @@ const Header = () => {
                 {/* Shop Dropdown */}
                 <div className="group relative py-1">
                   <Link
-                    to="/Shop"
+                    to="/Product"
                     className={`inline-flex items-center gap-1 transition-colors ${
-                      isActive("/Shop") ? "text-emerald-700 font-black border-b-2 border-emerald-600" : "text-slate-700 hover:text-emerald-600 font-semibold"
+                      isActive("/Product") ? "text-emerald-700 font-black border-b-2 border-emerald-600" : "text-slate-700 hover:text-emerald-600 font-semibold"
                     }`}
                   >
                     <span>{t("nav_shop")}</span>
                     <span className="text-[10px]">▼</span>
                   </Link>
                   <div className="absolute left-0 top-full hidden group-hover:block w-48 bg-white border border-slate-100 shadow-xl rounded-2xl p-2 z-50 normal-case">
-                    <Link to="/Shop" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                    <Link to="/Product" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
                       {t("nav_shop_catalog")}
                     </Link>
-                    <Link to="/ShopWishList" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                    <Link to="/ProductWishList" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
                       {t("nav_wishlist")} ({wishlistCount})
                     </Link>
-                    <Link to="/ShopCart" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                    <Link to="/ProductCart" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
                       {t("nav_cart")}
                     </Link>
-                    <Link to="/ShopCheckOut" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
+                    <Link to="/ProductCheckOut" className="block px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl">
                       {t("nav_checkout")}
                     </Link>
                   </div>
@@ -511,15 +540,86 @@ const Header = () => {
             </div>
 
             {/* Middle: Search Input */}
-            <div className="hidden lg:flex flex-1 max-w-sm mx-2">
+            <div className="hidden lg:flex flex-1 max-w-sm mx-2" ref={searchDropdownRef}>
               <div className="relative w-full">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
                 <input
                   type="text"
                   className="w-full pl-10 pr-4 py-2 bg-slate-100/80 hover:bg-slate-100 border border-slate-200 rounded-full text-slate-900 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none transition-all placeholder:text-slate-400"
                   placeholder={t("search_placeholder")}
-                  onClick={() => navigate("/Shop")}
+                  value={searchQuery}
+                  onFocus={() => setShowSearchDropdown(true)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowSearchDropdown(true);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setShowSearchDropdown(false);
+                      if (searchQuery.trim()) {
+                        navigate(`/Product?search=${encodeURIComponent(searchQuery.trim())}`);
+                      } else {
+                        navigate("/Product");
+                      }
+                    }
+                  }}
                 />
+
+                {/* Auto Suggestion Dropdown */}
+                {showSearchDropdown && searchQuery.trim().length > 0 && (filteredProducts.length > 0 || filteredCategories.length > 0) && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50">
+                    <div className="max-h-[60vh] overflow-y-auto py-2">
+                      {filteredCategories.length > 0 && (
+                        <div className="mb-2">
+                          <div className="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50">
+                            Categories
+                          </div>
+                          {filteredCategories.map(cat => (
+                            <button
+                              key={cat.id}
+                              onClick={() => {
+                                setShowSearchDropdown(false);
+                                setSearchQuery("");
+                                navigate(`/Product?category=${cat.id}`);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center gap-2"
+                            >
+                              <span className="text-emerald-600">📁</span>
+                              <span className="font-medium">{cat.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {filteredProducts.length > 0 && (
+                        <div>
+                          <div className="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50">
+                            Products
+                          </div>
+                          {filteredProducts.map(prod => (
+                            <button
+                              key={prod.id}
+                              onClick={() => {
+                                setShowSearchDropdown(false);
+                                setSearchQuery("");
+                                navigate(`/product/${prod.slug}`);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-emerald-50 transition-colors flex items-center gap-3"
+                            >
+                              <img src={getImageUrl(prod.imageUrl)} alt={prod.name} className="w-8 h-8 rounded object-cover border border-slate-200" />
+                              <div className="flex-1 min-w-0">
+                                <div className="font-semibold text-slate-800 truncate">{prod.name}</div>
+                                {prod.shortDescription && (
+                                  <div className="text-[10px] text-slate-500 truncate">{prod.shortDescription}</div>
+                                )}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -580,7 +680,7 @@ const Header = () => {
 
               {/* Wishlist */}
               <Link
-                to="/ShopWishList"
+                to="/ProductWishList"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all shadow-xs"
                 title="Wishlist"
               >
@@ -745,9 +845,9 @@ const Header = () => {
               🏠 Home
             </Link>
             <Link
-              to="/Shop"
+              to="/Product"
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                isActive("/Shop") ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
+                isActive("/Product") ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
               }`}
             >
               🛒 Shop
@@ -769,17 +869,17 @@ const Header = () => {
               📰 Blog
             </Link>
             <Link
-              to="/ShopWishList"
+              to="/ProductWishList"
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                isActive("/ShopWishList") ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
+                isActive("/ProductWishList") ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
               }`}
             >
               ❤️ Wishlist
             </Link>
             <Link
-              to="/ShopCart"
+              to="/ProductCart"
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                isActive("/ShopCart") ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
+                isActive("/ProductCart") ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
               }`}
             >
               🛍️ Cart
@@ -1208,7 +1308,7 @@ const Header = () => {
               <button
                 type="button"
                 className="btn btn-sm btn-success fw-bold"
-                onClick={() => handleNavigateFromCart("/Shop")}
+                onClick={() => handleNavigateFromCart("/Product")}
               >
                 {t("sliding_cart_shop_products")}
               </button>
@@ -1274,27 +1374,46 @@ const Header = () => {
               </div>
 
               <div className="border-top pt-3 mt-2">
+                <details className="mb-3">
+                  <summary className="fw-bold text-muted cursor-pointer" style={{ listStyle: "none", fontSize: "14px" }}>
+                    Price Breakup <span className="float-end">▼</span>
+                  </summary>
+                  <div className="mt-2 small text-muted ps-2 pe-2">
+                    <div className="d-flex justify-content-between mb-1">
+                      <span>Base Price</span>
+                      <span>₹{(cart.subtotal || 0).toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="d-flex justify-content-between mb-1">
+                      <span>Shipping Fee</span>
+                      <span>₹{(cart.shippingFee ?? 48).toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="d-flex justify-content-between mb-1">
+                      <span>GST Tax</span>
+                      <span>₹{(cart.gstTax ?? 0).toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+                </details>
                 <div className="d-flex justify-content-between align-items-center mb-3">
-                  <span className="fw-bold fs-6">{t("sliding_cart_total_amount")}</span>
+                  <span className="fw-bold fs-6">Total Payable <br/><span className="text-muted" style={{fontSize: "12px"}}>(Inclusive of all)</span></span>
                   <span className="fw-bold fs-5 text-success">
-                    ₹{(cart.subtotal || 0).toLocaleString('en-IN')}
+                    ₹{(cart.totalAmount ?? ((cart.subtotal || 0) + (cart.shippingFee ?? 48) + ((cart.subtotal || 0) * 0.05))).toLocaleString('en-IN')}
                   </span>
                 </div>
                 <div className="d-grid gap-2">
                   <button
                     type="button"
                     className="btn btn-outline-success fw-bold py-2"
-                    onClick={() => handleNavigateFromCart("/ShopCart")}
+                    onClick={() => handleNavigateFromCart("/ProductCart")}
                   >
                     {t("sliding_cart_view_full")}
                   </button>
                   <button
                     type="button"
                     className="btn btn-success btn-lg fw-bold d-flex justify-content-between align-items-center py-2.5 px-3"
-                    onClick={() => handleNavigateFromCart("/ShopCheckOut")}
+                    onClick={() => handleNavigateFromCart("/ProductCheckOut")}
                   >
                     <span>{t("sliding_cart_proceed_checkout")}</span>
-                    <span>₹{(cart.subtotal || 0).toLocaleString('en-IN')} &rsaquo;</span>
+                    <span>₹{(cart.totalAmount ?? ((cart.subtotal || 0) + (cart.shippingFee ?? 48) + ((cart.subtotal || 0) * 0.05))).toLocaleString('en-IN')} &rsaquo;</span>
                   </button>
                 </div>
               </div>

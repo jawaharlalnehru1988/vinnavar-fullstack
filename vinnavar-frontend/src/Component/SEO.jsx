@@ -7,10 +7,10 @@ const ROUTE_SEO_MAP = {
         description: "Vinnavar Organics offers 100% pure traditional organic rice (Mapillai Samba, Karuppu Kavuni, Seeraga Samba), cold-pressed oils, unpolished pulses, natural honey, and farm-fresh healthy grains.",
         canonical: "https://vinnavar.com/"
     },
-    "/Shop": {
-        title: "Shop Organic Products | Vinnavar Organics",
+    "/Product": {
+        title: "Product Catalog | Vinnavar Organics",
         description: "Explore our authentic range of traditional organic rice, cold-pressed oils, grains, natural honey, and traditional wellness products.",
-        canonical: "https://vinnavar.com/Shop"
+        canonical: "https://vinnavar.com/Product"
     },
     "/Blog": {
         title: "Health & Organic Farming Blog Articles | Vinnavar Organics",
@@ -100,8 +100,8 @@ const SEO = () => {
 
         const isPrivateRoute = pathname.startsWith("/admin") ||
                                pathname.startsWith("/MyAccount") ||
-                               pathname.startsWith("/ShopCheckOut") ||
-                               pathname.startsWith("/ShopCart");
+                               pathname.startsWith("/ProductCheckOut") ||
+                               pathname.startsWith("/ProductCart");
 
         if (isPrivateRoute) {
             metaRobots.setAttribute("content", "noindex, nofollow");

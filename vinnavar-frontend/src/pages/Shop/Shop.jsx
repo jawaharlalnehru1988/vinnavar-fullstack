@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 
 const assortment = getImageUrl("/media/site/assortment-citrus-fruits.png");
 
-const Shop = () => {
+const Product = () => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
@@ -24,6 +24,10 @@ const Shop = () => {
     const catParam = searchParams.get("category");
     if (catParam) {
       setSelectedCategoryId(parseInt(catParam));
+    }
+    const searchParam = searchParams.get("search");
+    if (searchParam) {
+      setSearchTerm(searchParam);
     }
   }, [searchParams]);
 
@@ -475,4 +479,4 @@ const Shop = () => {
   );
 };
 
-export default Shop;
+export default Product;

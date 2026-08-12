@@ -131,7 +131,7 @@ const OrganicProductList = ({ categoryId, limit = 8 }) => {
                     </div>
                     <div>
                         <Link
-                            to="/Shop"
+                            to="/Product"
                             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-all shadow-xs active:scale-95"
                         >
                             <span>{t("view_all_products")}</span>

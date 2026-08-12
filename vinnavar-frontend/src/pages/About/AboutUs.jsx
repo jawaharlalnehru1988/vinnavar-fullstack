@@ -282,7 +282,7 @@ const AboutUs = () => {
                     >
                       <img src={member8} alt="Gallery thumbnail" />
                       <div className="gallery-item-caption p-4">
-                        <h4 className="text-light mb-1">Fresh Cart Inc.</h4>
+                        <h4 className="text-light mb-1">Vinnavar</h4>
                         <p className="mb-0">Showreel by Marvin McKinney</p>
                       </div>
                     </a>

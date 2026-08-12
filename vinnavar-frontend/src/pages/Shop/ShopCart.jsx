@@ -7,7 +7,7 @@ import Swal from "sweetalert2";
 import { CartSkeleton } from "../../Component/Skeleton";
 import { useTranslation } from "react-i18next";
 
-const ShopCart = () => {
+const ProductCart = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [loaderStatus, setLoaderStatus] = useState(true);
@@ -202,7 +202,7 @@ const ShopCart = () => {
               </p>
               <div className="pt-2">
                 <Link
-                  to="/Shop"
+                  to="/Product"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-full shadow-lg shadow-emerald-700/20 transition-all active:scale-95"
                 >
                   <span>{t("explore_catalog")}</span>
@@ -223,7 +223,7 @@ const ShopCart = () => {
                     <span>{t("free_delivery")}</span>
                   </div>
                   <Link
-                    to="/ShopCheckOut"
+                    to="/ProductCheckOut"
                     className="px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-full transition-all shadow-sm"
                   >
                     {t("checkout_now")} ➔
@@ -310,7 +310,7 @@ const ShopCart = () => {
                 {/* Back to Shop Link */}
                 <div>
                   <Link
-                    to="/Shop"
+                    to="/Product"
                     className="inline-flex items-center gap-2 text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors"
                   >
                     <span>← {t("continue_shopping")}</span>
@@ -351,33 +351,44 @@ const ShopCart = () => {
                   </div>
 
                   <div className="space-y-3 text-xs font-medium">
-                    <div className="flex justify-between text-slate-700">
-                      <span className="font-bold text-slate-900">{t("subtotal_label")}</span>
-                      <span className="font-black text-emerald-700">₹{subtotal.toFixed(2)}</span>
-                    </div>
+                    <details className="group">
+                      <summary className="font-bold text-slate-600 cursor-pointer flex justify-between items-center pb-2 border-b border-slate-50" style={{ listStyle: "none" }}>
+                        <span>Price Breakup</span>
+                        <span className="text-slate-400">▼</span>
+                      </summary>
+                      <div className="pt-3 space-y-3 px-2">
+                        <div className="flex justify-content-between text-slate-700">
+                          <span className="font-bold text-slate-900">{t("subtotal_label", "Base Price")}</span>
+                          <span className="font-black text-emerald-700">₹{subtotal.toFixed(2)}</span>
+                        </div>
 
-                    <div className="flex justify-between items-center text-slate-700">
-                      <span className="font-bold text-slate-900">{t("shipment")}</span>
-                      <span className="text-right">
-                        <span className="text-[11px] text-slate-500 block">{t("weight_shipping", { weight: (cart?.totalWeightKg || 0).toFixed(1) })}</span>
-                        <span className="font-black text-emerald-700">₹{(cart?.shippingFee ?? 48).toFixed(2)}</span>
-                      </span>
-                    </div>
+                        <div className="flex justify-between items-center text-slate-700">
+                          <span className="font-bold text-slate-900">{t("shipment", "Shipping Fee")}</span>
+                          <span className="text-right">
+                            <span className="text-[11px] text-slate-500 block">{(cart?.totalWeightKg || 0).toFixed(1)} kg</span>
+                            <span className="font-black text-emerald-700">₹{(cart?.shippingFee ?? 48).toFixed(2)}</span>
+                          </span>
+                        </div>
 
-                    <div className="flex justify-between text-slate-700">
-                      <span className="font-bold text-slate-900">{t("tax_gst")}</span>
-                      <span className="font-black text-emerald-700">₹{(cart?.gstTax ?? 0).toFixed(2)}</span>
-                    </div>
+                        <div className="flex justify-between text-slate-700">
+                          <span className="font-bold text-slate-900">{t("tax_gst", "GST Tax")}</span>
+                          <span className="font-black text-emerald-700">₹{(cart?.gstTax ?? 0).toFixed(2)}</span>
+                        </div>
 
-                    {cart?.roundOff !== undefined && cart?.roundOff !== null && cart.roundOff !== 0 && (
-                      <div className="flex justify-between text-slate-700">
-                        <span className="font-bold text-slate-900">{t("round_off")}</span>
-                        <span className="font-black text-emerald-700">{cart.roundOff > 0 ? `+₹${cart.roundOff.toFixed(2)}` : `-₹${Math.abs(cart.roundOff).toFixed(2)}`}</span>
+                        {cart?.roundOff !== undefined && cart?.roundOff !== null && cart.roundOff !== 0 && (
+                          <div className="flex justify-between text-slate-700">
+                            <span className="font-bold text-slate-900">{t("round_off", "Round Off")}</span>
+                            <span className="font-black text-emerald-700">{cart.roundOff > 0 ? `+₹${cart.roundOff.toFixed(2)}` : `-₹${Math.abs(cart.roundOff).toFixed(2)}`}</span>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </details>
 
-                    <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-sm font-black text-slate-900">
-                      <span>{t("total")}</span>
+                    <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-sm font-black text-slate-900">
+                      <div>
+                        <span>Total Payable</span><br/>
+                        <span className="text-[10px] font-medium text-slate-500">(Inclusive of all)</span>
+                      </div>
                       <span className="text-2xl text-emerald-700">
                         ₹{(cart?.totalAmount ?? (subtotal + (cart?.shippingFee ?? 48) + (subtotal * 0.05))).toFixed(2)}
                       </span>
@@ -387,7 +398,7 @@ const ShopCart = () => {
                   <button
                     type="button"
                     className="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-full shadow-lg shadow-emerald-700/20 transition-all active:scale-95 flex items-center justify-between px-6"
-                    onClick={() => navigate("/ShopCheckOut")}
+                    onClick={() => navigate("/ProductCheckOut")}
                   >
                     <span>{t("proceed_to_checkout")}</span>
                     <span>₹{(cart?.totalAmount ?? (subtotal + (cart?.shippingFee ?? 48) + (subtotal * 0.05))).toFixed(2)} ➔</span>
@@ -439,4 +450,4 @@ const ShopCart = () => {
   );
 };
 
-export default ShopCart;
+export default ProductCart;

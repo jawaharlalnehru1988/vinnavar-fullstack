@@ -261,7 +261,7 @@ const MyAccountOrder = () => {
                       <div className="fs-1">🛍️</div>
                       <h4 className="fw-bold text-slate-800">No Orders Found</h4>
                       <p className="text-muted small">You haven't placed any organic orders yet.</p>
-                      <Link to="/Shop" className="btn btn-success rounded-pill px-4 font-bold shadow-sm">
+                      <Link to="/Product" className="btn btn-success rounded-pill px-4 font-bold shadow-sm">
                         Start Shopping ➔
                       </Link>
                     </div>

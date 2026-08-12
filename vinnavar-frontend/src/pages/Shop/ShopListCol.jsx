@@ -73,7 +73,7 @@ const dropdownData = [
   },
 ];
 
-const ShopListCol = () => {
+const ProductListCol = () => {
   // loading
   const [loaderStatus, setLoaderStatus] = useState(true);
   useEffect(() => {
@@ -436,13 +436,13 @@ const ShopListCol = () => {
                         </div>
                         {/* list icon */}
                         <div className="d-flex justify-content-between align-items-center">
-                          <Link to="/ShopListCol" className="text-muted me-3">
+                          <Link to="/ProductListCol" className="text-muted me-3">
                             <i className="bi bi-list-ul" />
                           </Link>
-                          <Link to="/ShopGridCol3" className=" me-3 active">
+                          <Link to="/ProductGridCol3" className=" me-3 active">
                             <i className="bi bi-grid" />
                           </Link>
-                          <Link to="/Shop" className="me-3 text-muted">
+                          <Link to="/Product" className="me-3 text-muted">
                             <i className="bi bi-grid-3x3-gap" />
                           </Link>
                           <div className="me-2">
@@ -1182,4 +1182,4 @@ const ShopListCol = () => {
   return <Dropdown />;
 };
 
-export default ShopListCol;
+export default ProductListCol;

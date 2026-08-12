@@ -155,7 +155,7 @@ const MyAccountReview = () => {
                         <p className="text-muted small max-w-md mx-auto mb-3">
                           Once you place orders and receive products, you can write reviews and rate items here.
                         </p>
-                        <Link to="/Shop" className="btn btn-outline-success rounded-pill px-4 fw-bold">
+                        <Link to="/Product" className="btn btn-outline-success rounded-pill px-4 fw-bold">
                           Explore Organic Catalog
                         </Link>
                       </div>

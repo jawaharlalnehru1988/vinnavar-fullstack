@@ -21,7 +21,7 @@ const MyAccountSignUp = () => {
                 {/* img */}
                 <img
                   src={signupimage}
-                  alt="freshcart"
+                  alt="Vinnavar"
                   className="img-fluid"
                 />
               </div>

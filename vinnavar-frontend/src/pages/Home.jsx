@@ -183,7 +183,7 @@ const Home = () => {
                       {/* Slide 1 */}
                       <div className="carousel-item active">
                         {/* Desktop Image */}
-                        <Link to="/Shop" className="d-none d-md-block">
+                        <Link to="/Product" className="d-none d-md-block">
                           <img
                             src={`${process.env.PUBLIC_URL}/HERO_01_DESKTOP.webp`}
                             alt="Vinnavar Organic Grains"
@@ -192,7 +192,7 @@ const Home = () => {
                           />
                         </Link>
                         {/* Mobile Image */}
-                        <Link to="/Shop" className="d-block d-md-none">
+                        <Link to="/Product" className="d-block d-md-none">
                           <img
                             src={`${process.env.PUBLIC_URL}/HERO_01_MOBILE.webp`}
                             alt="Vinnavar Organic Grains"
@@ -205,7 +205,7 @@ const Home = () => {
                       {/* Slide 2 */}
                       <div className="carousel-item">
                         {/* Desktop Image */}
-                        <Link to="/Shop" className="d-none d-md-block">
+                        <Link to="/Product" className="d-none d-md-block">
                           <img
                             src={`${process.env.PUBLIC_URL}/hero_02_desktop.webp`}
                             alt="Vinnavar Cold Pressed Oils"
@@ -214,7 +214,7 @@ const Home = () => {
                           />
                         </Link>
                         {/* Mobile Image */}
-                        <Link to="/Shop" className="d-block d-md-none">
+                        <Link to="/Product" className="d-block d-md-none">
                           <img
                             src={`${process.env.PUBLIC_URL}/hero_02_mobile.webp`}
                             alt="Vinnavar Cold Pressed Oils"
@@ -227,7 +227,7 @@ const Home = () => {
                       {/* Slide 3 */}
                       <div className="carousel-item">
                         {/* Desktop Image */}
-                        <Link to="/Shop" className="d-none d-md-block">
+                        <Link to="/Product" className="d-none d-md-block">
                           <img
                             src={`${process.env.PUBLIC_URL}/HERO_03_DESKTOP.webp`}
                             alt="Vinnavar Natural Sweeteners"
@@ -236,7 +236,7 @@ const Home = () => {
                           />
                         </Link>
                         {/* Mobile Image */}
-                        <Link to="/Shop" className="d-block d-md-none">
+                        <Link to="/Product" className="d-block d-md-none">
                           <img
                             src={`${process.env.PUBLIC_URL}/HERO_03_MOBILE.webp`}
                             alt="Vinnavar Natural Sweeteners"
@@ -308,7 +308,7 @@ const Home = () => {
                                   style={{ height: "200px" }}
                                 >
                                   <Link
-                                    to={`/Shop?category=${cat.id}`}
+                                    to={`/Product?category=${cat.id}`}
                                     className="w-100 h-100 d-flex align-items-center justify-content-center"
                                   >
                                     <img
@@ -342,7 +342,7 @@ const Home = () => {
                                     }}
                                     title={cat.name}
                                   >
-                                    <Link to={`/Shop?category=${cat.id}`} className="text-dark text-decoration-none">
+                                    <Link to={`/Product?category=${cat.id}`} className="text-dark text-decoration-none">
                                       {cat.name}
                                     </Link>
                                   </h4>
@@ -360,7 +360,7 @@ const Home = () => {
                                     {cat.description || "Premium quality organically grown products."}
                                   </p>
                                   <Link
-                                    to={`/Shop?category=${cat.id}`}
+                                    to={`/Product?category=${cat.id}`}
                                     className="btn btn-success btn-sm rounded-pill mt-auto fw-bold py-2 w-100 shadow-sm"
                                   >
                                     Browse Products

@@ -31,6 +31,7 @@ public class RazorpayService {
     private final OrderRepository orderRepository;
     private final CartItemRepository cartItemRepository;
     private final SiteSettingService siteSettingService;
+    private final com.vinnavar.backend.modules.shipping.service.ShippingService shippingService;
 
     public String getRazorpayKeyId() {
         return siteSettingService.getSettingValue("razorpay_key_id", "rzp_test_YOUR_KEY_ID");
@@ -47,9 +48,29 @@ public class RazorpayService {
             throw new IllegalStateException("Cannot checkout: Cart is empty.");
         }
 
-        BigDecimal totalAmount = cartItems.stream()
+        BigDecimal subtotal = cartItems.stream()
                 .map(CartItem::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        double totalWeightKg = cartItems.stream()
+                .mapToDouble(item -> {
+                    String vName = item.getVariant() != null ? item.getVariant().getVariantName() : "";
+                    return item.getQuantity() * com.vinnavar.backend.modules.cart.service.CartService.parseWeightInKg(vName);
+                })
+                .sum();
+
+        String destState = request.getShippingAddress() != null ? request.getShippingAddress().getState() : "Tamil Nadu";
+        String pMethod = "ONLINE";
+
+        com.vinnavar.backend.modules.shipping.service.ShippingService.ShippingCalculationResult calcResult =
+                shippingService.calculateShippingFee(totalWeightKg, destState, pMethod, subtotal);
+        BigDecimal shippingFee = calcResult.getTotalShippingFee();
+
+        BigDecimal productGst = subtotal.multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal shippingGst = shippingFee.multiply(new BigDecimal("0.18")).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal gstTax = productGst.add(shippingGst);
+        BigDecimal unroundedTotal = subtotal.add(shippingFee).add(gstTax).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal totalAmount = unroundedTotal.setScale(0, java.math.RoundingMode.FLOOR).setScale(2, java.math.RoundingMode.HALF_UP);
 
         int amountInPaise = totalAmount.multiply(new BigDecimal(100)).intValue();
 
@@ -64,6 +85,11 @@ public class RazorpayService {
                 .customerEmail(request.getCustomerEmail())
                 .customerPhone(request.getCustomerPhone())
                 .shippingAddress(request.getShippingAddress())
+                .billingAddress(request.getBillingAddress() != null ? request.getBillingAddress() : request.getShippingAddress())
+                .subtotal(subtotal)
+                .shippingFee(shippingFee)
+                .gstTax(gstTax)
+                .totalWeightKg(totalWeightKg)
                 .totalAmount(totalAmount)
                 .paymentMethod(PaymentMethod.ONLINE)
                 .paymentStatus("PENDING_RAZORPAY")

@@ -19,7 +19,7 @@ const loadRazorpayScript = () => {
     });
 };
 
-const ShopCheckOut = () => {
+const ProductCheckOut = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [loaderStatus, setLoaderStatus] = useState(true);
@@ -328,7 +328,7 @@ const ShopCheckOut = () => {
                                 </p>
                             </div>
                             <Link
-                                to="/ShopCart"
+                                to="/ProductCart"
                                 className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-full border border-white/20 transition-all self-start sm:self-auto"
                             >
                                 {t("edit_cart")}
@@ -585,7 +585,7 @@ const ShopCheckOut = () => {
                                     {(!cart || !cart.items || cart.items.length === 0) ? (
                                         <div className="text-center py-6 text-slate-400 space-y-3">
                                             <p className="text-xs">{t("cart_empty_checkout")}</p>
-                                            <Link to="/Shop" className="inline-block px-4 py-2 bg-emerald-700 text-white text-xs font-bold rounded-full">
+                                            <Link to="/Product" className="inline-block px-4 py-2 bg-emerald-700 text-white text-xs font-bold rounded-full">
                                                 {t("browse_products")}
                                             </Link>
                                         </div>
@@ -622,37 +622,52 @@ const ShopCheckOut = () => {
                                                     );
                                                 })}
                                             </div>
-
-                                            <div className="space-y-2 text-xs font-medium pt-4 border-t border-slate-100">
-                                                <div className="flex justify-between text-slate-700">
-                                                    <span className="font-bold text-slate-900">Base Price (Subtotal)</span>
-                                                    <span className="font-black text-slate-900">₹{(cart.subtotal || 0).toFixed(2)}</span>
-                                                </div>
-                                                <div className="flex justify-between items-center text-slate-700">
-                                                    <span className="font-bold text-slate-900">{t("shipment")}</span>
-                                                    <span className="text-right">
-                                                        <span className="text-[10px] text-slate-500 block">{t("weight_based")} ({(cart.totalWeightKg || 0).toFixed(1)} kg):</span>
-                                                        <span className="font-black text-emerald-700">₹{(cart.shippingFee ?? 48).toFixed(2)}</span>
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between text-slate-700">
-                                                    <span className="font-bold text-slate-900">{t("tax_gst")}</span>
-                                                    <span className="font-black text-emerald-700">₹{(cart.gstTax ?? 0).toFixed(2)}</span>
-                                                </div>
-                                                {cart?.roundOff !== undefined && cart?.roundOff !== null && cart.roundOff !== 0 && (
-                                                    <div className="flex justify-between text-slate-700">
-                                                        <span className="font-bold text-slate-900">{t("round_off")}</span>
-                                                        <span className="font-black text-emerald-700">{cart.roundOff > 0 ? `+₹${cart.roundOff.toFixed(2)}` : `-₹${Math.abs(cart.roundOff).toFixed(2)}`}</span>
+                                            <div className="space-y-2 text-xs font-medium">
+                                                <details className="group">
+                                                    <summary className="font-bold text-slate-600 cursor-pointer flex justify-between items-center pb-2 border-b border-slate-50" style={{ listStyle: "none" }}>
+                                                        <span>Price Breakup</span>
+                                                        <span className="text-slate-400">▼</span>
+                                                    </summary>
+                                                    <div className="pt-3 space-y-3 px-2">
+                                                        <div className="flex justify-between text-slate-700">
+                                                            <span className="font-bold text-slate-900">{t("subtotal_label", "Base Price")}</span>
+                                                            <span className="font-black text-emerald-700">₹{(cart.subtotal || 0).toFixed(2)}</span>
+                                                        </div>
+                                                        <div className="flex justify-between items-center text-slate-700">
+                                                            <span className="font-bold text-slate-900">{t("shipment", "Shipping Fee")}</span>
+                                                            <span className="text-right">
+                                                                <span className="text-[10px] text-slate-500 block">{t("weight_based")} ({(cart.totalWeightKg || 0).toFixed(1)} kg):</span>
+                                                                <span className="font-black text-emerald-700">₹{(cart.shippingFee ?? 48).toFixed(2)}</span>
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex justify-between text-slate-700">
+                                                            <span className="font-bold text-slate-900">{t("tax_gst", "GST Tax")}</span>
+                                                            <span className="font-black text-emerald-700">₹{(cart.gstTax ?? 0).toFixed(2)}</span>
+                                                        </div>
+                                                        {cart?.roundOff !== undefined && cart?.roundOff !== null && cart.roundOff !== 0 && (
+                                                            <div className="flex justify-between text-slate-700">
+                                                                <span className="font-bold text-slate-900">{t("round_off", "Round Off")}</span>
+                                                                <span className="font-black text-emerald-700">{cart.roundOff > 0 ? `+₹${cart.roundOff.toFixed(2)}` : `-₹${Math.abs(cart.roundOff).toFixed(2)}`}</span>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                                <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-sm font-black text-slate-900">
-                                                    <span>{t("total_payable")}</span>
+                                                </details>
+                                                <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-sm font-black text-slate-900">
+                                                    <div>
+                                                        <span>Total Payable</span><br/>
+                                                        <span className="text-[10px] font-medium text-slate-500">(Inclusive of all)</span>
+                                                    </div>
                                                     <span className="text-xl text-emerald-700">
                                                         ₹{(cart.totalAmount ?? ((cart.subtotal || 0) + (cart.shippingFee ?? 48) + ((cart.subtotal || 0) * 0.05))).toFixed(2)}
                                                     </span>
                                                 </div>
                                             </div>
 
+                                            <div className="mb-4 p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-center">
+                                                <p className="text-[12px] font-bold text-emerald-800">
+                                                    Except Tamilnadu, Expected Delivery Days :  5-8 Days
+                                                </p>
+                                            </div>
                                             <button
                                                 type="submit"
                                                 className="w-full py-4 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-full shadow-lg shadow-emerald-700/20 transition-all active:scale-95 disabled:opacity-50"
@@ -684,4 +699,4 @@ const ShopCheckOut = () => {
     );
 };
 
-export default ShopCheckOut;
+export default ProductCheckOut;

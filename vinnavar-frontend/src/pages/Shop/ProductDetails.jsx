@@ -287,7 +287,7 @@ const ProductDetails = () => {
             <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center py-20 px-4 text-center">
                 <h3 className="text-2xl font-bold text-red-600">Product Not Found</h3>
                 <p className="text-slate-500 mt-2">The product you are looking for does not exist or has been removed.</p>
-                <Link to="/Shop" className="mt-6 px-6 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors shadow-md">
+                <Link to="/Product" className="mt-6 px-6 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors shadow-md">
                     Back to Store
                 </Link>
             </div>
@@ -332,7 +332,7 @@ const ProductDetails = () => {
             if (res.ok) {
                 window.dispatchEvent(new Event("cartUpdated"));
                 if (buyNow) {
-                    navigate("/ShopCheckOut");
+                    navigate("/ProductCheckOut");
                 } else {
                     Swal.fire({
                         icon: "success",
@@ -438,7 +438,7 @@ const ProductDetails = () => {
                 <nav className="flex items-center space-x-2 text-xs sm:text-sm text-slate-500 mb-6 overflow-x-auto pb-1 scrollbar-none">
                     <Link to="/" className="hover:text-emerald-600 transition-colors">Home</Link>
                     <span className="text-slate-300">/</span>
-                    <Link to="/Shop" className="hover:text-emerald-600 transition-colors">Shop</Link>
+                    <Link to="/Product" className="hover:text-emerald-600 transition-colors">Shop</Link>
                     {product.category && (
                         <>
                             <span className="text-slate-300">/</span>

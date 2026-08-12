@@ -7,7 +7,7 @@ import { API_BASE_URL, getImageUrl, fetchWishlist, removeFromWishlist, clearWish
 import { CartSkeleton } from "../../Component/Skeleton";
 import { useTranslation } from "react-i18next";
 
-const ShopWishList = () => {
+const ProductWishList = () => {
   const { t } = useTranslation();
   const [loaderStatus, setLoaderStatus] = useState(true);
   const [wishlist, setWishlist] = useState({ items: [], totalItemCount: 0 });
@@ -211,7 +211,7 @@ const ShopWishList = () => {
               </p>
               <div className="pt-2">
                 <Link
-                  to="/Shop"
+                  to="/Product"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-full shadow-lg shadow-emerald-700/20 transition-all active:scale-95"
                 >
                   <span>{t("explore_products")}</span>
@@ -375,4 +375,4 @@ const ShopWishList = () => {
   );
 };
 
-export default ShopWishList;
+export default ProductWishList;

@@ -17,7 +17,7 @@ const MyAccountSignIn = () => {
                 <Link className="navbar-brand" to="../index.html">
                   <img
                     src={Grocerylogo}
-                    alt="freshcart"
+                    alt="Vinnavar"
                     className="d-inline-block align-text-top"
                   />
                 </Link>
@@ -39,7 +39,7 @@ const MyAccountSignIn = () => {
                   {/* img */}
                   <img
                     src={signinimage}
-                    alt="freshcart"
+                    alt="Vinnavar"
                     className="img-fluid"
                   />
                 </div>

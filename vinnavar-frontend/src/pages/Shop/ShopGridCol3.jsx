@@ -73,7 +73,7 @@ const dropdownData = [
   },
 ];
 
-const ShopGridCol3 = () => {
+const ProductGridCol3 = () => {
   // loading
   const [loaderStatus, setLoaderStatus] = useState(true);
   useEffect(() => {
@@ -436,13 +436,13 @@ const ShopGridCol3 = () => {
                         </div>
                         {/* icon */}
                         <div className="d-flex justify-content-between align-items-center">
-                          <Link to="/ShopListCol" className="text-muted me-3">
+                          <Link to="/ProductListCol" className="text-muted me-3">
                             <i className="bi bi-list-ul" />
                           </Link>
-                          <Link to="/ShopGridCol3" className=" me-3 active">
+                          <Link to="/ProductGridCol3" className=" me-3 active">
                             <i className="bi bi-grid" />
                           </Link>
-                          <Link to="/Shop" className="me-3 text-muted">
+                          <Link to="/Product" className="me-3 text-muted">
                             <i className="bi bi-grid-3x3-gap" />
                           </Link>
                           {/* select option */}
@@ -1724,4 +1724,4 @@ const ShopGridCol3 = () => {
   return <Dropdown />;
 };
 
-export default ShopGridCol3;
+export default ProductGridCol3;

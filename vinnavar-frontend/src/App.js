@@ -8,12 +8,12 @@ import Home from "./pages/Home";
 import Blog from "./pages/About/Blog";
 import BlogCategory from "./pages/About/BlogCategory";
 import BlogSingle from "./pages/About/BlogSingle";
-import Shop from "./pages/Shop/Shop";
-import ShopGridCol3 from "./pages/Shop/ShopGridCol3";
-import ShopListCol from "./pages/Shop/ShopListCol";
-import ShopCart from "./pages/Shop/ShopCart";
-import ShopCheckOut from "./pages/Shop/ShopCheckOut";
-import ShopWishList from "./pages/Shop/ShopWishList";
+import Product from "./pages/Shop/Shop";
+import ProductGridCol3 from "./pages/Shop/ShopGridCol3";
+import ProductListCol from "./pages/Shop/ShopListCol";
+import ProductCart from "./pages/Shop/ShopCart";
+import ProductCheckOut from "./pages/Shop/ShopCheckOut";
+import ProductWishList from "./pages/Shop/ShopWishList";
 import MyAccountOrder from "./pages/Accounts/MyAccountOrder";
 import MyAccountSetting from "./pages/Accounts/MyAcconutSetting";
 import MyAcconutNotification from "./pages/Accounts/MyAcconutNotification";
@@ -78,12 +78,12 @@ const AppContent = () => {
         <Route path="/product/id/:id" element={<ProductDetails />} />
         <Route path="/ProductDetails" element={<ProductDetails />} />
         {/* Shop pages */}
-        <Route path="/Shop" element={<Shop />} />
-        <Route path="/ShopGridCol3" element={<ShopGridCol3 />} />
-        <Route path="/ShopListCol" element={<ShopListCol />} />
-        <Route path="/ShopWishList" element={<ShopWishList />} />
-        <Route path="/ShopCheckOut" element={<ShopCheckOut />} />
-        <Route path="/ShopCart" element={<ShopCart />} />
+        <Route path="/Product" element={<Product />} />
+        <Route path="/ProductGridCol3" element={<ProductGridCol3 />} />
+        <Route path="/ProductListCol" element={<ProductListCol />} />
+        <Route path="/ProductWishList" element={<ProductWishList />} />
+        <Route path="/ProductCheckOut" element={<ProductCheckOut />} />
+        <Route path="/ProductCart" element={<ProductCart />} />
         {/* Accounts pages */}
         <Route path="/MyAccountOrder" element={<MyAccountOrder />} />
         <Route path="/MyAccountSetting" element={<MyAccountSetting />} />
