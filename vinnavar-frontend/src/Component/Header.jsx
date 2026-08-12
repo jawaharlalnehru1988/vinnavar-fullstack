@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES } from "../i18n";
 
-const Grocerylogo = getImageUrl("/media/site/Grocerylogo.png");
+
 
 const Header = () => {
   const { t, i18n } = useTranslation();
@@ -44,7 +44,7 @@ const Header = () => {
   };
   const [cart, setCart] = useState(null);
   const [wishlistCount, setWishlistCount] = useState(0);
-  const [logoUrl, setLogoUrl] = useState(Grocerylogo);
+  const [logoUrl, setLogoUrl] = useState(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = React.useRef(null);
 
@@ -430,12 +430,14 @@ const Header = () => {
             {/* Left: Enlarged 1x1 inch Logo & Nav Links */}
             <div className="flex items-center gap-6">
               <Link to="/" className="flex items-center flex-shrink-0 group">
-                <img
-                  src={logoUrl}
-                  style={{ height: "96px", width: "96px", objectFit: "contain" }}
-                  className="transition-transform group-hover:scale-105"
-                  alt="Vinnavar Logo"
-                />
+                {logoUrl && (
+                  <img
+                    src={logoUrl}
+                    style={{ height: "96px", width: "96px", objectFit: "contain" }}
+                    className="transition-transform group-hover:scale-105"
+                    alt="Vinnavar Logo"
+                  />
+                )}
               </Link>
 
               {/* Primary Navigation Links (Single Row) */}
@@ -723,29 +725,72 @@ const Header = () => {
                 </span>
               </button>
 
-              {/* Mobile Navigation Toggle */}
-              <button
-                className="md:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 focus:outline-none"
-                type="button"
-                onClick={handleClick}
-                data-bs-toggle="collapse"
-                data-bs-target="#mobileNav"
-              >
-                <span className="text-xl">☰</span>
-              </button>
+
             </div>
           </div>
         </div>
 
-        {/* Mobile Dropdown Menu */}
-        <div className="collapse md:hidden border-t border-slate-100 px-4 py-3 bg-white" id="mobileNav">
-          <div className="space-y-2 text-sm font-semibold">
-            <Link to="/" className={`block py-2 ${isActive("/") ? "text-emerald-700 font-bold" : "text-slate-800"}`}>Home</Link>
-            <Link to="/Shop" className={`block py-2 ${isActive("/Shop") ? "text-emerald-700 font-bold" : "text-slate-800"}`}>Shop Catalog</Link>
-            <Link to="/TrackOrder" className={`block py-2 ${isActive("/TrackOrder") ? "text-emerald-700 font-bold" : "text-slate-800"}`}>🚚 Track Order</Link>
-            <Link to="/Blog" className={`block py-2 ${isActive("/Blog") ? "text-emerald-700 font-bold" : "text-slate-800"}`}>Blog &amp; Articles</Link>
-            <Link to="/BlogCategory" className="block py-2 text-slate-600 pl-3">↳ Blog Categories</Link>
-            <a href="#corporate-contact" onClick={scrollToContact} className="block py-2 text-slate-800">Contact Us</a>
+        {/* Mobile Second-Row Navigation — always visible on mobile/tablet */}
+        <div className="md:hidden border-t border-slate-100 bg-white/98 shadow-sm">
+          <div
+            className="flex items-center gap-2 px-3 py-2 overflow-x-auto"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            <Link
+              to="/"
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                isActive("/") ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
+              }`}
+            >
+              🏠 Home
+            </Link>
+            <Link
+              to="/Shop"
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                isActive("/Shop") ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
+              }`}
+            >
+              🛒 Shop
+            </Link>
+            <Link
+              to="/TrackOrder"
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                isActive("/TrackOrder") ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
+              }`}
+            >
+              🚚 Track Order
+            </Link>
+            <Link
+              to="/Blog"
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                isActive("/Blog") ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
+              }`}
+            >
+              📰 Blog
+            </Link>
+            <Link
+              to="/ShopWishList"
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                isActive("/ShopWishList") ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
+              }`}
+            >
+              ❤️ Wishlist
+            </Link>
+            <Link
+              to="/ShopCart"
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                isActive("/ShopCart") ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
+              }`}
+            >
+              🛍️ Cart
+            </Link>
+            <a
+              href="#corporate-contact"
+              onClick={scrollToContact}
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all"
+            >
+              📞 Contact
+            </a>
           </div>
         </div>
       </header>

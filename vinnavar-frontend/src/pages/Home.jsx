@@ -386,6 +386,110 @@ const Home = () => {
             <>
               <TestimonialsCarousel />
               <FAQ />
+
+              {/* Visitor Count Banner */}
+              <section
+                style={{
+                  background: "linear-gradient(135deg, #1a5c2a 0%, #2e7d32 50%, #388e3c 100%)",
+                  padding: "60px 20px",
+                  textAlign: "center",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                {/* Decorative blobs */}
+                <div
+                  style={{
+                    position: "absolute", top: "-60px", left: "-60px",
+                    width: "200px", height: "200px", borderRadius: "50%",
+                    background: "rgba(255,255,255,0.05)",
+                  }}
+                />
+                <div
+                  style={{
+                    position: "absolute", bottom: "-80px", right: "-40px",
+                    width: "260px", height: "260px", borderRadius: "50%",
+                    background: "rgba(255,255,255,0.05)",
+                  }}
+                />
+
+                <div style={{ position: "relative", zIndex: 1 }}>
+                  {/* Icon */}
+                  <div style={{ marginBottom: "16px" }}>
+                    <span
+                      style={{
+                        fontSize: "2.8rem",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "72px",
+                        height: "72px",
+                        borderRadius: "50%",
+                        background: "rgba(255,255,255,0.15)",
+                        backdropFilter: "blur(8px)",
+                      }}
+                    >
+                      🌿
+                    </span>
+                  </div>
+
+                  {/* Count */}
+                  <h2
+                    style={{
+                      fontSize: "clamp(2.8rem, 6vw, 5rem)",
+                      fontWeight: "800",
+                      color: "#ffffff",
+                      margin: "0 0 8px 0",
+                      letterSpacing: "-1px",
+                      textShadow: "0 4px 20px rgba(0,0,0,0.3)",
+                    }}
+                  >
+                    5K<span style={{ color: "#a5d6a7" }}>+</span>
+                  </h2>
+
+                  {/* Label */}
+                  <p
+                    style={{
+                      fontSize: "1.15rem",
+                      fontWeight: "600",
+                      color: "rgba(255,255,255,0.9)",
+                      margin: "0 0 6px 0",
+                      letterSpacing: "0.5px",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Visitors in the Last Week
+                  </p>
+
+                  {/* Sub-label */}
+                  <p
+                    style={{
+                      fontSize: "0.95rem",
+                      color: "rgba(255,255,255,0.65)",
+                      margin: 0,
+                    }}
+                  >
+                    Trusted by thousands of organic food lovers across India
+                  </p>
+
+                  {/* Divider dots */}
+                  <div style={{ marginTop: "28px", display: "flex", justifyContent: "center", gap: "8px" }}>
+                    {[1, 2, 3].map((i) => (
+                      <span
+                        key={i}
+                        style={{
+                          display: "inline-block",
+                          width: i === 2 ? "28px" : "8px",
+                          height: "8px",
+                          borderRadius: "4px",
+                          background: i === 2 ? "#a5d6a7" : "rgba(255,255,255,0.35)",
+                          transition: "width 0.3s",
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </section>
             </>
 
 

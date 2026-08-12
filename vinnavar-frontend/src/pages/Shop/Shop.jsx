@@ -318,8 +318,11 @@ const Shop = () => {
                   </div>
 
                   <div className="inline-flex flex-wrap items-center justify-center gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200/70 text-xs sm:text-sm">
-                    <a href="tel:+917550210447" className="font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1.5 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-xs">
-                      📞 +91 7550210447
+                    <a href="https://wa.me/917550210447" target="_blank" rel="noopener noreferrer" className="font-bold text-white hover:opacity-90 flex items-center gap-2 bg-[#25D366] px-4 py-2 rounded-xl shadow-sm transition-all active:scale-95">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="18" height="18" fill="white">
+                        <path d="M16 0C7.164 0 0 7.163 0 16c0 2.822.737 5.469 2.027 7.77L0 32l8.479-2.001A15.93 15.93 0 0 0 16 32c8.836 0 16-7.163 16-16S24.836 0 16 0zm0 29.333a13.27 13.27 0 0 1-6.784-1.856l-.486-.29-5.033 1.187 1.21-4.908-.317-.502A13.247 13.247 0 0 1 2.667 16C2.667 8.636 8.636 2.667 16 2.667S29.333 8.636 29.333 16 23.364 29.333 16 29.333zm7.258-9.907c-.398-.2-2.355-1.162-2.72-1.294-.365-.133-.63-.2-.895.2-.265.398-1.027 1.294-1.26 1.56-.232.265-.464.299-.862.1-.398-.2-1.681-.62-3.202-1.977-1.183-1.056-1.982-2.36-2.214-2.758-.232-.398-.025-.613.175-.812.18-.179.398-.464.597-.696.2-.232.265-.398.398-.663.133-.265.066-.497-.033-.696-.1-.2-.895-2.16-1.227-2.958-.323-.776-.65-.671-.895-.683l-.763-.013c-.265 0-.696.1-1.06.497-.365.398-1.393 1.361-1.393 3.32 0 1.958 1.426 3.851 1.626 4.116.2.265 2.807 4.285 6.802 6.01.951.41 1.693.655 2.271.839.954.304 1.822.261 2.509.158.765-.114 2.355-.963 2.686-1.893.332-.93.332-1.727.232-1.893-.099-.166-.364-.265-.762-.464z"/>
+                      </svg>
+                      +91 7550210447
                     </a>
                     <a href="mailto:vinnavarbrand@gmail.com" className="font-semibold text-slate-700 hover:text-emerald-700 flex items-center gap-1.5 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-xs">
                       ✉️ vinnavarbrand@gmail.com

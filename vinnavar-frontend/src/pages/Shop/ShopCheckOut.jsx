@@ -223,7 +223,7 @@ const ShopCheckOut = () => {
                     currency: razorpayData.currency || "INR",
                     name: "Vinnavar Organics",
                     description: `Order Payment for ${razorpayData.orderNumber}`,
-                    image: getImageUrl("/media/site/Grocerylogo.png"),
+                    image: getImageUrl("/media/site/asset_c3"),
                     order_id: razorpayData.razorpayOrderId.startsWith("order_") ? razorpayData.razorpayOrderId : undefined,
                     prefill: {
                         name: shippingForm.name,

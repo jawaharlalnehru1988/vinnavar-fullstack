@@ -20,4 +20,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findAllByOrderByCreatedAtDesc();
 
     long countByProductIdAndStatus(Long productId, String status);
+    
+    void deleteByProductId(Long productId);
 }

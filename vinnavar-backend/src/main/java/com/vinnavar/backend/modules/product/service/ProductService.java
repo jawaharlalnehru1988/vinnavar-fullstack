@@ -6,6 +6,9 @@ import com.vinnavar.backend.modules.product.entity.Product;
 import com.vinnavar.backend.modules.product.entity.ProductVariant;
 import com.vinnavar.backend.modules.product.repository.CategoryRepository;
 import com.vinnavar.backend.modules.product.repository.ProductRepository;
+import com.vinnavar.backend.modules.cart.repository.CartItemRepository;
+import com.vinnavar.backend.modules.wishlist.repository.WishlistItemRepository;
+import com.vinnavar.backend.modules.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -30,6 +33,9 @@ public class ProductService {
 
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
+    private final CartItemRepository cartItemRepository;
+    private final WishlistItemRepository wishlistItemRepository;
+    private final ReviewRepository reviewRepository;
 
     @Value("${app.media.dir:/var/www/vinnavar-fullstack/vinnavar-backend/media}")
     private String mediaDir;
@@ -231,6 +237,10 @@ public class ProductService {
             mediaUrls.add(product.getVideoUrl());
         }
 
+        cartItemRepository.deleteByProductId(id);
+        wishlistItemRepository.deleteByProductId(id);
+        reviewRepository.deleteByProductId(id);
+
         productRepository.delete(product);
         productRepository.flush();
 
@@ -298,6 +308,11 @@ public class ProductService {
 
     @Transactional
     public void deleteCategory(Long id) {
+        List<Product> products = productRepository.findByCategoryId(id);
+        for (Product p : products) {
+            p.setCategory(null);
+            productRepository.save(p);
+        }
         categoryRepository.deleteById(id);
     }
 

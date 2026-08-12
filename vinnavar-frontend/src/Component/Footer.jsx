@@ -4,13 +4,13 @@ import { Link } from "react-router-dom";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { useTranslation } from "react-i18next";
 
-const groceryshop = getImageUrl("/media/site/Grocerylogo.png");
+
 
 const Footer = () => {
   const { t } = useTranslation();
   let date = new Date();
   let year = date.getFullYear();
-  const [logoUrl, setLogoUrl] = useState(groceryshop);
+  const [logoUrl, setLogoUrl] = useState(null);
   const [brandName, setBrandName] = useState("Vinnavar");
 
   useEffect(() => {
@@ -46,12 +46,14 @@ const Footer = () => {
                   {/* Column 1: Brand details */}
                   <div className="col-12 col-md-4">
                     <Link to="/">
-                      <img
-                        src={logoUrl}
-                        style={{ height: "96px", width: "96px", objectFit: "contain" }}
-                        alt="Vinnavar Logo"
-                        className="mb-3"
-                      />
+                      {logoUrl && (
+                        <img
+                          src={logoUrl}
+                          style={{ height: "96px", width: "96px", objectFit: "contain" }}
+                          alt="Vinnavar Logo"
+                          className="mb-3"
+                        />
+                      )}
                     </Link>
                     <h4 className="fw-bold text-dark mb-1" style={{ fontSize: "1.3rem", letterSpacing: "-0.5px" }}>
                       {brandName}
