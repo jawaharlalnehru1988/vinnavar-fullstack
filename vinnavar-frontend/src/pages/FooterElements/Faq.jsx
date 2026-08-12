@@ -27,11 +27,6 @@ const FAQ = () => {
       answer:
         "After placing your order, go to your profile > 'My Orders' to see live updates and order history.",
     },
-    {
-      question: "Is there a minimum order value for free delivery?",
-      answer:
-        "Yes, orders above ₹499 qualify for free delivery. A small delivery charge applies for smaller orders.",
-    },
   ];
 
   const [openIndex, setOpenIndex] = useState(null);

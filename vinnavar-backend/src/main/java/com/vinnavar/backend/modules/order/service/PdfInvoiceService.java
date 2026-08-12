@@ -76,34 +76,7 @@ public class PdfInvoiceService {
             writer.setCompressionLevel(9);
             document.open();
 
-            // Background Mild Watermark (Dead Center)
-            try {
-                String logoPath = "/var/www/vinnavar-fullstack/vinnavar-backend/media/site/Grocerylogo.png";
-                java.io.File logoFile = new java.io.File(logoPath);
-                if (logoFile.exists()) {
-                    PdfContentByte canvas = writer.getDirectContentUnder();
-                    canvas.saveState();
-                    PdfGState gstate = new PdfGState();
-                    gstate.setFillOpacity(0.10f);
-                    gstate.setStrokeOpacity(0.10f);
-                    canvas.setGState(gstate);
 
-                    // Resize watermark to 100x100px at 30% quality — tiny embedded data
-                    byte[] watermarkBytes = resizeImageToJpeg(logoFile, 100, 100, 0.30f);
-                    if (watermarkBytes != null) {
-                        Image watermark = Image.getInstance(watermarkBytes);
-                        // Visually scaled up on page while data stays tiny
-                        watermark.scaleToFit(320f, 320f);
-                        float x = (PageSize.A4.getWidth() - watermark.getScaledWidth()) / 2;
-                        float y = (PageSize.A4.getHeight() - watermark.getScaledHeight()) / 2;
-                        watermark.setAbsolutePosition(x, y);
-                        canvas.addImage(watermark);
-                    }
-                    canvas.restoreState();
-                }
-            } catch (Exception watermarkEx) {
-                // Watermark fallback silently
-            }
 
             // Colors
             Color emeraldDark = new Color(4, 120, 87);
@@ -128,6 +101,24 @@ public class PdfInvoiceService {
             // Company Details (Left)
             PdfPCell cellLeft = new PdfPCell();
             cellLeft.setBorder(Rectangle.NO_BORDER);
+            
+            try {
+                String logoPath = "/var/www/vinnavar-fullstack/vinnavar-backend/media/site/Grocerylogo.png";
+                java.io.File logoFile = new java.io.File(logoPath);
+                if (logoFile.exists()) {
+                    byte[] logoBytes = resizeImageToJpeg(logoFile, 300, 300, 0.90f);
+                    if (logoBytes != null) {
+                        Image logo = Image.getInstance(logoBytes);
+                        logo.scaleToFit(120f, 120f);
+                        logo.setAlignment(Element.ALIGN_LEFT);
+                        cellLeft.addElement(logo);
+                        cellLeft.addElement(new Paragraph(" "));
+                    }
+                }
+            } catch (Exception e) {
+                // Logo fallback
+            }
+            
             cellLeft.addElement(new Paragraph("VINNAVAR ORGANICS", headerFont));
             cellLeft.addElement(new Paragraph("LP Traders", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, Color.DARK_GRAY)));
             cellLeft.addElement(new Paragraph("100% Pure & Certified Organic Produce", subHeaderFont));
