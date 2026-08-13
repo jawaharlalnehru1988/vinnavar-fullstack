@@ -215,32 +215,32 @@ const MyAccountAddress = () => {
                 <ul className="nav flex-column nav-pills nav-pills-dark gap-1">
                   <li className="nav-item">
                     <Link className="nav-link" to="/MyAccountOrder">
-                      <i className="fas fa-shopping-bag me-2" />
-                      Your Orders
+                      <i className="fas fa-shopping-bag me-2" /> Your Orders
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/MyAccountReviews">
+                      <i className="fas fa-star me-2" /> My Reviews
                     </Link>
                   </li>
                   <li className="nav-item">
                     <Link className="nav-link" to="/MyAccountSetting">
-                      <i className="fas fa-cog me-2" />
-                      Settings
+                      <i className="fas fa-cog me-2" /> Settings
                     </Link>
                   </li>
                   <li className="nav-item">
-                    <Link className="nav-link active bg-success text-white" to="/MyAccountAddress">
-                      <i className="fas fa-map-marker-alt me-2" />
-                      Address Book
+                    <Link className="nav-link active font-bold" to="/MyAccountAddress">
+                      <i className="fas fa-map-marker-alt me-2" /> Address
                     </Link>
                   </li>
                   <li className="nav-item">
                     <Link className="nav-link" to="/MyAcconutPaymentMethod">
-                      <i className="fas fa-credit-card me-2" />
-                      Payment Method
+                      <i className="fas fa-credit-card me-2" /> Payment Method
                     </Link>
                   </li>
                   <li className="nav-item">
-                    <Link className="nav-link" to="/MyAcconutNotification">
-                      <i className="fas fa-bell me-2" />
-                      Notification
+                    <Link className="nav-link" to="/MyAccountComplaint">
+                      <i className="fas fa-headset me-2" /> Help &amp; Complaints
                     </Link>
                   </li>
                 </ul>

@@ -64,8 +64,8 @@ public class SiteSettingService {
     public void seedDefaultSiteSettings() {
         List<SiteSetting> defaults = List.of(
                 SiteSetting.builder().settingKey("store_name").settingValue("Vinnavar Organics").settingGroup("GENERAL").description("Brand Name").build(),
-                SiteSetting.builder().settingKey("store_logo").settingValue("/media/site/Grocerylogo.png").settingGroup("LOGO").description("Header Logo Image").build(),
-                SiteSetting.builder().settingKey("footer_logo").settingValue("/media/site/Grocerylogo.png").settingGroup("LOGO").description("Footer Logo Image").build(),
+                SiteSetting.builder().settingKey("store_logo").settingValue("/media/site/logo_vinnavar.webp").settingGroup("LOGO").description("Header Logo Image").build(),
+                SiteSetting.builder().settingKey("footer_logo").settingValue("/media/site/logo_vinnavar.webp").settingGroup("LOGO").description("Footer Logo Image").build(),
                 SiteSetting.builder().settingKey("header_announcement").settingValue("Super Value Deals - 100% Pure Organic Staples").settingGroup("LABELS").description("Top Header Banner Text").build(),
                 SiteSetting.builder().settingKey("home_hero_1").settingValue("/media/site/slide-1.jpg").settingGroup("HERO_SLIDER").description("Home Slide 1 Image").build(),
                 SiteSetting.builder().settingKey("home_hero_2").settingValue("/media/site/slider-2.jpg").settingGroup("HERO_SLIDER").description("Home Slide 2 Image").build(),
@@ -82,9 +82,63 @@ public class SiteSettingService {
         );
 
         for (SiteSetting def : defaults) {
-            if (repository.findBySettingKey(def.getSettingKey()).isEmpty()) {
-                repository.save(def);
+            repository.findBySettingKey(def.getSettingKey()).ifPresentOrElse(
+                existing -> {
+                    if (existing.getSettingValue() != null && 
+                       (existing.getSettingValue().contains("Grocerylogo") || 
+                        existing.getSettingValue().contains("vinnavar_logo") || 
+                        existing.getSettingValue().contains("logo.png"))) {
+                        existing.setSettingValue(def.getSettingValue());
+                        repository.save(existing);
+                    }
+                },
+                () -> repository.save(def)
+            );
+        }
+
+        // Physically synchronize all legacy logo paths and favicon with the new logo
+        try {
+            java.nio.file.Path sourcePath = java.nio.file.Paths.get("/var/www/vinnavar-fullstack/vinnavar-frontend/public/logo_vinnavar.webp");
+            if (java.nio.file.Files.exists(sourcePath)) {
+                byte[] webpBytes = java.nio.file.Files.readAllBytes(sourcePath);
+
+                // 1. Delete old favicon.ico and write valid ICO file from logo_vinnavar.webp
+                java.nio.file.Path faviconTarget = java.nio.file.Paths.get("/var/www/vinnavar-fullstack/vinnavar-frontend/public/favicon.ico");
+                java.nio.file.Files.deleteIfExists(faviconTarget);
+
+                byte[] icoHeader = new byte[]{
+                    0, 0, 1, 0, 1, 0,
+                    0, 0, 0, 0, 1, 0, 32, 0
+                };
+                byte[] sizeBytes = java.nio.ByteBuffer.allocate(4).order(java.nio.ByteOrder.LITTLE_ENDIAN).putInt(webpBytes.length).array();
+                byte[] offsetBytes = java.nio.ByteBuffer.allocate(4).order(java.nio.ByteOrder.LITTLE_ENDIAN).putInt(22).array();
+
+                byte[] icoContent = new byte[22 + webpBytes.length];
+                System.arraycopy(icoHeader, 0, icoContent, 0, 14);
+                System.arraycopy(sizeBytes, 0, icoContent, 14, 4);
+                System.arraycopy(offsetBytes, 0, icoContent, 18, 4);
+                System.arraycopy(webpBytes, 0, icoContent, 22, webpBytes.length);
+
+                java.nio.file.Files.write(faviconTarget, icoContent);
+
+                // 2. Synchronize target media paths
+                java.nio.file.Path[] targetPaths = new java.nio.file.Path[]{
+                    java.nio.file.Paths.get("/var/www/vinnavar-fullstack/vinnavar-frontend/public/logo192.png"),
+                    java.nio.file.Paths.get("/var/www/vinnavar-fullstack/vinnavar-frontend/public/logo512.png"),
+                    java.nio.file.Paths.get("/var/www/vinnavar-fullstack/vinnavar-backend/media/site/Grocerylogo.png"),
+                    java.nio.file.Paths.get("/var/www/vinnavar-fullstack/vinnavar-backend/media/site/vinnavar_logo.png"),
+                    java.nio.file.Paths.get("/var/www/vinnavar-fullstack/vinnavar-backend/media/site/logo.png"),
+                    java.nio.file.Paths.get("/var/www/vinnavar-fullstack/vinnavar-backend/media/site/logo_vinnavar.webp")
+                };
+                for (java.nio.file.Path target : targetPaths) {
+                    if (target.getParent() != null) {
+                        java.nio.file.Files.createDirectories(target.getParent());
+                    }
+                    java.nio.file.Files.copy(sourcePath, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                }
             }
+        } catch (Exception e) {
+            // Ignore file sync exceptions
         }
     }
 }

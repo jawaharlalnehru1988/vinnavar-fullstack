@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { MagnifyingGlass } from "react-loader-spinner";
 import ScrollToTop from "../ScrollToTop";
 
-const Grocerylogo = getImageUrl("/media/site/Grocerylogo.png");
+const Grocerylogo = getImageUrl("/media/site/logo_vinnavar.webp");
 const product1 = getImageUrl("/media/site/category-baby-care.jpg");
 const product2 = getImageUrl("/media/site/category-atta-rice-dal.jpg");
 const product3 = getImageUrl("/media/site/category-bakery-biscuits.jpg");

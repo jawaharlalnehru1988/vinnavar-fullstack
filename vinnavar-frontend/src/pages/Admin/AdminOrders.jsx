@@ -16,9 +16,13 @@ const getOrderStatusBadge = (status) => {
             return <span className="inline-flex items-center gap-1 bg-orange-500/10 text-orange-800 border border-orange-500/20 px-2.5 py-1 text-xs font-bold rounded-full shadow-xs">🛵 OUT FOR DELIVERY</span>;
         case "DELIVERED":
             return <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-800 border border-emerald-500/20 px-2.5 py-1 text-xs font-bold rounded-full shadow-xs">🎉 DELIVERED</span>;
+        case "CANCELLATION_REQUESTED":
+            return <span className="inline-flex items-center gap-1 bg-fuchsia-500/10 text-fuchsia-800 border border-fuchsia-500/20 px-2.5 py-1 text-xs font-bold rounded-full shadow-xs">🛑 CANCEL REQUESTED</span>;
         case "CANCELLED":
         case "FAILED":
             return <span className="inline-flex items-center gap-1 bg-rose-500/10 text-rose-800 border border-rose-500/20 px-2.5 py-1 text-xs font-bold rounded-full shadow-xs">❌ CANCELLED</span>;
+        case "REFUNDED":
+            return <span className="inline-flex items-center gap-1 bg-teal-500/10 text-teal-800 border border-teal-500/20 px-2.5 py-1 text-xs font-bold rounded-full shadow-xs">💸 REFUNDED</span>;
         default:
             return <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-1 text-xs font-bold rounded-full">{status}</span>;
     }
@@ -233,6 +237,42 @@ const AdminOrders = ({ orders, loadData }) => {
         }
     };
 
+    const handleRefundOrder = async (orderId, totalAmount) => {
+        const result = await Swal.fire({
+            title: `Refund Order?`,
+            text: `Are you sure you want to issue a refund via Razorpay? Total order amount is ₹${totalAmount}.`,
+            icon: "warning",
+            input: "number",
+            inputLabel: "Refund Amount (Leave empty for full refund)",
+            inputPlaceholder: "e.g. 500",
+            inputAttributes: { step: "0.01", min: "1", max: totalAmount },
+            showCancelButton: true,
+            confirmButtonColor: "#e11d48",
+            cancelButtonColor: "#64748b",
+            confirmButtonText: "Issue Refund"
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const amount = result.value ? parseFloat(result.value) : null;
+                const url = new URL(`${API_BASE_URL}/admin/orders/${orderId}/refund`);
+                if (amount) {
+                    url.searchParams.append("amount", amount);
+                }
+                const res = await fetch(url.toString(), { method: "POST" });
+                if (res.ok) {
+                    Swal.fire("Refunded!", "Refund processed successfully via Razorpay.", "success");
+                    loadData();
+                } else {
+                    Swal.fire("Error", "Failed to issue refund. Check backend logs.", "error");
+                }
+            } catch (err) {
+                console.error("Error refunding order:", err);
+                Swal.fire("Error", "Failed to connect to server.", "error");
+            }
+        }
+    };
+
     const openAddressEdit = (order) => {
         const ship = order.shippingAddress || {};
         const bill = order.billingAddress || {};
@@ -386,7 +426,9 @@ const AdminOrders = ({ orders, loadData }) => {
                                                 <option value="PROCESSING">PROCESSING</option>
                                                 <option value="SHIPPED">SHIPPED</option>
                                                 <option value="DELIVERED">DELIVERED</option>
+                                                <option value="CANCELLATION_REQUESTED">CANCEL REQUESTED</option>
                                                 <option value="CANCELLED">CANCELLED</option>
+                                                <option value="REFUNDED">REFUNDED</option>
                                             </select>
                                         </td>
                                         <td className="py-3 px-4 whitespace-nowrap">
@@ -405,6 +447,16 @@ const AdminOrders = ({ orders, loadData }) => {
                                                 >
                                                     📄 Bill PDF
                                                 </button>
+                                                {o.paymentMethod === "ONLINE" && (!o.paymentStatus || !o.paymentStatus.includes("REFUND")) && (
+                                                    <button
+                                                        type="button"
+                                                        className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow-xs transition-all"
+                                                        onClick={() => handleRefundOrder(o.id, o.totalAmount)}
+                                                        title="Refund Payment via Razorpay"
+                                                    >
+                                                        💸 Refund
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="py-3 px-4 text-center whitespace-nowrap">
@@ -798,6 +850,27 @@ const AdminOrders = ({ orders, loadData }) => {
                                         </div>
                                     </div>
                                 )}
+                            </div>
+                            
+                            <div className="bg-slate-50 px-6 py-4 flex items-center justify-between border-t border-slate-200">
+                                {selectedOrderModal.paymentMethod === "ONLINE" && (!selectedOrderModal.paymentStatus || !selectedOrderModal.paymentStatus.includes("REFUND")) ? (
+                                    <button
+                                        type="button"
+                                        className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm px-4 py-2 rounded-xl shadow-xs transition-all flex items-center gap-2"
+                                        onClick={() => handleRefundOrder(selectedOrderModal.id, selectedOrderModal.totalAmount)}
+                                    >
+                                        <span>💸</span> Issue Refund via Razorpay
+                                    </button>
+                                ) : (
+                                    <div></div>
+                                )}
+                                <button
+                                    type="button"
+                                    className="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-sm px-4 py-2 rounded-xl transition-all"
+                                    onClick={() => setSelectedOrderModal(null)}
+                                >
+                                    Close Details
+                                </button>
                             </div>
                         </div>
                     </div>

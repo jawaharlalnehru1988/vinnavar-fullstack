@@ -93,41 +93,64 @@ public class PdfInvoiceService {
             Font fontSmallBold = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.BLACK);
             Font fontItalic = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 8, Color.DARK_GRAY);
 
-            // 1. Header Section Table
-            PdfPTable headerTable = new PdfPTable(2);
+            // 1. Header Section Table (Single Horizontal Row: Logo | Company Details | Invoice Metadata)
+            PdfPTable headerTable = new PdfPTable(3);
             headerTable.setWidthPercentage(100);
-            headerTable.setWidths(new float[]{3.2f, 1.8f});
+            headerTable.setWidths(new float[]{0.9f, 2.6f, 1.5f}); // Increased col 1 width for larger logo
 
-            // Company Details (Left)
-            PdfPCell cellLeft = new PdfPCell();
-            cellLeft.setBorder(Rectangle.NO_BORDER);
-            
+            // Column 1: Logo Image (Far Left)
+            PdfPCell logoCell = new PdfPCell();
+            logoCell.setBorder(Rectangle.NO_BORDER);
+            logoCell.setPaddingRight(8f);
+            logoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
             try {
-                String logoPath = "/var/www/vinnavar-fullstack/vinnavar-backend/media/site/Grocerylogo.png";
-                java.io.File logoFile = new java.io.File(logoPath);
-                if (logoFile.exists()) {
-                    byte[] logoBytes = resizeImageToJpeg(logoFile, 300, 300, 0.90f);
+                String[] possibleLogoPaths = {
+                    "/var/www/vinnavar-fullstack/vinnavar-backend/media/site/logo_vinnavar.png",
+                    "/var/www/vinnavar-fullstack/vinnavar-frontend/public/logo_vinnavar.png",
+                    "/var/www/vinnavar-fullstack/vinnavar-frontend/public/logo_vinnavar.webp",
+                    "/var/www/vinnavar-fullstack/vinnavar-backend/media/site/logo_vinnavar.webp",
+                    "/var/www/vinnavar-fullstack/vinnavar-backend/media/site/Grocerylogo.png"
+                };
+                java.io.File logoFile = null;
+                for (String p : possibleLogoPaths) {
+                    java.io.File f = new java.io.File(p);
+                    if (f.exists()) {
+                        logoFile = f;
+                        break;
+                    }
+                }
+                if (logoFile != null) {
+                    Image logo = null;
+                    byte[] logoBytes = resizeImageToJpeg(logoFile, 200, 200, 0.95f);
                     if (logoBytes != null) {
-                        Image logo = Image.getInstance(logoBytes);
-                        logo.scaleToFit(120f, 120f);
-                        logo.setAlignment(Element.ALIGN_LEFT);
-                        cellLeft.addElement(logo);
-                        cellLeft.addElement(new Paragraph(" "));
+                        logo = Image.getInstance(logoBytes);
+                    } else {
+                        logo = Image.getInstance(logoFile.getAbsolutePath());
+                    }
+                    if (logo != null) {
+                        logo.scaleToFit(76f, 76f); // 2x larger
+                        logo.setAlignment(Element.ALIGN_CENTER);
+                        logoCell.addElement(logo);
                     }
                 }
             } catch (Exception e) {
                 // Logo fallback
             }
-            
-            cellLeft.addElement(new Paragraph("VINNAVAR ORGANICS", headerFont));
-            cellLeft.addElement(new Paragraph("LP Traders", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, Color.DARK_GRAY)));
-            cellLeft.addElement(new Paragraph("100% Pure & Certified Organic Produce", subHeaderFont));
-            cellLeft.addElement(new Paragraph("Full Address: #16, MS Nagar Phase 2, Kurumanthangal Road, Kunnathur, Arani, TN - 632314", fontSmall));
-            cellLeft.addElement(new Paragraph("GSTIN: 33AFOPL7097M1ZN | FSSAI Lic No: 22425479000675", fontSmallBold));
-            cellLeft.addElement(new Paragraph("WhatsApp: +91 7550210447 | Email: vinnavarbrand@gmail.com", fontSmall));
-            headerTable.addCell(cellLeft);
+            headerTable.addCell(logoCell);
 
-            // Invoice Title & Order Meta (Right)
+            // Column 2: Company Brand & Address Details (Middle Left)
+            PdfPCell companyCell = new PdfPCell();
+            companyCell.setBorder(Rectangle.NO_BORDER);
+            companyCell.addElement(new Paragraph("VINNAVAR ORGANICS", headerFont));
+            companyCell.addElement(new Paragraph("LP Traders", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, Color.DARK_GRAY)));
+            companyCell.addElement(new Paragraph("100% Pure & Certified Organic Produce", subHeaderFont));
+            companyCell.addElement(new Paragraph("Full Address: #16, MS Nagar Phase 2, Kurumanthangal Road, Kunnathur, Arani, TN - 632314", fontSmall));
+            companyCell.addElement(new Paragraph("GSTIN: 33AFOPL7097M1ZN | FSSAI Lic No: 22425479000675", fontSmallBold));
+            companyCell.addElement(new Paragraph("WhatsApp: +91 7550210447 | Email: vinnavarbrand@gmail.com", fontSmall));
+            headerTable.addCell(companyCell);
+
+            // Column 3: Invoice Title & Order Meta (Right)
             PdfPCell cellRight = new PdfPCell();
             cellRight.setBorder(Rectangle.NO_BORDER);
             cellRight.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -136,10 +159,11 @@ public class PdfInvoiceService {
             cellRight.addElement(pInvoice);
 
             Paragraph pDetails = new Paragraph(
-                    "Invoice #: " + order.getOrderNumber() + "\n" +
-                    "Date: " + (order.getCreatedAt() != null ? order.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm")) : "N/A") + "\n" +
-                    "Status: " + order.getOrderStatus() + " (" + order.getPaymentMethod() + ")",
-                    fontRegular
+                    "Invoice #: " + (order.getOrderNumber() != null ? order.getOrderNumber() : "VIN-" + order.getId()) + "\n" +
+                    "Date: " + (order.getCreatedAt() != null ? order.getCreatedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm")) : "N/A") + "\n" +
+                    "Status: " + (order.getOrderStatus() != null ? order.getOrderStatus().name() : "PAID") + 
+                    (order.getPaymentMethod() != null ? " (" + order.getPaymentMethod() + ")" : ""),
+                    fontSmallBold
             );
             pDetails.setAlignment(Element.ALIGN_RIGHT);
             cellRight.addElement(pDetails);

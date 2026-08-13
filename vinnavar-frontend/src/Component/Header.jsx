@@ -62,7 +62,7 @@ const Header = () => {
   };
   const [cart, setCart] = useState(null);
   const [wishlistCount, setWishlistCount] = useState(0);
-  const [logoUrl, setLogoUrl] = useState(null);
+  const [logoUrl, setLogoUrl] = useState(getImageUrl("/media/site/logo_vinnavar.webp"));
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = React.useRef(null);
 

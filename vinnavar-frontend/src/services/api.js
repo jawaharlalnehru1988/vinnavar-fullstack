@@ -11,7 +11,10 @@ const getApiBaseUrl = () => {
 export const API_BASE_URL = getApiBaseUrl();
 
 export const getImageUrl = (path) => {
-    if (!path) return "/media/placeholder.png";
+    if (!path) return "/logo_vinnavar.webp";
+    if (typeof path === "string" && (path.includes("Grocerylogo") || path.includes("vinnavar_logo") || path.endsWith("/logo.png") || path.includes("logo_vinnavar"))) {
+        return "/logo_vinnavar.webp";
+    }
     if (path.startsWith("http://") || path.startsWith("https://")) {
         return path;
     }

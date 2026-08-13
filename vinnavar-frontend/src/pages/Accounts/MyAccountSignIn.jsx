@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import ScrollToTop from "../ScrollToTop";
 const signinimage = getImageUrl("/media/site/signin-g.svg");
-// const Grocerylogo = getImageUrl("/media/site/Grocerylogo.png");
+// const Grocerylogo = getImageUrl("/media/site/logo_vinnavar.webp");
 
 const MyAccountSignIn = () => {
   return (

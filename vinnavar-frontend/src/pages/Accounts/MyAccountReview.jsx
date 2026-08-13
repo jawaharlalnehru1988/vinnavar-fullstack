@@ -101,13 +101,18 @@ const MyAccountReview = () => {
                     </Link>
                   </li>
                   <li className="nav-item">
+                    <Link className="nav-link active font-bold" to="/MyAccountReviews">
+                      <i className="fas fa-star me-2" /> My Reviews
+                    </Link>
+                  </li>
+                  <li className="nav-item">
                     <Link className="nav-link" to="/MyAccountSetting">
                       <i className="fas fa-cog me-2" /> Settings
                     </Link>
                   </li>
                   <li className="nav-item">
                     <Link className="nav-link" to="/MyAccountAddress">
-                      <i className="fas fa-map-marker-alt me-2" /> Address Book
+                      <i className="fas fa-map-marker-alt me-2" /> Address
                     </Link>
                   </li>
                   <li className="nav-item">
@@ -117,12 +122,7 @@ const MyAccountReview = () => {
                   </li>
                   <li className="nav-item">
                     <Link className="nav-link" to="/MyAccountComplaint">
-                      <i className="fas fa-bullhorn me-2" /> Complaints &amp; Support
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link className="nav-link active bg-success text-white font-bold" to="/MyAccountReview">
-                      <i className="fas fa-star me-2" /> Reviews &amp; Feedback
+                      <i className="fas fa-headset me-2" /> Help &amp; Complaints
                     </Link>
                   </li>
                   <li className="nav-item">

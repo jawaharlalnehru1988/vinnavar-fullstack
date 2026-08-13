@@ -62,7 +62,7 @@ const AdminLogin = () => {
                 {/* Brand Header */}
                 <div className="text-center mb-8">
                     <img
-                        src={getImageUrl("/media/site/vinnavar_logo.png")}
+                        src={getImageUrl("/logo_vinnavar.webp")}
                         alt="Vinnavar Logo"
                         className="h-20 w-auto mx-auto object-contain mb-3 drop-shadow-md"
                     />

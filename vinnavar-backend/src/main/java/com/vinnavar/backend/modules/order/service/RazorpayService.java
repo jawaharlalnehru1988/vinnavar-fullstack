@@ -81,6 +81,7 @@ public class RazorpayService {
         Order order = Order.builder()
                 .orderNumber(orderNumber)
                 .cartId(request.getCartId())
+                .userId(request.getUserId())
                 .customerName(request.getCustomerName())
                 .customerEmail(request.getCustomerEmail())
                 .customerPhone(request.getCustomerPhone())
@@ -176,6 +177,7 @@ public class RazorpayService {
             throw new IllegalStateException("Payment Verification Failed: Invalid Razorpay Signature.");
         }
 
+        order.setRazorpayPaymentId(request.getRazorpayPaymentId());
         order.setPaymentStatus("PAID_RAZORPAY (ID: " + request.getRazorpayPaymentId() + ")");
         order.setOrderStatus(OrderStatus.CONFIRMED);
         Order savedOrder = orderRepository.save(order);
@@ -186,5 +188,45 @@ public class RazorpayService {
         }
 
         return savedOrder;
+    }
+    @Transactional
+    public Order refundOrder(Long orderId, BigDecimal amount) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + orderId));
+
+        if (order.getPaymentMethod() != PaymentMethod.ONLINE) {
+            throw new IllegalStateException("Cannot refund a non-online order.");
+        }
+        if (order.getRazorpayPaymentId() == null || order.getRazorpayPaymentId().isEmpty()) {
+            throw new IllegalStateException("No Razorpay Payment ID found for this order.");
+        }
+
+        try {
+            RazorpayClient razorpayClient = new RazorpayClient(getRazorpayKeyId(), getRazorpayKeySecret());
+            JSONObject refundRequest = new JSONObject();
+            refundRequest.put("payment_id", order.getRazorpayPaymentId());
+            
+            boolean isPartial = false;
+            if (amount != null && amount.compareTo(BigDecimal.ZERO) > 0 && amount.compareTo(order.getTotalAmount()) < 0) {
+                int amountInPaise = amount.multiply(new BigDecimal(100)).intValue();
+                refundRequest.put("amount", amountInPaise);
+                isPartial = true;
+            }
+
+            // Using Razorpay SDK to initiate refund
+            razorpayClient.refunds.create(refundRequest);
+
+            if (isPartial) {
+                order.setPaymentStatus("REFUNDED_PARTIAL");
+                order.setOrderStatus(OrderStatus.REFUNDED); // Or keep CONFIRMED depending on business logic
+            } else {
+                order.setPaymentStatus("REFUNDED");
+                order.setOrderStatus(OrderStatus.REFUNDED);
+            }
+            return orderRepository.save(order);
+        } catch (Exception e) {
+            System.err.println("Razorpay Refund Error: " + e.getMessage());
+            throw new RuntimeException("Failed to initiate refund with Razorpay: " + e.getMessage());
+        }
     }
 }

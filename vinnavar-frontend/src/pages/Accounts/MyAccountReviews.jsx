@@ -147,30 +147,40 @@ const MyAccountReviews = () => {
             {/* Account Sidebar Navigation */}
             <div className="col-lg-3 col-md-4 col-12 border-end d-none d-md-block">
               <div className="pt-2 pe-lg-4">
-                <ul className="nav flex-column nav-pills gap-1">
+                <ul className="nav flex-column nav-pills nav-pills-dark gap-1">
                   <li className="nav-item">
-                    <Link className="nav-link text-dark fw-medium" to="/MyAccountOrder">
+                    <Link className="nav-link" to="/MyAccountOrder">
                       <i className="fas fa-shopping-bag me-2" /> Your Orders
                     </Link>
                   </li>
                   <li className="nav-item">
-                    <Link className="nav-link active bg-success fw-bold text-white shadow-xs" to="/MyAccountReviews">
+                    <Link className="nav-link active font-bold" to="/MyAccountReviews">
                       <i className="fas fa-star me-2" /> My Reviews
                     </Link>
                   </li>
                   <li className="nav-item">
-                    <Link className="nav-link text-dark fw-medium" to="/MyAccountSetting">
+                    <Link className="nav-link" to="/MyAccountSetting">
                       <i className="fas fa-cog me-2" /> Settings
                     </Link>
                   </li>
                   <li className="nav-item">
-                    <Link className="nav-link text-dark fw-medium" to="/MyAccountAddress">
+                    <Link className="nav-link" to="/MyAccountAddress">
                       <i className="fas fa-map-marker-alt me-2" /> Address
                     </Link>
                   </li>
                   <li className="nav-item">
-                    <Link className="nav-link text-dark fw-medium" to="/MyAccountComplaint">
+                    <Link className="nav-link" to="/MyAcconutPaymentMethod">
+                      <i className="fas fa-credit-card me-2" /> Payment Method
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/MyAccountComplaint">
                       <i className="fas fa-headset me-2" /> Help &amp; Complaints
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/MyAcconutNotification">
+                      <i className="fas fa-bell me-2" /> Notification
                     </Link>
                   </li>
                 </ul>

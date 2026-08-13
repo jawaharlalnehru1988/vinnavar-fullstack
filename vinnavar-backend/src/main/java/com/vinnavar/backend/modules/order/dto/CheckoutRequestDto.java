@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CheckoutRequestDto {
     private String cartId;
+    private Long userId;
     private String customerName;
     private String customerEmail;
     private String customerPhone;

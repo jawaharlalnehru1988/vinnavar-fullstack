@@ -83,7 +83,7 @@ const AdminSidebar = ({
             <header className="md:hidden sticky top-0 z-40 bg-slate-900 text-white border-b border-slate-800 px-4 py-3 flex items-center justify-between shadow-lg">
                 <div className="flex items-center gap-2.5 min-w-0">
                     <img
-                        src={getImageUrl("/media/site/vinnavar_logo.png")}
+                        src={getImageUrl("/logo_vinnavar.webp")}
                         alt="Vinnavar Logo"
                         className="w-8 h-8 object-contain rounded-full bg-white p-0.5 shadow-sm ring-1 ring-emerald-500/30 flex-shrink-0"
                     />
@@ -140,7 +140,7 @@ const AdminSidebar = ({
                 <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
                     <div className="flex items-center gap-3">
                         <img
-                            src={getImageUrl("/media/site/vinnavar_logo.png")}
+                            src={getImageUrl("/logo_vinnavar.webp")}
                             alt="Vinnavar Logo"
                             className="w-11 h-11 object-contain rounded-full bg-white p-1 shadow-md ring-2 ring-emerald-500/30"
                         />

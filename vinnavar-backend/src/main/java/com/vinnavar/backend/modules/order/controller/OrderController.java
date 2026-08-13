@@ -26,6 +26,11 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getAllOrders());
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Order>> getOrdersByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(orderService.getOrdersByUserId(userId));
+    }
+
     @GetMapping("/{orderNumber}")
     public ResponseEntity<Order> getOrderByNumber(@PathVariable String orderNumber) {
         Order order = orderService.getOrderByNumber(orderNumber);
@@ -50,5 +55,11 @@ public class OrderController {
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(new InputStreamResource(bis));
+    }
+
+    @PutMapping("/{orderId}/cancel-request")
+    public ResponseEntity<Order> requestCancellation(@PathVariable Long orderId) {
+        Order order = orderService.requestCancellation(orderId);
+        return ResponseEntity.ok(order);
     }
 }

@@ -67,6 +67,20 @@ public class AdminOrderController {
         return ResponseEntity.ok(updated);
     }
 
+    @PostMapping("/{id}/refund")
+    public ResponseEntity<Order> refundOrder(
+            @PathVariable Long id,
+            @RequestParam(required = false) java.math.BigDecimal amount
+    ) {
+        Order updated = ((com.vinnavar.backend.modules.order.service.RazorpayService) 
+            org.springframework.web.context.support.WebApplicationContextUtils
+                .getRequiredWebApplicationContext(
+                    ((org.springframework.web.context.request.ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder.getRequestAttributes()).getRequest().getServletContext()
+                ).getBean(com.vinnavar.backend.modules.order.service.RazorpayService.class))
+            .refundOrder(id, amount);
+        return ResponseEntity.ok(updated);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
         orderService.deleteOrder(id);

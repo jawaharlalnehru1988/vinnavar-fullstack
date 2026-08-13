@@ -23,6 +23,10 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long userId;
+
+    private String razorpayPaymentId;
+
     @Column(nullable = false, unique = true)
     private String orderNumber;
 

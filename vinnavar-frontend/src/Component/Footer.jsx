@@ -10,7 +10,7 @@ const Footer = () => {
   const { t } = useTranslation();
   let date = new Date();
   let year = date.getFullYear();
-  const [logoUrl, setLogoUrl] = useState(null);
+  const [logoUrl, setLogoUrl] = useState(getImageUrl("/media/site/logo_vinnavar.webp"));
   const [brandName, setBrandName] = useState("Vinnavar");
 
   useEffect(() => {

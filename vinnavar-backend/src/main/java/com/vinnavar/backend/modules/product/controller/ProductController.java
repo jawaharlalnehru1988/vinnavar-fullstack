@@ -85,7 +85,7 @@ public class ProductController {
         } else if (rawImage != null) {
             imageUrl = scheme + "://" + hostName + rawImage;
         } else {
-            imageUrl = scheme + "://" + hostName + "/media/site/logo.png";
+            imageUrl = scheme + "://" + hostName + "/media/site/logo_vinnavar.webp";
         }
 
         String productName = product.getName() != null ? escapeHtml(product.getName()) : "Vinnavar Organic Product";

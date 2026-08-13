@@ -134,17 +134,26 @@ const MyAccountOrder = () => {
   const fetchUserOrders = async () => {
     setLoaderStatus(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/orders`);
-      if (res.ok) {
-        let data = await res.json();
-        if (currentUser && currentUser.mobileNumber) {
-          const userMobile = String(currentUser.mobileNumber).trim();
-          const filtered = data.filter(o => o.customerPhone && String(o.customerPhone).trim().endsWith(userMobile.slice(-10)));
-          if (filtered.length > 0) {
-            data = filtered;
-          }
+      if (currentUser && currentUser.id) {
+        const res = await fetch(`${API_BASE_URL}/orders/user/${currentUser.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setOrders(data || []);
         }
-        setOrders(data || []);
+      } else {
+        // Fallback if no user id
+        const res = await fetch(`${API_BASE_URL}/orders`);
+        if (res.ok) {
+          let data = await res.json();
+          if (currentUser && currentUser.mobileNumber) {
+            const userMobile = String(currentUser.mobileNumber).trim();
+            const filtered = data.filter(o => o.customerPhone && String(o.customerPhone).trim().endsWith(userMobile.slice(-10)));
+            if (filtered.length > 0) {
+              data = filtered;
+            }
+          }
+          setOrders(data || []);
+        }
       }
     } catch (err) {
       console.error("Failed to load user orders", err);
@@ -172,6 +181,35 @@ const MyAccountOrder = () => {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Failed to download PDF bill", err);
+    }
+  };
+
+  const handleCancelOrder = async (orderId, orderNumber) => {
+    const result = await Swal.fire({
+      title: "Cancel Order?",
+      text: `Are you sure you want to cancel order ${orderNumber} and request a refund?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#e11d48",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Yes, Cancel Order"
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel-request`, {
+          method: "PUT"
+        });
+        if (res.ok) {
+          Swal.fire("Requested!", "Your cancellation request has been submitted.", "success");
+          fetchUserOrders();
+        } else {
+          Swal.fire("Error", "Failed to submit cancellation request.", "error");
+        }
+      } catch (err) {
+        console.error("Failed to cancel order", err);
+        Swal.fire("Error", "Failed to connect to server.", "error");
+      }
     }
   };
 
@@ -329,6 +367,16 @@ const MyAccountOrder = () => {
                                   >
                                     <i className="fas fa-eye" />
                                   </button>
+                                  {!(o.orderStatus === "DELIVERED" || o.orderStatus === "CANCELLED" || o.orderStatus === "REFUNDED" || o.orderStatus === "CANCELLATION_REQUESTED") && (
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm btn-outline-danger rounded-pill font-bold px-3 d-inline-flex align-items-center gap-1 shadow-xs"
+                                      onClick={() => handleCancelOrder(o.id, o.orderNumber)}
+                                      title="Request Cancellation & Refund"
+                                    >
+                                      🚫 Cancel
+                                    </button>
+                                  )}
                                 </div>
                               </td>
                             </tr>
