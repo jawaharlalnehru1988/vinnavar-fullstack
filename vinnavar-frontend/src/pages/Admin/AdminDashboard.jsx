@@ -13,6 +13,7 @@ import AdminProducts from "./AdminProducts";
 import AdminCategories from "./AdminCategories";
 import AdminOrders from "./AdminOrders";
 import AdminOffers from "./AdminOffers";
+import AdminTransactions from "./AdminTransactions";
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -233,6 +234,12 @@ const AdminDashboard = () => {
                                 >
                                     <span>🚚</span> Process Customer Orders
                                 </button>
+                                <button
+                                    onClick={() => setActiveTab("transactions")}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-4 py-2.5 rounded-xl shadow-sm transition-all duration-150 flex items-center gap-2"
+                                >
+                                    <span>💳</span> Razorpay & Payment Audit
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -267,6 +274,14 @@ const AdminDashboard = () => {
                 {/* ORDERS SECTION */}
                 {activeTab === "orders" && (
                     <AdminOrders
+                        orders={orders}
+                        loadData={loadData}
+                    />
+                )}
+
+                {/* TRANSACTIONS & AUDIT LOGS SECTION */}
+                {activeTab === "transactions" && (
+                    <AdminTransactions
                         orders={orders}
                         loadData={loadData}
                     />

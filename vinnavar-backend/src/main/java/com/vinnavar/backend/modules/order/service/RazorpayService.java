@@ -198,7 +198,10 @@ public class RazorpayService {
             throw new IllegalStateException("Cannot refund a non-online order.");
         }
         if (order.getRazorpayPaymentId() == null || order.getRazorpayPaymentId().isEmpty()) {
-            throw new IllegalStateException("No Razorpay Payment ID found for this order.");
+            System.err.println("No Razorpay Payment ID found for order " + orderId + ". Processing as offline/manual refund.");
+            order.setPaymentStatus("REFUNDED_MANUAL");
+            order.setOrderStatus(OrderStatus.REFUNDED);
+            return orderRepository.save(order);
         }
 
         try {
@@ -227,6 +230,28 @@ public class RazorpayService {
         } catch (Exception e) {
             System.err.println("Razorpay Refund Error: " + e.getMessage());
             throw new RuntimeException("Failed to initiate refund with Razorpay: " + e.getMessage());
+        }
+    }
+
+    public List<java.util.Map<String, Object>> fetchAllRazorpayPayments() {
+        try {
+            RazorpayClient razorpayClient = new RazorpayClient(getRazorpayKeyId(), getRazorpayKeySecret());
+            JSONObject params = new JSONObject();
+            params.put("count", 100);
+            List<com.razorpay.Payment> payments = razorpayClient.payments.fetchAll(params);
+            List<java.util.Map<String, Object>> result = new java.util.ArrayList<>();
+            for (com.razorpay.Payment payment : payments) {
+                JSONObject json = payment.toJson();
+                java.util.Map<String, Object> map = new java.util.HashMap<>();
+                for (String key : json.keySet()) {
+                    map.put(key, json.get(key));
+                }
+                result.add(map);
+            }
+            return result;
+        } catch (Exception e) {
+            System.err.println("Error fetching live Razorpay payments: " + e.getMessage());
+            return java.util.Collections.emptyList();
         }
     }
 }

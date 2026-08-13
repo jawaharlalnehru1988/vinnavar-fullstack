@@ -56,6 +56,7 @@ const AdminSidebar = ({
         { id: "products", label: "📦 Products", desc: "Manage catalog" },
         { id: "offers", label: "🏷️ Offers & Discounts", desc: "Deals & special prices" },
         { id: "orders", label: "🚚 Customer Orders", desc: "View & track orders" },
+        { id: "transactions", label: "💳 Transactions", desc: "Razorpay & Audit Logs" },
         { id: "shipping", label: "🚛 Shipping Rates", desc: "Weight & zone rates" },
         { id: "reviews", label: "⭐ Customer Reviews", desc: "Ratings & photo reviews" },
         { id: "customers", label: "👥 Customers", desc: "Customer profiles" },

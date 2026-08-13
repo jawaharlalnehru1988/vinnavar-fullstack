@@ -347,6 +347,7 @@ const AdminOrders = ({ orders, loadData }) => {
                                 <th className="py-3.5 px-4">Shipping Fee</th>
                                 <th className="py-3.5 px-4">Total Amount</th>
                                 <th className="py-3.5 px-4">Payment</th>
+                                <th className="py-3.5 px-4">Razorpay ID</th>
                                 <th className="py-3.5 px-4">Status</th>
                                 <th className="py-3.5 px-4">Update Status</th>
                                 <th className="py-3.5 px-4">Full Details</th>
@@ -415,6 +416,7 @@ const AdminOrders = ({ orders, loadData }) => {
                                         </td>
                                         <td className="py-3 px-4 font-bold text-slate-900 whitespace-nowrap">₹{o.totalAmount}</td>
                                         <td className="py-3 px-4 whitespace-nowrap">{getPaymentBadge(o.paymentMethod)}</td>
+                                        <td className="py-3 px-4 font-mono text-xs text-slate-600 whitespace-nowrap">{o.razorpayPaymentId || '-'}</td>
                                         <td className="py-3 px-4 whitespace-nowrap">{getOrderStatusBadge(o.orderStatus)}</td>
                                         <td className="py-3 px-4 whitespace-nowrap">
                                             <select

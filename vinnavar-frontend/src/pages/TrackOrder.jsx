@@ -29,6 +29,15 @@ const COURIER_PROVIDERS = [
     searchUrl: (awb) => `https://www.delhivery.com/track/package/${encodeURIComponent(awb)}`,
     description: "Real-time location updates for Delhivery courier services.",
   },
+  {
+    id: "indiapost",
+    name: "India Post",
+    logoText: "📮",
+    badgeBg: "bg-orange-100 text-orange-900 border-orange-300",
+    url: "https://www.indiapost.gov.in/",
+    searchUrl: (awb) => `https://www.indiapost.gov.in/`,
+    description: "Official India Post consignment tracking portal.",
+  },
 ];
 
 const TrackOrder = () => {

@@ -171,8 +171,18 @@ const ProductCheckOut = () => {
             return;
         }
 
+        if (shippingForm.street.trim().length < 30) {
+            Swal.fire("Invalid Address", "Shipping street address must be at least 30 characters long.", "warning");
+            return;
+        }
+
         if (!sameAsShipping && (!billingForm.name || !billingForm.street || !billingForm.pincode)) {
             Swal.fire("Missing Billing Information", "Please fill in all required Billing Address fields.", "warning");
+            return;
+        }
+
+        if (!sameAsShipping && billingForm.street.trim().length < 30) {
+            Swal.fire("Invalid Billing Address", "Billing street address must be at least 30 characters long.", "warning");
             return;
         }
 
@@ -195,12 +205,17 @@ const ProductCheckOut = () => {
             customerPhone: shippingForm.phone,
             userGstin: shippingForm.gstin || "",
             shippingAddress: {
-                street: shippingForm.street,
+                streetAddress: shippingForm.street,
                 city: shippingForm.city,
                 state: shippingForm.state,
                 pincode: shippingForm.pincode
             },
-            billingAddress: activeBilling,
+            billingAddress: {
+                streetAddress: activeBilling.street,
+                city: activeBilling.city,
+                state: activeBilling.state,
+                pincode: activeBilling.pincode
+            },
             paymentMethod
         };
 
@@ -414,6 +429,7 @@ const ProductCheckOut = () => {
                                                 value={shippingForm.street}
                                                 onChange={handleShippingChange}
                                                 required
+                                                minLength="30"
                                             ></textarea>
                                         </div>
 
@@ -515,6 +531,7 @@ const ProductCheckOut = () => {
                                                     value={billingForm.street}
                                                     onChange={handleBillingChange}
                                                     required
+                                                    minLength="30"
                                                 ></textarea>
                                             </div>
 

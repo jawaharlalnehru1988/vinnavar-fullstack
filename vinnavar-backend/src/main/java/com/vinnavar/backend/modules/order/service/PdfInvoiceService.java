@@ -394,7 +394,7 @@ public class PdfInvoiceService {
 
             Paragraph disclaimerBody = new Paragraph(
                     "* Transport & Transit damages are not responsible by Seller. (Transit issues)\n" +
-                    "* Goods Once Cannot be Return or Refund.\n" +
+                    "* Goods Once Sold, Cannot be Returned or Refunded.\n" +
                     "* If Quality issue proved by Suitable evidence via Supporting Email Conversation, Valid Returns or Refunds Are Applied according to Refund policy.",
                     fontItalic
             );

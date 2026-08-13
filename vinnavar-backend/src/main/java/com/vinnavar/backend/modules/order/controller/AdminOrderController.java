@@ -15,10 +15,16 @@ import java.util.List;
 public class AdminOrderController {
 
     private final OrderService orderService;
+    private final com.vinnavar.backend.modules.order.service.RazorpayService razorpayService;
 
     @GetMapping
     public ResponseEntity<List<Order>> getAllAdminOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());
+    }
+
+    @GetMapping("/razorpay-transactions")
+    public ResponseEntity<List<java.util.Map<String, Object>>> getLiveRazorpayTransactions() {
+        return ResponseEntity.ok(razorpayService.fetchAllRazorpayPayments());
     }
 
     @PutMapping("/{id}/status")

@@ -21,7 +21,7 @@ sudo systemctl restart vinnavar-backend || systemctl restart vinnavar-backend
 
 echo "=== [4/5] Building React Frontend ==="
 cd /var/www/vinnavar-fullstack/vinnavar-frontend
-npm install
+npm install --legacy-peer-deps
 npm run build
 
 echo "=== [5/5] Reloading Nginx ==="
