@@ -227,14 +227,24 @@ const OrganicProductList = ({ categoryId, limit = 8 }) => {
 
                                 {/* Price & Add Button */}
                                 <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
-                                    <div>
-                                        <span className="text-base font-black text-slate-900">
-                                            ₹{currentVariant?.discountPrice || currentVariant?.price || 0}
-                                        </span>
-                                        {currentVariant?.discountPrice && (
-                                            <span className="text-xs text-slate-400 line-through ml-1.5 font-medium">
-                                                ₹{currentVariant?.price}
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-base font-black text-slate-900">
+                                                ₹{currentVariant?.discountPrice || currentVariant?.price || 0}
                                             </span>
+                                            {currentVariant?.discountPrice && (
+                                                <span className="text-xs text-slate-400 line-through font-medium">
+                                                    ₹{currentVariant?.price}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {currentVariant?.discountPrice && currentVariant.price > currentVariant.discountPrice && (
+                                            <div className="mt-0.5">
+                                                <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-1.5 py-0.5 rounded inline-flex items-center">
+                                                    <i className="fa fa-arrow-down mr-1 text-[8px]"></i>
+                                                    {Math.round(((currentVariant.price - currentVariant.discountPrice) / currentVariant.price) * 100)}% OFF
+                                                </span>
+                                            </div>
                                         )}
                                     </div>
                                     <button

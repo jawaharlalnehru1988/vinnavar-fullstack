@@ -458,7 +458,7 @@ const Header = () => {
             
             {/* Left: Enlarged 1x1 inch Logo & Nav Links */}
             <div className="flex items-center gap-6">
-              <Link to="/" className="flex items-center flex-shrink-0 group">
+              <Link to="/" className="flex items-center flex-shrink-0 group gap-3">
                 {logoUrl && (
                   <img
                     src={logoUrl}
@@ -467,6 +467,30 @@ const Header = () => {
                     alt="Vinnavar Logo"
                   />
                 )}
+                {/* Mobile View Site Title */}
+                <style>{`
+                  @keyframes goldenShine {
+                    0% { background-position: 0% center; }
+                    100% { background-position: -200% center; }
+                  }
+                  .golden-text {
+                    background: linear-gradient(to right, #bf953f, #fcf6ba 20%, #b38728 40%, #fbf5b7 60%, #aa771c 80%, #bf953f 100%);
+                    background-size: 200% auto;
+                    color: transparent;
+                    -webkit-background-clip: text;
+                    background-clip: text;
+                    animation: goldenShine 3s linear infinite;
+                    text-shadow: 0px 2px 4px rgba(0,0,0,0.15);
+                  }
+                `}</style>
+                <div className="md:hidden flex flex-col justify-center -mt-1">
+                  <span className="text-xl sm:text-2xl font-black leading-tight tracking-tight golden-text">
+                    Vinnavar
+                  </span>
+                  <span className="text-sm sm:text-base font-extrabold tracking-widest golden-text">
+                    Organic E - Commerce
+                  </span>
+                </div>
               </Link>
 
               {/* Primary Navigation Links (Single Row) */}
@@ -896,51 +920,19 @@ const Header = () => {
       </header>
 
       {/* Sub-Header Brand Bar */}
-      <div
-        className="w-full sticky top-0 z-40"
-        style={{
-          background: "linear-gradient(90deg, #064e3b 0%, #065f46 40%, #047857 70%, #059669 100%)",
-          boxShadow: "0 2px 8px rgba(6,78,59,0.18)"
-        }}
-      >
+      <div className="hidden md:block w-full sticky top-0 z-40 bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center gap-2 py-1.5">
-            <span style={{ fontSize: "15px" }}>🌿</span>
-            <span
-              style={{
-                fontFamily: "'Georgia', 'Times New Roman', serif",
-                fontSize: "13px",
-                fontWeight: "600",
-                letterSpacing: "0.08em",
-                color: "#d1fae5",
-                textTransform: "none"
-              }}
-            >
-              Vinnavar
-            </span>
-            <span
-              style={{
-                fontSize: "11px",
-                color: "#6ee7b7",
-                fontWeight: "400",
-                letterSpacing: "0.04em"
-              }}
-            >
-              —
-            </span>
-            <span
-              style={{
-                fontFamily: "'Georgia', 'Times New Roman', serif",
-                fontSize: "13px",
-                fontWeight: "400",
-                letterSpacing: "0.06em",
-                color: "#a7f3d0",
-                fontStyle: "italic"
-              }}
-            >
-              Organic E-Commerce
-            </span>
-            <span style={{ fontSize: "15px" }}>🌿</span>
+          <div className="flex items-center justify-center gap-3 py-2 drop-shadow-md">
+            <span style={{ fontSize: "32px" }}>🌿</span>
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-3xl font-black leading-tight tracking-tight golden-text">
+                Vinnavar
+              </span>
+              <span className="text-3xl font-extrabold tracking-widest golden-text">
+                Organic E - Commerce
+              </span>
+            </div>
+            <span style={{ fontSize: "32px" }}>🌿</span>
           </div>
         </div>
       </div>

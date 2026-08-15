@@ -490,5 +490,37 @@ export const uploadComplaintImage = async (file) => {
     return data;
 };
 
+// --- Social Media Admin API ---
+export const fetchSocialMediaLinks = async () => {
+    const res = await fetch(`${API_BASE_URL}/social-media`);
+    if (!res.ok) return [];
+    return res.json();
+};
 
+export const createSocialMediaLink = async (payload) => {
+    const res = await fetch(`${API_BASE_URL}/social-media/admin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error("Failed to create social media link");
+    return res.json();
+};
 
+export const updateSocialMediaLink = async (id, payload) => {
+    const res = await fetch(`${API_BASE_URL}/social-media/admin/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error("Failed to update social media link");
+    return res.json();
+};
+
+export const deleteSocialMediaLink = async (id) => {
+    const res = await fetch(`${API_BASE_URL}/social-media/admin/${id}`, {
+        method: "DELETE"
+    });
+    if (!res.ok) throw new Error("Failed to delete social media link");
+    return true;
+};

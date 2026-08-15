@@ -1,4 +1,4 @@
-import { fetchSettings, getImageUrl } from "../services/api";
+import { fetchSettings, getImageUrl, fetchSocialMediaLinks } from "../services/api";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "@fortawesome/fontawesome-free/css/all.min.css";
@@ -12,9 +12,10 @@ const Footer = () => {
   let year = date.getFullYear();
   const [logoUrl, setLogoUrl] = useState(getImageUrl("/media/site/logo_vinnavar.webp"));
   const [brandName, setBrandName] = useState("Vinnavar");
+  const [socialLinks, setSocialLinks] = useState([]);
 
   useEffect(() => {
-    const loadLogo = async () => {
+    const loadData = async () => {
       try {
         const settings = await fetchSettings();
         const logo = settings?.footer_logo || settings?.store_logo;
@@ -27,8 +28,17 @@ const Footer = () => {
       } catch (err) {
         console.error("Error fetching footer logo setting", err);
       }
+
+      try {
+        const smData = await fetchSocialMediaLinks();
+        if (smData && smData.length > 0) {
+          setSocialLinks(smData);
+        }
+      } catch (err) {
+        console.error("Error fetching social media links", err);
+      }
     };
-    loadLogo();
+    loadData();
   }, []);
 
   return (
@@ -44,7 +54,7 @@ const Footer = () => {
                 <div className="row g-4 align-items-start text-start">
                   
                   {/* Column 1: Brand details */}
-                  <div className="col-12 col-md-4">
+                  <div className="col-12 col-lg-3 col-md-6">
                     <Link to="/">
                       {logoUrl && (
                         <img
@@ -64,7 +74,7 @@ const Footer = () => {
                   </div>
 
                   {/* Column 2: Contact & Support */}
-                  <div className="col-12 col-md-4 px-md-4" id="corporate-contact">
+                  <div className="col-12 col-lg-3 col-md-6 px-lg-3" id="corporate-contact">
                     <h6 className="text-uppercase text-success fw-bold small mb-3" style={{ letterSpacing: "1px", fontSize: "0.8rem" }}>
                       Corporate Contact
                     </h6>
@@ -95,7 +105,7 @@ const Footer = () => {
                   </div>
 
                   {/* Column 3: Registrations */}
-                  <div className="col-12 col-md-4 ps-md-4">
+                  <div className="col-12 col-lg-3 col-md-6 px-lg-3">
                     <h6 className="text-uppercase text-success fw-bold small mb-3" style={{ letterSpacing: "1px", fontSize: "0.8rem" }}>
                       Registrations & Licenses
                     </h6>
@@ -115,6 +125,44 @@ const Footer = () => {
                     </div>
                   </div>
 
+                  {/* Column 4: Social Media */}
+                  <div className="col-12 col-lg-3 col-md-6 ps-lg-3">
+                    <h6 className="text-uppercase text-success fw-bold small mb-3" style={{ letterSpacing: "1px", fontSize: "0.8rem" }}>
+                      Follow Us
+                    </h6>
+                    <div className="d-flex flex-wrap gap-2">
+                      {socialLinks.length === 0 ? (
+                        <span className="text-muted small">Stay tuned!</span>
+                      ) : (
+                        socialLinks.map((social) => {
+                          const isWhatsapp = social.name && social.name.toLowerCase() === "whatsapp";
+                          const href = isWhatsapp && social.link ? social.link : undefined;
+                          return (
+                            <a 
+                              key={social.id}
+                              href={href} 
+                              target={href ? "_blank" : undefined}
+                              rel={href ? "noopener noreferrer" : undefined}
+                              title={social.name}
+                              className="d-inline-block"
+                              onClick={(e) => { if (!href) e.preventDefault(); }}
+                              style={{ cursor: href ? "pointer" : "default" }}
+                            >
+                              <img 
+                                src={getImageUrl(social.iconImageUrl)} 
+                                alt={social.name} 
+                                style={{ height: "32px", width: "32px", objectFit: "contain", borderRadius: "50%" }}
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                            </a>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Payment Methods & Security Banner */}

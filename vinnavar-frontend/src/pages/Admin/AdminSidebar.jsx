@@ -63,7 +63,8 @@ const AdminSidebar = ({
         { id: "testimonials", label: "💬 Testimonials", desc: "Customer reviews" },
         { id: "assets", label: "🖼️ Site Assets", desc: "Banners & sliders", isDropdown: true },
         { id: "complaints", label: "📢 Complaints", desc: "Support tickets" },
-        { id: "blogs", label: "📝 Blog Articles", desc: "Posts & recipes" }
+        { id: "blogs", label: "📝 Blog Articles", desc: "Posts & recipes" },
+        { id: "social-media", label: "🌐 Social Media", desc: "Manage footer links" }
     ];
 
     const primaryItems = navItems.slice(0, 9);

@@ -14,6 +14,7 @@ import AdminCategories from "./AdminCategories";
 import AdminOrders from "./AdminOrders";
 import AdminOffers from "./AdminOffers";
 import AdminTransactions from "./AdminTransactions";
+import AdminSocialMedia from "./AdminSocialMedia";
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -316,6 +317,9 @@ const AdminDashboard = () => {
 
                 {/* CUSTOMER REVIEWS SECTION */}
                 {activeTab === "reviews" && <AdminReviews />}
+
+                {/* SOCIAL MEDIA SECTION */}
+                {activeTab === "social-media" && <AdminSocialMedia />}
             </main>
         </div>
     );
