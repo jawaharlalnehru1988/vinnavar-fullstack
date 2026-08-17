@@ -484,7 +484,7 @@ const Header = () => {
                   }
                 `}</style>
                 <div className="md:hidden flex flex-col justify-center -mt-1">
-                  <span className="text-xl sm:text-2xl font-black leading-tight tracking-tight golden-text">
+                  <span className="text-xl sm:text-2xl font-black leading-tight tracking-widest golden-text">
                     Vinnavar
                   </span>
                   <span className="text-sm sm:text-base font-extrabold tracking-widest golden-text">
@@ -925,7 +925,7 @@ const Header = () => {
           <div className="flex items-center justify-center gap-3 py-2 drop-shadow-md">
             <span style={{ fontSize: "32px" }}>🌿</span>
             <div className="flex flex-col items-center justify-center">
-              <span className="text-3xl font-black leading-tight tracking-tight golden-text">
+              <span className="text-3xl font-black leading-tight tracking-widest golden-text">
                 Vinnavar
               </span>
               <span className="text-3xl font-extrabold tracking-widest golden-text">

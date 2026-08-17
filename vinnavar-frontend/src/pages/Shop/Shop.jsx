@@ -277,11 +277,14 @@ const Product = () => {
                   <span className="inline-block px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-emerald-400/20 text-emerald-200 border border-emerald-400/30">
                     {t("catalog_view")}
                   </span>
-                  <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+                  <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
                     {selectedCategoryObj ? selectedCategoryObj.name : t("all_organic_products")}
                   </h1>
                   <p className="text-emerald-100 text-xs sm:text-sm max-w-xl">
                     {selectedCategoryObj?.description || t("browse_complete_range")}
+                  </p>
+                  <p className="text-emerald-200/80 text-[10px] sm:text-xs max-w-xl italic mt-1">
+                    Disclaimer: Photos are for illustration purposes only. Actual product or results may vary.
                   </p>
                 </div>
               </div>
