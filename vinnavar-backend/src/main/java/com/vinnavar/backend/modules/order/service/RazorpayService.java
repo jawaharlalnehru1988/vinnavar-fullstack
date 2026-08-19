@@ -32,6 +32,7 @@ public class RazorpayService {
     private final CartItemRepository cartItemRepository;
     private final SiteSettingService siteSettingService;
     private final com.vinnavar.backend.modules.shipping.service.ShippingService shippingService;
+    private final EmailService emailService;
 
     public String getRazorpayKeyId() {
         return siteSettingService.getSettingValue("razorpay_key_id", "rzp_test_YOUR_KEY_ID");
@@ -186,6 +187,8 @@ public class RazorpayService {
         if (order.getCartId() != null) {
             cartItemRepository.deleteByCartId(order.getCartId());
         }
+
+        emailService.sendOrderConfirmation(savedOrder);
 
         return savedOrder;
     }

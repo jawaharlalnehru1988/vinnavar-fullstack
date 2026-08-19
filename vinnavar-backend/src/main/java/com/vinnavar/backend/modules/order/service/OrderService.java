@@ -25,6 +25,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CartItemRepository cartItemRepository;
     private final com.vinnavar.backend.modules.shipping.service.ShippingService shippingService;
+    private final EmailService emailService;
 
     @Transactional
     public Order processCheckout(CheckoutRequestDto request) {
@@ -102,6 +103,8 @@ public class OrderService {
 
         // Clear cart after successful checkout
         cartItemRepository.deleteByCartId(request.getCartId());
+
+        emailService.sendOrderConfirmation(savedOrder);
 
         return savedOrder;
     }

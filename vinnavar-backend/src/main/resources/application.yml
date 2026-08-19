@@ -33,6 +33,10 @@ app:
     url-prefix: /media/
   google:
     clientId: ${GOOGLE_CLIENT_ID:}
+  email:
+    sendgrid-api-key: ${SENDGRID_API_KEY:}
+    from-email: ${SENDGRID_FROM_EMAIL:}
+    admin-email: ${SENDGRID_ADMIN_EMAIL:}
 
 logging:
   level:
