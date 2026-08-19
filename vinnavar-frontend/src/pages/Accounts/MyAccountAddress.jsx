@@ -41,7 +41,7 @@ const MyAccountAddress = () => {
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/customer/addresses?mobile=${currentUser.mobileNumber}`);
+      const res = await fetch(`${API_BASE_URL}/customer/addresses?mobile=${encodeURIComponent(currentUser.mobileNumber)}`);
       if (res.ok) {
         const data = await res.json();
         setAddresses(data || []);

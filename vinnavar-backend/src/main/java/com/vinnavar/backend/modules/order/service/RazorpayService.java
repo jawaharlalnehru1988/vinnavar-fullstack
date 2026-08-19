@@ -33,6 +33,7 @@ public class RazorpayService {
     private final SiteSettingService siteSettingService;
     private final com.vinnavar.backend.modules.shipping.service.ShippingService shippingService;
     private final EmailService emailService;
+    private final OrderService orderService;
 
     public String getRazorpayKeyId() {
         return siteSettingService.getSettingValue("razorpay_key_id", "rzp_test_YOUR_KEY_ID");
@@ -115,6 +116,13 @@ public class RazorpayService {
             order.getItems().add(orderItem);
         }
 
+        order = orderRepository.save(order);
+
+        String financialYear = getFinancialYear(order.getCreatedAt() != null ? order.getCreatedAt() : LocalDateTime.now());
+        String finalOrderNumber = "VIN/" + financialYear + "/" + String.format("%04d", order.getId());
+        order.setOrderNumber(finalOrderNumber);
+        order = orderRepository.save(order);
+
         String keyId = getRazorpayKeyId();
         String keySecret = getRazorpayKeySecret();
 
@@ -124,7 +132,7 @@ public class RazorpayService {
             JSONObject orderRequest = new JSONObject();
             orderRequest.put("amount", amountInPaise);
             orderRequest.put("currency", "INR");
-            orderRequest.put("receipt", orderNumber);
+            orderRequest.put("receipt", finalOrderNumber);
 
             com.razorpay.Order razorpayOrder = razorpayClient.orders.create(orderRequest);
             if (razorpayOrder.has("id")) {
@@ -138,8 +146,12 @@ public class RazorpayService {
         order.setPaymentStatus("RAZORPAY_INITIATED:" + razorpayOrderId);
         orderRepository.save(order);
 
+        if (request.getUserId() != null) {
+            orderService.saveCustomerDetailsIfLoggedIn(request);
+        }
+
         return RazorpayOrderResponseDto.builder()
-                .orderNumber(orderNumber)
+                .orderNumber(finalOrderNumber)
                 .razorpayOrderId(razorpayOrderId)
                 .amount(totalAmount)
                 .amountInPaise(amountInPaise)
@@ -256,5 +268,22 @@ public class RazorpayService {
             System.err.println("Error fetching live Razorpay payments: " + e.getMessage());
             return java.util.Collections.emptyList();
         }
+    }
+
+    private String getFinancialYear(java.time.temporal.TemporalAccessor date) {
+        if (date == null) {
+            date = java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Kolkata"));
+        }
+        int year = date.get(java.time.temporal.ChronoField.YEAR);
+        int month = date.get(java.time.temporal.ChronoField.MONTH_OF_YEAR);
+        int startYear, endYear;
+        if (month >= 4) {
+            startYear = year;
+            endYear = year + 1;
+        } else {
+            startYear = year - 1;
+            endYear = year;
+        }
+        return String.format("%02d-%02d", startYear % 100, endYear % 100);
     }
 }

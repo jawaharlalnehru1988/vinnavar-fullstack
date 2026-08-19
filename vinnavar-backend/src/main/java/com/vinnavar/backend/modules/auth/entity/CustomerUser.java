@@ -42,4 +42,7 @@ public class CustomerUser {
     @Column(nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(nullable = true)
+    private String gstin;
 }

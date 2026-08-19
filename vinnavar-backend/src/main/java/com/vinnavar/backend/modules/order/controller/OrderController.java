@@ -31,8 +31,8 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrdersByUserId(userId));
     }
 
-    @GetMapping("/{orderNumber}")
-    public ResponseEntity<Order> getOrderByNumber(@PathVariable String orderNumber) {
+    @GetMapping("/by-number")
+    public ResponseEntity<Order> getOrderByNumber(@RequestParam String orderNumber) {
         Order order = orderService.getOrderByNumber(orderNumber);
         if (order == null) {
             return ResponseEntity.notFound().build();
@@ -40,15 +40,16 @@ public class OrderController {
         return ResponseEntity.ok(order);
     }
 
-    @GetMapping("/{orderNumber}/pdf")
-    public ResponseEntity<InputStreamResource> downloadInvoicePdf(@PathVariable String orderNumber) {
+    @GetMapping("/download-pdf")
+    public ResponseEntity<InputStreamResource> downloadInvoicePdf(@RequestParam String orderNumber) {
         Order order = orderService.getOrderByNumber(orderNumber);
         if (order == null) {
             return ResponseEntity.notFound().build();
         }
         ByteArrayInputStream bis = pdfInvoiceService.generateOrderInvoicePdf(order);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=\"Bill-" + orderNumber + ".pdf\"");
+        // Replace slashes in filename to avoid file system issues when saving
+        headers.add("Content-Disposition", "attachment; filename=\"Bill-" + orderNumber.replace("/", "-") + ".pdf\"");
 
         return ResponseEntity
                 .ok()

@@ -168,7 +168,7 @@ const MyAccountOrder = () => {
 
   const handleDownloadBill = async (orderNumber) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/orders/${orderNumber}/pdf`);
+      const res = await fetch(`${API_BASE_URL}/orders/download-pdf?orderNumber=${encodeURIComponent(orderNumber)}`);
       if (!res.ok) return;
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);

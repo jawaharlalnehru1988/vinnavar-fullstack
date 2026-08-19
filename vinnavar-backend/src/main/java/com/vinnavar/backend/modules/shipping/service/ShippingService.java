@@ -282,14 +282,14 @@ public class ShippingService {
         BigDecimal codVarFee = BigDecimal.ZERO;
 
         if ("COD".equalsIgnoreCase(paymentMethod)) {
-            String fixedStr = configRepository.findByConfigKey("COD Fixed").map(ShippingConfig::getConfigValue).orElse("30.0");
+            String fixedStr = configRepository.findByConfigKey("COD Fixed").map(ShippingConfig::getConfigValue).orElse("10.0");
             try {
                 codFixedFee = new BigDecimal(fixedStr).setScale(2, RoundingMode.HALF_UP);
             } catch (Exception e) {
-                codFixedFee = new BigDecimal("30.00");
+                codFixedFee = new BigDecimal("10.00");
             }
 
-            String varStr = configRepository.findByConfigKey("COD Variable (%)").map(ShippingConfig::getConfigValue).orElse("1.5");
+            String varStr = configRepository.findByConfigKey("COD Variable (%)").map(ShippingConfig::getConfigValue).orElse("0.0");
             try {
                 BigDecimal varPercent = new BigDecimal(varStr);
                 if (orderSubtotal != null && orderSubtotal.compareTo(BigDecimal.ZERO) > 0 && varPercent.compareTo(BigDecimal.ZERO) > 0) {

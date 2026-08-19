@@ -10,6 +10,9 @@ import com.vinnavar.backend.modules.order.enums.PaymentMethod;
 import com.vinnavar.backend.modules.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.vinnavar.backend.modules.auth.entity.CustomerAddress;
+import com.vinnavar.backend.modules.auth.repository.CustomerUserRepository;
+import com.vinnavar.backend.modules.auth.service.CustomerAddressService;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -26,6 +29,8 @@ public class OrderService {
     private final CartItemRepository cartItemRepository;
     private final com.vinnavar.backend.modules.shipping.service.ShippingService shippingService;
     private final EmailService emailService;
+    private final CustomerUserRepository customerUserRepository;
+    private final CustomerAddressService customerAddressService;
 
     @Transactional
     public Order processCheckout(CheckoutRequestDto request) {
@@ -66,6 +71,7 @@ public class OrderService {
         Order order = Order.builder()
                 .orderNumber(orderNumber)
                 .cartId(request.getCartId())
+                .userId(request.getUserId())
                 .customerName(request.getCustomerName())
                 .customerEmail(request.getCustomerEmail())
                 .customerPhone(request.getCustomerPhone())
@@ -100,13 +106,63 @@ public class OrderService {
         }
 
         Order savedOrder = orderRepository.save(order);
+        
+        String financialYear = getFinancialYear(savedOrder.getCreatedAt() != null ? savedOrder.getCreatedAt() : LocalDateTime.now());
+        String finalOrderNumber = "VIN/" + financialYear + "/" + String.format("%04d", savedOrder.getId());
+        savedOrder.setOrderNumber(finalOrderNumber);
+        savedOrder = orderRepository.save(savedOrder);
 
         // Clear cart after successful checkout
         cartItemRepository.deleteByCartId(request.getCartId());
 
+        if (request.getUserId() != null) {
+            saveCustomerDetailsIfLoggedIn(request);
+        }
+
         emailService.sendOrderConfirmation(savedOrder);
 
         return savedOrder;
+    }
+
+    public void saveCustomerDetailsIfLoggedIn(CheckoutRequestDto request) {
+        if (request.getUserId() == null) return;
+        customerUserRepository.findById(request.getUserId()).ifPresent(user -> {
+            boolean updated = false;
+            if (user.getMobileNumber() == null && request.getCustomerPhone() != null) {
+                user.setMobileNumber(request.getCustomerPhone());
+                updated = true;
+            }
+            if (request.getGstin() != null && !request.getGstin().isBlank()) {
+                user.setGstin(request.getGstin());
+                updated = true;
+            }
+            if (updated) {
+                customerUserRepository.save(user);
+            }
+
+            String phoneToUse = user.getMobileNumber() != null ? user.getMobileNumber() : request.getCustomerPhone();
+            if (phoneToUse != null && request.getShippingAddress() != null) {
+                boolean exists = customerAddressService.getAddressesByMobile(phoneToUse)
+                        .stream()
+                        .anyMatch(addr -> addr.getStreetAddress().equalsIgnoreCase(request.getShippingAddress().getStreetAddress()));
+
+                if (!exists) {
+                    CustomerAddress newAddress = CustomerAddress.builder()
+                            .customerMobile(phoneToUse)
+                            .addressType("DELIVERY")
+                            .title("Saved Address")
+                            .fullName(request.getCustomerName())
+                            .phone(request.getCustomerPhone())
+                            .streetAddress(request.getShippingAddress().getStreetAddress())
+                            .city(request.getShippingAddress().getCity())
+                            .state(request.getShippingAddress().getState())
+                            .pincode(request.getShippingAddress().getPincode())
+                            .isDefault(true)
+                            .build();
+                    customerAddressService.saveAddress(newAddress);
+                }
+            }
+        });
     }
 
     @Transactional(readOnly = true)
@@ -218,5 +274,22 @@ public class OrderService {
         }
         order.setOrderStatus(OrderStatus.CANCELLATION_REQUESTED);
         return orderRepository.save(order);
+    }
+
+    private String getFinancialYear(java.time.temporal.TemporalAccessor date) {
+        if (date == null) {
+            date = java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Kolkata"));
+        }
+        int year = date.get(java.time.temporal.ChronoField.YEAR);
+        int month = date.get(java.time.temporal.ChronoField.MONTH_OF_YEAR);
+        int startYear, endYear;
+        if (month >= 4) {
+            startYear = year;
+            endYear = year + 1;
+        } else {
+            startYear = year - 1;
+            endYear = year;
+        }
+        return String.format("%02d-%02d", startYear % 100, endYear % 100);
     }
 }

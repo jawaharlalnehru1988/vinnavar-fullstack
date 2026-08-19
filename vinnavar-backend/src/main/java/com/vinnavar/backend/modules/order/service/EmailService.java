@@ -7,17 +7,26 @@ import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
+import com.sendgrid.helpers.mail.objects.Attachments;
 import com.vinnavar.backend.modules.order.entity.Order;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
 public class EmailService {
+
+    private final PdfInvoiceService pdfInvoiceService;
+
+    public EmailService(PdfInvoiceService pdfInvoiceService) {
+        this.pdfInvoiceService = pdfInvoiceService;
+    }
 
     @Value("${app.email.sendgrid-api-key}")
     private String sendGridApiKey;
@@ -36,12 +45,22 @@ public class EmailService {
         }
 
         CompletableFuture.runAsync(() -> {
+            // Generate PDF Invoice
+            ByteArrayInputStream pdfStream = null;
+            try {
+                pdfStream = pdfInvoiceService.generateOrderInvoicePdf(order);
+            } catch (Exception e) {
+                log.error("Failed to generate PDF Invoice for order {}: {}", order.getOrderNumber(), e.getMessage());
+            }
+
             // 1. Send Email to Customer
             if (order.getCustomerEmail() != null && !order.getCustomerEmail().isBlank()) {
                 sendEmail(
                     order.getCustomerEmail(),
                     "Order Confirmation - " + order.getOrderNumber(),
-                    buildCustomerEmailContent(order)
+                    buildCustomerEmailContent(order),
+                    pdfStream,
+                    "Invoice_" + order.getOrderNumber() + ".pdf"
                 );
             } else {
                 log.info("No customer email provided for order: {}", order.getOrderNumber());
@@ -49,10 +68,17 @@ public class EmailService {
 
             // 2. Send Email to Admin
             if (adminEmailStr != null && !adminEmailStr.isBlank()) {
+                // If the stream was consumed by the previous call, we need to regenerate it or reset it.
+                // Since ByteArrayInputStream supports mark/reset by default, we can just reset it!
+                if (pdfStream != null) {
+                    pdfStream.reset();
+                }
                 sendEmail(
                     adminEmailStr,
                     "New Order Received: " + order.getOrderNumber(),
-                    buildAdminEmailContent(order)
+                    buildAdminEmailContent(order),
+                    pdfStream,
+                    "Invoice_" + order.getOrderNumber() + ".pdf"
                 );
             }
         }).exceptionally(ex -> {
@@ -61,11 +87,27 @@ public class EmailService {
         });
     }
 
-    private void sendEmail(String toEmailStr, String subject, String bodyContent) {
+    private void sendEmail(String toEmailStr, String subject, String bodyContent, ByteArrayInputStream attachmentStream, String attachmentName) {
         Email from = new Email(fromEmailStr, "Vinnavar Organics");
         Email to = new Email(toEmailStr);
         Content content = new Content("text/html", bodyContent);
         Mail mail = new Mail(from, subject, to, content);
+
+        if (attachmentStream != null) {
+            try {
+                byte[] bytes = attachmentStream.readAllBytes();
+                String base64Content = Base64.getEncoder().encodeToString(bytes);
+                Attachments attachments = new Attachments();
+                attachments.setContent(base64Content);
+                attachments.setType("application/pdf");
+                attachments.setFilename(attachmentName);
+                attachments.setDisposition("attachment");
+                attachments.setContentId("Invoice");
+                mail.addAttachments(attachments);
+            } catch (Exception e) {
+                log.error("Failed to add attachment to email: {}", e.getMessage());
+            }
+        }
 
         SendGrid sg = new SendGrid(sendGridApiKey);
         Request request = new Request();

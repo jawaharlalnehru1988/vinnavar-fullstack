@@ -83,11 +83,12 @@ const ProductCheckOut = () => {
                     ...prev,
                     name: customer.name || prev.name,
                     email: customer.email || prev.email,
-                    phone: customer.mobileNumber || prev.phone
+                    phone: customer.mobileNumber || prev.phone,
+                    gstin: customer.gstin || prev.gstin
                 }));
 
                 if (customer.mobileNumber) {
-                    fetch(`${API_BASE_URL}/customer/addresses?mobile=${customer.mobileNumber}`)
+                    fetch(`${API_BASE_URL}/customer/addresses?mobile=${encodeURIComponent(customer.mobileNumber)}`)
                         .then(r => r.ok ? r.json() : [])
                         .then(addresses => {
                             if (Array.isArray(addresses) && addresses.length > 0) {
@@ -198,8 +199,15 @@ const ProductCheckOut = () => {
             pincode: billingForm.pincode
         };
 
+        let currentUserId = null;
+        try {
+            const cust = JSON.parse(localStorage.getItem("vinnavar_customer"));
+            if (cust && cust.id) currentUserId = cust.id;
+        } catch(e) {}
+
         const checkoutData = {
             cartId,
+            userId: currentUserId,
             customerName: shippingForm.name,
             customerEmail: shippingForm.email || "customer@vinnavar.com",
             customerPhone: shippingForm.phone,
@@ -259,14 +267,24 @@ const ProductCheckOut = () => {
 
                             localStorage.removeItem("vinnavar_cart_id");
 
+                            const custStr = localStorage.getItem("vinnavar_customer");
+                            if (custStr) {
+                                try {
+                                    let cust = JSON.parse(custStr);
+                                    if (shippingForm.phone) cust.mobileNumber = shippingForm.phone;
+                                    if (shippingForm.gstin) cust.gstin = shippingForm.gstin;
+                                    localStorage.setItem("vinnavar_customer", JSON.stringify(cust));
+                                } catch(e) {}
+                            }
+
                             Swal.fire({
                                 icon: "success",
                                 title: "Payment Successful! 🎉",
                                 html: `Thank you for your order!<br/>Order Number: <strong>${verification.orderNumber || razorpayData.orderNumber}</strong><br/>Payment ID: <code>${response.razorpay_payment_id}</code>`,
-                                confirmButtonText: "Return to Home",
+                                confirmButtonText: "View Order History",
                                 confirmButtonColor: "#047857"
                             }).then(() => {
-                                navigate("/");
+                                navigate("/MyAccountOrder");
                             });
                         } catch (err) {
                             Swal.fire({ icon: "error", title: "Payment Verification Issue", text: err.message });
@@ -302,14 +320,24 @@ const ProductCheckOut = () => {
                 const order = await processCodCheckout(checkoutData);
                 localStorage.removeItem("vinnavar_cart_id");
 
+                const custStr = localStorage.getItem("vinnavar_customer");
+                if (custStr) {
+                    try {
+                        let cust = JSON.parse(custStr);
+                        if (shippingForm.phone) cust.mobileNumber = shippingForm.phone;
+                        if (shippingForm.gstin) cust.gstin = shippingForm.gstin;
+                        localStorage.setItem("vinnavar_customer", JSON.stringify(cust));
+                    } catch(e) {}
+                }
+
                 Swal.fire({
                     icon: "success",
                     title: "Order Placed (COD)! 🎉",
                     html: `Thank you for your order! Your Order ID is <strong>${order.orderNumber}</strong>.<br/>We will deliver your pure organic items shortly.`,
-                    confirmButtonText: "Return to Home",
+                    confirmButtonText: "View Order History",
                     confirmButtonColor: "#047857"
                 }).then(() => {
-                    navigate("/");
+                    navigate("/MyAccountOrder");
                 });
             } catch (err) {
                 Swal.fire("Checkout Failed", err.message || "Failed to place COD order.", "error");

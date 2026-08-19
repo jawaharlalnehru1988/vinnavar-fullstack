@@ -188,7 +188,7 @@ const AdminOrders = ({ orders, loadData }) => {
 
     const handleDownloadBill = async (orderNumber) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/orders/${orderNumber}/pdf`);
+            const res = await fetch(`${API_BASE_URL}/orders/download-pdf?orderNumber=${encodeURIComponent(orderNumber)}`);
             if (!res.ok) {
                 Swal.fire("Error", "Failed to generate PDF invoice", "error");
                 return;

@@ -65,6 +65,27 @@ public class PdfInvoiceService {
         }
     }
 
+    /**
+     * Calculates the Indian Financial Year (e.g., "26-27") based on a given date.
+     * The financial year runs from April 1 to March 31.
+     */
+    private String getFinancialYear(java.time.temporal.TemporalAccessor date) {
+        if (date == null) {
+            date = java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Kolkata"));
+        }
+        int year = date.get(java.time.temporal.ChronoField.YEAR);
+        int month = date.get(java.time.temporal.ChronoField.MONTH_OF_YEAR);
+        int startYear, endYear;
+        if (month >= 4) {
+            startYear = year;
+            endYear = year + 1;
+        } else {
+            startYear = year - 1;
+            endYear = year;
+        }
+        return String.format("%02d-%02d", startYear % 100, endYear % 100);
+    }
+
     public ByteArrayInputStream generateOrderInvoicePdf(Order order) {
         Document document = new Document(PageSize.A4, 28, 28, 28, 28);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -159,7 +180,7 @@ public class PdfInvoiceService {
             cellRight.addElement(pInvoice);
 
             Paragraph pDetails = new Paragraph(
-                    "Invoice #: " + (order.getOrderNumber() != null ? order.getOrderNumber() : "VIN-" + order.getId()) + "\n" +
+                    "Invoice #: VIN/" + getFinancialYear(order.getCreatedAt()) + "/" + String.format("%04d", order.getId()) + "\n" +
                     "Date: " + (order.getCreatedAt() != null ? order.getCreatedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm")) : "N/A") + "\n" +
                     "Status: " + (order.getOrderStatus() != null ? order.getOrderStatus().name() : "PAID") + 
                     (order.getPaymentMethod() != null ? " (" + order.getPaymentMethod() + ")" : ""),
