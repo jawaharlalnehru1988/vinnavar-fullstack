@@ -24,7 +24,7 @@ const ProductCheckOut = () => {
     const navigate = useNavigate();
     const [loaderStatus, setLoaderStatus] = useState(true);
     const [cart, setCart] = useState(null);
-    const paymentMethod = "RAZORPAY";
+    const [paymentMethod, setPaymentMethod] = useState("RAZORPAY");
     const [isProcessing, setIsProcessing] = useState(false);
 
     const [shippingForm, setShippingForm] = useState({
@@ -337,7 +337,7 @@ const ProductCheckOut = () => {
                                 <span className="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-200 text-xs font-extrabold rounded-full border border-emerald-400/30 uppercase tracking-widest mb-2">
                                     {t("trusted_gateway")}
                                 </span>
-                                <h1 className="text-2xl sm:text-3xl font-black">{t("secure_checkout")}</h1>
+                                <h1 className="text-2xl sm:text-3xl font-black text-white">{t("secure_checkout")}</h1>
                                 <p className="text-emerald-100 text-xs sm:text-sm mt-1">
                                     {t("checkout_desc")}
                                 </p>
@@ -572,21 +572,45 @@ const ProductCheckOut = () => {
                                         </h2>
                                     </div>
 
-                                    <div className="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-200/80 flex items-center justify-between gap-4">
+                                    <div 
+                                        className={`p-4 rounded-2xl border flex items-center justify-between gap-4 cursor-pointer transition-all ${paymentMethod === 'RAZORPAY' ? 'bg-emerald-50/60 border-emerald-200/80' : 'bg-slate-50 border-slate-200/80'}`}
+                                        onClick={() => setPaymentMethod('RAZORPAY')}
+                                    >
                                         <div className="flex items-center gap-3">
-                                            <div className="w-4 h-4 rounded-full bg-emerald-700 border-2 border-white shadow-xs"></div>
+                                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'RAZORPAY' ? 'border-emerald-700 bg-emerald-700 shadow-xs' : 'border-slate-300'}`}>
+                                                {paymentMethod === 'RAZORPAY' && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
+                                            </div>
                                             <div>
                                                 <div className="font-bold text-slate-900 text-xs sm:text-sm">
-                                                    {t("razorpay_title")}
+                                                    {t("razorpay_title", "Razorpay Payment Gateway (UPI, Cards, NetBanking)")}
                                                 </div>
                                                 <div className="text-slate-500 text-[11px] mt-0.5">
-                                                    {t("razorpay_desc")}
+                                                    {t("razorpay_desc", "Pay securely via GPay, PhonePe, Paytm, Credit/Debit Cards, & NetBanking.")}
                                                 </div>
                                             </div>
                                         </div>
-                                        <span className="px-2.5 py-1 bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-xs">
-                                            {t("instant_safe")}
+                                        <span className="px-2.5 py-1 bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-xs hidden sm:block">
+                                            {t("instant_safe", "INSTANT & 100% SAFE")}
                                         </span>
+                                    </div>
+                                    
+                                    <div 
+                                        className={`p-4 rounded-2xl border flex items-center justify-between gap-4 cursor-pointer transition-all ${paymentMethod === 'COD' ? 'bg-emerald-50/60 border-emerald-200/80' : 'bg-slate-50 border-slate-200/80'}`}
+                                        onClick={() => setPaymentMethod('COD')}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'COD' ? 'border-emerald-700 bg-emerald-700 shadow-xs' : 'border-slate-300'}`}>
+                                                {paymentMethod === 'COD' && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
+                                            </div>
+                                            <div>
+                                                <div className="font-bold text-slate-900 text-xs sm:text-sm">
+                                                    {t("cod_title", "Cash on Delivery (COD)")}
+                                                </div>
+                                                <div className="text-slate-500 text-[11px] mt-0.5">
+                                                    {t("cod_desc", "Pay with cash upon delivery.")}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -693,7 +717,7 @@ const ProductCheckOut = () => {
                                                 {isProcessing ? (
                                                     t("processing_payment")
                                                 ) : (
-                                                    t("pay_via_razorpay", { amount: (cart.totalAmount ?? ((cart.subtotal || 0) + (cart.shippingFee ?? 48) + ((cart.subtotal || 0) * 0.05))).toFixed(2) })
+                                                    paymentMethod === 'RAZORPAY' ? t("pay_via_razorpay", { amount: (cart.totalAmount ?? ((cart.subtotal || 0) + (cart.shippingFee ?? 48) + ((cart.subtotal || 0) * 0.05))).toFixed(2) }) : t("place_order_cod", "Place Order (COD)")
                                                 )}
                                             </button>
 
