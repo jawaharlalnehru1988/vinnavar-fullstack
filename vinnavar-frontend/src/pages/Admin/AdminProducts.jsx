@@ -7,12 +7,14 @@ const AdminProducts = ({ products, categories, loadData }) => {
     const [editingProductId, setEditingProductId] = useState(null);
     const [uploadingImage, setUploadingImage] = useState(false);
     const [uploadingVideo, setUploadingVideo] = useState(false);
+    const [productDisplayOrderInputs, setProductDisplayOrderInputs] = useState({});
 
     const [productForm, setProductForm] = useState({
         name: "",
         slug: "",
         hsnCode: "1006",
         categoryId: "",
+        displayOrder: 0,
         shortDescription: "",
         fullDescription: "",
         benefits: "",
@@ -30,6 +32,24 @@ const AdminProducts = ({ products, categories, loadData }) => {
         ]
     });
 
+    const handleProductDisplayOrderUpdate = async (productId, orderVal) => {
+        const val = parseInt(orderVal);
+        if (isNaN(val)) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/products/${productId}/display-order?displayOrder=${val}`, {
+                method: "PUT"
+            });
+            if (res.ok) {
+                Swal.fire({ icon: "success", title: "Product Order Number Saved 🔢", timer: 1000, showConfirmButton: false });
+                loadData();
+            } else {
+                Swal.fire("Error", "Failed to save product order number", "error");
+            }
+        } catch (err) {
+            Swal.fire("Error", "Failed to update display order", "error");
+        }
+    };
+
     const resetProductForm = () => {
         setEditingProductId(null);
         setProductForm({
@@ -37,6 +57,7 @@ const AdminProducts = ({ products, categories, loadData }) => {
             slug: "",
             hsnCode: "1006",
             categoryId: "",
+            displayOrder: 0,
             shortDescription: "",
             fullDescription: "",
             benefits: "",
@@ -85,6 +106,7 @@ const AdminProducts = ({ products, categories, loadData }) => {
             slug: prod.slug || "",
             hsnCode: prod.hsnCode || "1006",
             categoryId: prod.category?.id || "",
+            displayOrder: prod.displayOrder != null ? prod.displayOrder : 0,
             shortDescription: prod.shortDescription || "",
             fullDescription: prod.fullDescription || "",
             benefits: prod.benefits || "",
@@ -318,6 +340,7 @@ const AdminProducts = ({ products, categories, loadData }) => {
             slug: productForm.slug,
             hsnCode: productForm.hsnCode || "1006",
             categoryId: productForm.categoryId ? parseInt(productForm.categoryId) : null,
+            displayOrder: parseInt(productForm.displayOrder) || 0,
             shortDescription: productForm.shortDescription,
             fullDescription: productForm.fullDescription,
             benefits: productForm.benefits,
@@ -370,20 +393,33 @@ const AdminProducts = ({ products, categories, loadData }) => {
         }
     };
 
+    const sortedProducts = [...products].sort((a, b) => {
+        const orderA = a.displayOrder != null ? a.displayOrder : 9999;
+        const orderB = b.displayOrder != null ? b.displayOrder : 9999;
+        if (orderA !== orderB) return orderA - orderB;
+        return a.id - b.id;
+    });
+
     return (
         <div className="space-y-5">
             {/* Header section */}
             <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-slate-200">
-                <div>
-                    <h2 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
-                        <span>📦</span> Product Catalog CRUD
-                    </h2>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">Manage organic food products, prices, and media</p>
+                <div className="flex items-center gap-3">
+                    <div>
+                        <h2 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+                            <span>📦</span> Product Catalog CRUD
+                        </h2>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">Manage organic food products, sequence order, prices, and media</p>
+                    </div>
+                    <span className="bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 text-xs font-bold px-3 py-1 rounded-full font-mono">
+                        Total: {products.length}
+                    </span>
                 </div>
                 <button
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-4 py-2.5 rounded-xl shadow-sm hover:shadow-emerald-950/20 transition-all duration-150 flex items-center gap-2"
                     onClick={() => {
                         resetProductForm();
+                        setProductForm((prev) => ({ ...prev, displayOrder: (products.length + 1) * 10 }));
                         setShowProductModal(true);
                     }}
                 >
@@ -397,6 +433,7 @@ const AdminProducts = ({ products, categories, loadData }) => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider">
+                                <th className="py-3.5 px-4 w-28 text-center" title="Custom sequence order for customer storefront UI cards">Order #</th>
                                 <th className="py-3.5 px-4 text-center">Image</th>
                                 <th className="py-3.5 px-4">Product Name</th>
                                 <th className="py-3.5 px-4">HSN Code</th>
@@ -407,19 +444,45 @@ const AdminProducts = ({ products, categories, loadData }) => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 text-sm">
-                            {products.length === 0 ? (
+                            {sortedProducts.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="py-8 text-center text-slate-500 font-medium">
+                                    <td colSpan="8" className="py-8 text-center text-slate-500 font-medium">
                                         No organic products found in catalog.
                                     </td>
                                 </tr>
                             ) : (
-                                products.map((p) => {
+                                sortedProducts.map((p) => {
                                     const defaultVar = p.variants?.[0] || {};
                                     const imgUrl = getImageUrl(p.imageUrl);
+                                    const currentOrderVal = productDisplayOrderInputs[p.id] !== undefined ? productDisplayOrderInputs[p.id] : (p.displayOrder != null ? p.displayOrder : 0);
 
                                     return (
                                         <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
+                                            <td className="py-3 px-4 text-center whitespace-nowrap">
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        className="w-16 px-2 py-1 bg-slate-50 border border-emerald-300 rounded-lg text-xs font-mono font-bold text-center text-emerald-800 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+                                                        value={currentOrderVal}
+                                                        onChange={(e) => setProductDisplayOrderInputs({ ...productDisplayOrderInputs, [p.id]: e.target.value })}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Enter") {
+                                                                handleProductDisplayOrderUpdate(p.id, currentOrderVal);
+                                                            }
+                                                        }}
+                                                        title="Press Enter or click 💾 to save"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 p-1 rounded-lg border border-emerald-200 font-bold text-xs transition-all"
+                                                        onClick={() => handleProductDisplayOrderUpdate(p.id, currentOrderVal)}
+                                                        title="Save Order Number"
+                                                    >
+                                                        💾
+                                                    </button>
+                                                </div>
+                                            </td>
                                             <td className="py-3 px-4 text-center">
                                                 <div className="flex flex-col items-center gap-1">
                                                     <img
@@ -521,6 +584,20 @@ const AdminProducts = ({ products, categories, loadData }) => {
                                         onChange={(e) => setProductForm({ ...productForm, slug: e.target.value })}
                                         placeholder="e.g. kattuyanam-rice"
                                     />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                                        Display Order / Sequence #
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all text-emerald-800"
+                                        placeholder="e.g. 10, 20, 30..."
+                                        value={productForm.displayOrder != null ? productForm.displayOrder : 0}
+                                        onChange={(e) => setProductForm({ ...productForm, displayOrder: e.target.value })}
+                                    />
+                                    <p className="text-[10px] text-slate-400 font-medium mt-0.5">Lower numbers appear first on storefront UI cards</p>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">HSN Code</label>

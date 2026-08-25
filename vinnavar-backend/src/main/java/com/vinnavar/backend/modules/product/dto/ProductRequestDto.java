@@ -21,6 +21,7 @@ public class ProductRequestDto {
     private List<String> imageUrls;
     private String videoUrl;
     private Long categoryId;
+    private Integer displayOrder = 0;
     private boolean featured;
     private boolean active = true;
     private java.util.Map<String, String> nameTranslations;

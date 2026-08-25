@@ -41,6 +41,12 @@ public class AdminProductController {
         return ResponseEntity.ok(product);
     }
 
+    @PutMapping("/products/{id}/display-order")
+    public ResponseEntity<Product> updateProductDisplayOrder(@PathVariable Long id, @RequestParam Integer displayOrder) {
+        Product product = productService.updateProductDisplayOrder(id, displayOrder);
+        return ResponseEntity.ok(product);
+    }
+
     @DeleteMapping("/products/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
@@ -55,6 +61,12 @@ public class AdminProductController {
     @PutMapping("/categories/{id}")
     public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody Category category) {
         return ResponseEntity.ok(productService.updateCategory(id, category));
+    }
+
+    @PutMapping("/categories/{id}/display-order")
+    public ResponseEntity<Category> updateCategoryDisplayOrder(@PathVariable Long id, @RequestParam Integer displayOrder) {
+        Category cat = productService.updateCategoryDisplayOrder(id, displayOrder);
+        return ResponseEntity.ok(cat);
     }
 
     @DeleteMapping("/categories/{id}")

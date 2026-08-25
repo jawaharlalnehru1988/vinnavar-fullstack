@@ -166,7 +166,19 @@ public class RazorpayService {
     @Transactional
     public Order verifyPayment(RazorpayVerificationRequestDto request) {
         Order order = orderRepository.findByOrderNumber(request.getOrderNumber())
-                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + request.getOrderNumber()));
+                .orElseGet(() -> {
+                    if (request.getRazorpayOrderId() != null && !request.getRazorpayOrderId().isBlank()) {
+                        return orderRepository.findAll().stream()
+                                .filter(o -> o.getPaymentStatus() != null && o.getPaymentStatus().contains(request.getRazorpayOrderId()))
+                                .findFirst()
+                                .orElse(null);
+                    }
+                    return null;
+                });
+
+        if (order == null) {
+            throw new IllegalArgumentException("Order not found: " + request.getOrderNumber());
+        }
 
         String keySecret = getRazorpayKeySecret();
         boolean isValidSignature = false;
@@ -200,10 +212,70 @@ public class RazorpayService {
             cartItemRepository.deleteByCartId(order.getCartId());
         }
 
-        emailService.sendOrderConfirmation(savedOrder);
+        try {
+            emailService.sendOrderConfirmation(savedOrder);
+        } catch (Exception e) {
+            System.err.println("Error sending confirmation email for online order: " + e.getMessage());
+        }
 
         return savedOrder;
     }
+
+    @Transactional
+    public void processRazorpayWebhook(String payload, String signature) {
+        try {
+            String webhookSecret = siteSettingService.getSettingValue("razorpay_webhook_secret", getRazorpayKeySecret());
+            if (signature != null && !signature.isBlank()) {
+                try {
+                    Utils.verifyWebhookSignature(payload, signature, webhookSecret);
+                } catch (Exception e) {
+                    System.err.println("Razorpay Webhook signature warning: " + e.getMessage());
+                }
+            }
+
+            JSONObject event = new JSONObject(payload);
+            String eventType = event.optString("event");
+            if ("payment.captured".equals(eventType) || "order.paid".equals(eventType)) {
+                JSONObject payloadObj = event.optJSONObject("payload");
+                JSONObject paymentEntity = (payloadObj != null && payloadObj.optJSONObject("payment") != null)
+                        ? payloadObj.getJSONObject("payment").optJSONObject("entity")
+                        : null;
+
+                if (paymentEntity != null) {
+                    String paymentId = paymentEntity.optString("id");
+                    String razorpayOrderId = paymentEntity.optString("order_id");
+                    String customerEmail = paymentEntity.optString("email");
+                    String customerPhone = paymentEntity.optString("contact");
+
+                    Order order = orderRepository.findAll().stream()
+                            .filter(o -> o.getPaymentStatus() != null && o.getPaymentStatus().contains(razorpayOrderId))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (order != null && order.getOrderStatus() != OrderStatus.CONFIRMED) {
+                        order.setRazorpayPaymentId(paymentId);
+                        order.setPaymentStatus("PAID_RAZORPAY (ID: " + paymentId + ")");
+                        order.setOrderStatus(OrderStatus.CONFIRMED);
+                        if ((order.getCustomerEmail() == null || order.getCustomerEmail().isBlank() || order.getCustomerEmail().contains("customer@vinnavar.com")) && customerEmail != null && !customerEmail.isBlank()) {
+                            order.setCustomerEmail(customerEmail);
+                        }
+                        if ((order.getCustomerPhone() == null || order.getCustomerPhone().isBlank()) && customerPhone != null && !customerPhone.isBlank()) {
+                            order.setCustomerPhone(customerPhone);
+                        }
+                        Order saved = orderRepository.save(order);
+                        if (order.getCartId() != null) {
+                            cartItemRepository.deleteByCartId(order.getCartId());
+                        }
+                        emailService.sendOrderConfirmation(saved);
+                        System.out.println("Razorpay Webhook confirmed order: " + saved.getOrderNumber());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error processing Razorpay webhook: " + e.getMessage());
+        }
+    }
+
     @Transactional
     public Order refundOrder(Long orderId, BigDecimal amount) {
         Order order = orderRepository.findById(orderId)
@@ -259,7 +331,12 @@ public class RazorpayService {
                 JSONObject json = payment.toJson();
                 java.util.Map<String, Object> map = new java.util.HashMap<>();
                 for (String key : json.keySet()) {
-                    map.put(key, json.get(key));
+                    Object val = json.opt(key);
+                    if (val == null || val == JSONObject.NULL) {
+                        map.put(key, null);
+                    } else {
+                        map.put(key, val);
+                    }
                 }
                 result.add(map);
             }

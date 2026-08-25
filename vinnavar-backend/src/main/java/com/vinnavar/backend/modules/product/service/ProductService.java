@@ -41,19 +41,19 @@ public class ProductService {
     private String mediaDir;
 
     public List<Category> getAllActiveCategories() {
-        return categoryRepository.findAll();
+        return categoryRepository.findAllByOrderByDisplayOrderAscIdAsc();
     }
 
     public List<Product> getAllActiveProducts() {
-        return productRepository.findAll();
+        return productRepository.findByActiveTrueOrderByDisplayOrderAscIdAsc();
     }
 
     public List<Product> getFeaturedProducts() {
-        return productRepository.findByFeaturedTrueAndActiveTrue();
+        return productRepository.findByFeaturedTrueAndActiveTrueOrderByDisplayOrderAscIdAsc();
     }
 
     public List<Product> getProductsByCategory(Long categoryId) {
-        return productRepository.findByCategoryIdAndActiveTrue(categoryId);
+        return productRepository.findByCategoryIdAndActiveTrueOrderByDisplayOrderAscIdAsc(categoryId);
     }
 
     public Product getProductBySlug(String slug) {
@@ -94,6 +94,7 @@ public class ProductService {
                 .imageUrls(images)
                 .videoUrl(dto.getVideoUrl())
                 .category(category)
+                .displayOrder(dto.getDisplayOrder() != null ? dto.getDisplayOrder() : 0)
                 .featured(dto.isFeatured())
                 .active(dto.isActive())
                 .nameTranslations(dto.getNameTranslations() != null ? new java.util.HashMap<>(dto.getNameTranslations()) : new java.util.HashMap<>())
@@ -156,6 +157,9 @@ public class ProductService {
         }
         if (mainImageUrl != null && !mainImageUrl.isBlank()) {
             product.setImageUrl(mainImageUrl);
+        }
+        if (dto.getDisplayOrder() != null) {
+            product.setDisplayOrder(dto.getDisplayOrder());
         }
         if (dto.getNameTranslations() != null) {
             product.getNameTranslations().clear();
@@ -284,6 +288,9 @@ public class ProductService {
         if (category.getSlug() == null || category.getSlug().isBlank()) {
             category.setSlug(category.getName().toLowerCase().replaceAll("[^a-z0-9]", "-"));
         }
+        if (category.getDisplayOrder() == null) {
+            category.setDisplayOrder(0);
+        }
         return categoryRepository.save(category);
     }
 
@@ -299,11 +306,34 @@ public class ProductService {
         if (category.getImageUrl() != null && !category.getImageUrl().isBlank()) {
             existing.setImageUrl(category.getImageUrl());
         }
+        if (category.getDisplayOrder() != null) {
+            existing.setDisplayOrder(category.getDisplayOrder());
+        }
         if (category.getNameTranslations() != null) {
             existing.getNameTranslations().clear();
             existing.getNameTranslations().putAll(category.getNameTranslations());
         }
+        if (category.getDescriptionTranslations() != null) {
+            existing.getDescriptionTranslations().clear();
+            existing.getDescriptionTranslations().putAll(category.getDescriptionTranslations());
+        }
         return categoryRepository.save(existing);
+    }
+
+    @Transactional
+    public Category updateCategoryDisplayOrder(Long id, Integer displayOrder) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+        category.setDisplayOrder(displayOrder != null ? displayOrder : 0);
+        return categoryRepository.save(category);
+    }
+
+    @Transactional
+    public Product updateProductDisplayOrder(Long id, Integer displayOrder) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+        product.setDisplayOrder(displayOrder != null ? displayOrder : 0);
+        return productRepository.save(product);
     }
 
     @Transactional

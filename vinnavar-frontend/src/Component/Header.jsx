@@ -23,6 +23,7 @@ const Header = () => {
   const [allSearchCategories, setAllSearchCategories] = useState([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const searchDropdownRef = useRef(null);
+  const mobileSearchDropdownRef = useRef(null);
 
   useEffect(() => {
     const loadSearchData = async () => {
@@ -74,7 +75,10 @@ const Header = () => {
       if (langMenuRef.current && !langMenuRef.current.contains(event.target)) {
         setIsLangMenuOpen(false);
       }
-      if (searchDropdownRef.current && !searchDropdownRef.current.contains(event.target)) {
+      if (
+        searchDropdownRef.current && !searchDropdownRef.current.contains(event.target) &&
+        (!mobileSearchDropdownRef.current || !mobileSearchDropdownRef.current.contains(event.target))
+      ) {
         setShowSearchDropdown(false);
       }
     };
@@ -441,6 +445,28 @@ const Header = () => {
     c.name?.toLowerCase().includes(searchQuery.toLowerCase())
   ).slice(0, 3);
 
+  const handleSearchSubmit = (queryToSearch) => {
+    setShowSearchDropdown(false);
+    const q = (queryToSearch !== undefined ? queryToSearch : searchQuery).trim();
+    if (q) {
+      navigate(`/Product?search=${encodeURIComponent(q)}`);
+    } else {
+      navigate("/Product");
+    }
+  };
+
+  const handleCategorySelect = (catId) => {
+    setShowSearchDropdown(false);
+    setSearchQuery("");
+    navigate(`/Product?category=${catId}`);
+  };
+
+  const handleProductSelect = (slug) => {
+    setShowSearchDropdown(false);
+    setSearchQuery("");
+    navigate(`/product/${slug}`);
+  };
+
   return (
     <>
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm transition-all">
@@ -563,13 +589,13 @@ const Header = () => {
               </nav>
             </div>
 
-            {/* Middle: Search Input */}
+            {/* Middle: Search Input (Desktop) */}
             <div className="hidden lg:flex flex-1 max-w-sm mx-2" ref={searchDropdownRef}>
               <div className="relative w-full">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
                 <input
                   type="text"
-                  className="w-full pl-10 pr-4 py-2 bg-slate-100/80 hover:bg-slate-100 border border-slate-200 rounded-full text-slate-900 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none transition-all placeholder:text-slate-400"
+                  className="w-full pl-10 pr-8 py-2 bg-slate-100/80 hover:bg-slate-100 border border-slate-200 rounded-full text-slate-900 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none transition-all placeholder:text-slate-400"
                   placeholder={t("search_placeholder")}
                   value={searchQuery}
                   onFocus={() => setShowSearchDropdown(true)}
@@ -579,15 +605,23 @@ const Header = () => {
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      setShowSearchDropdown(false);
-                      if (searchQuery.trim()) {
-                        navigate(`/Product?search=${encodeURIComponent(searchQuery.trim())}`);
-                      } else {
-                        navigate("/Product");
-                      }
+                      handleSearchSubmit(e.target.value);
                     }
                   }}
                 />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setShowSearchDropdown(false);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full bg-slate-200/80"
+                    title="Clear search"
+                  >
+                    ✕
+                  </button>
+                )}
 
                 {/* Auto Suggestion Dropdown */}
                 {showSearchDropdown && searchQuery.trim().length > 0 && (filteredProducts.length > 0 || filteredCategories.length > 0) && (
@@ -601,11 +635,7 @@ const Header = () => {
                           {filteredCategories.map(cat => (
                             <button
                               key={cat.id}
-                              onClick={() => {
-                                setShowSearchDropdown(false);
-                                setSearchQuery("");
-                                navigate(`/Product?category=${cat.id}`);
-                              }}
+                              onClick={() => handleCategorySelect(cat.id)}
                               className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center gap-2"
                             >
                               <span className="text-emerald-600">📁</span>
@@ -623,11 +653,7 @@ const Header = () => {
                           {filteredProducts.map(prod => (
                             <button
                               key={prod.id}
-                              onClick={() => {
-                                setShowSearchDropdown(false);
-                                setSearchQuery("");
-                                navigate(`/product/${prod.slug}`);
-                              }}
+                              onClick={() => handleProductSelect(prod.slug)}
                               className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-emerald-50 transition-colors flex items-center gap-3"
                             >
                               <img src={getImageUrl(prod.imageUrl)} alt={prod.name} className="w-8 h-8 rounded object-cover border border-slate-200" />
@@ -851,6 +877,90 @@ const Header = () => {
 
 
             </div>
+          </div>
+        </div>
+
+        {/* Mobile & Tablet Search Bar — visible on all screens smaller than desktop (< lg) */}
+        <div className="lg:hidden px-3 sm:px-6 py-2 border-t border-slate-100 bg-white/95 backdrop-blur-sm" ref={mobileSearchDropdownRef}>
+          <div className="relative w-full max-w-xl mx-auto">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+            <input
+              type="text"
+              className="w-full pl-10 pr-9 py-2 bg-slate-100/90 hover:bg-slate-100 border border-slate-200 rounded-full text-slate-900 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none transition-all placeholder:text-slate-400"
+              placeholder={t("search_placeholder")}
+              value={searchQuery}
+              onFocus={() => setShowSearchDropdown(true)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSearchDropdown(true);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearchSubmit(e.target.value);
+                }
+              }}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  setShowSearchDropdown(false);
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold w-4 h-4 flex items-center justify-center rounded-full bg-slate-200/80"
+                title="Clear search"
+              >
+                ✕
+              </button>
+            )}
+
+            {/* Mobile Auto Suggestion Dropdown */}
+            {showSearchDropdown && searchQuery.trim().length > 0 && (filteredProducts.length > 0 || filteredCategories.length > 0) && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden z-50">
+                <div className="max-h-[60vh] overflow-y-auto py-2">
+                  {filteredCategories.length > 0 && (
+                    <div className="mb-2">
+                      <div className="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50">
+                        Categories
+                      </div>
+                      {filteredCategories.map(cat => (
+                        <button
+                          key={cat.id}
+                          onClick={() => handleCategorySelect(cat.id)}
+                          className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center gap-2"
+                        >
+                          <span className="text-emerald-600">📁</span>
+                          <span className="font-medium">{cat.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {filteredProducts.length > 0 && (
+                    <div>
+                      <div className="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50">
+                        Products
+                      </div>
+                      {filteredProducts.map(prod => (
+                        <button
+                          key={prod.id}
+                          onClick={() => handleProductSelect(prod.slug)}
+                          className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-emerald-50 transition-colors flex items-center gap-3"
+                        >
+                          <img src={getImageUrl(prod.imageUrl)} alt={prod.name} className="w-8 h-8 rounded object-cover border border-slate-200 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-slate-800 truncate">{prod.name}</div>
+                            {prod.shortDescription && (
+                              <div className="text-[10px] text-slate-500 truncate">{prod.shortDescription}</div>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

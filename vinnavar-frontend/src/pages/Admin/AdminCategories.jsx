@@ -5,15 +5,35 @@ import { API_BASE_URL, getImageUrl } from "../../services/api";
 const AdminCategories = ({ categories, products, loadData }) => {
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [editingCategoryId, setEditingCategoryId] = useState(null);
+    const [categoryDisplayOrderInputs, setCategoryDisplayOrderInputs] = useState({});
     const [categoryForm, setCategoryForm] = useState({
         name: "",
         description: "",
         imageUrl: "",
+        displayOrder: 0,
         nameTranslations: { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" },
         descriptionTranslations: { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" }
     });
     const [categoryViewMode, setCategoryViewMode] = useState("list");
     const [categoryCurrentPage, setCategoryCurrentPage] = useState(1);
+
+    const handleCategoryDisplayOrderUpdate = async (catId, orderVal) => {
+        const val = parseInt(orderVal);
+        if (isNaN(val)) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/categories/${catId}/display-order?displayOrder=${val}`, {
+                method: "PUT"
+            });
+            if (res.ok) {
+                Swal.fire({ icon: "success", title: "Order Number Saved 🔢", timer: 1000, showConfirmButton: false });
+                loadData();
+            } else {
+                Swal.fire("Error", "Failed to save order number", "error");
+            }
+        } catch (err) {
+            Swal.fire("Error", "Failed to update display order", "error");
+        }
+    };
 
     const handleQuickCategoryImageUpload = async (catId, file) => {
         if (!file) return;
@@ -36,7 +56,8 @@ const AdminCategories = ({ categories, products, loadData }) => {
                         body: JSON.stringify({
                             name: cat.name,
                             description: cat.description,
-                            imageUrl: data.imageUrl
+                            imageUrl: data.imageUrl,
+                            displayOrder: cat.displayOrder != null ? cat.displayOrder : 0
                         })
                     });
                     Swal.fire({ icon: "success", title: "Category Image Updated", timer: 1200, showConfirmButton: false });
@@ -78,11 +99,16 @@ const AdminCategories = ({ categories, products, loadData }) => {
             : `${API_BASE_URL}/admin/categories`;
         const method = editingCategoryId ? "PUT" : "POST";
 
+        const payload = {
+            ...categoryForm,
+            displayOrder: parseInt(categoryForm.displayOrder) || 0
+        };
+
         try {
             const res = await fetch(url, {
                 method: method,
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(categoryForm)
+                body: JSON.stringify(payload)
             });
             if (res.ok) {
                 Swal.fire({ icon: "success", title: editingCategoryId ? "Category Updated" : "Category Created", timer: 1500, showConfirmButton: false });
@@ -92,6 +118,7 @@ const AdminCategories = ({ categories, products, loadData }) => {
                     name: "",
                     description: "",
                     imageUrl: "",
+                    displayOrder: 0,
                     nameTranslations: { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" },
                     descriptionTranslations: { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" }
                 });
@@ -108,6 +135,7 @@ const AdminCategories = ({ categories, products, loadData }) => {
             name: cat.name || "",
             description: cat.description || "",
             imageUrl: cat.imageUrl || "",
+            displayOrder: cat.displayOrder != null ? cat.displayOrder : 0,
             nameTranslations: cat.nameTranslations || { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" },
             descriptionTranslations: cat.descriptionTranslations || { ta: "", hi: "", te: "", kn: "", ml: "", mr: "", bn: "", pa: "" }
         });
@@ -136,12 +164,19 @@ const AdminCategories = ({ categories, products, loadData }) => {
         }
     };
 
+    const sortedCategories = [...categories].sort((a, b) => {
+        const orderA = a.displayOrder != null ? a.displayOrder : 9999;
+        const orderB = b.displayOrder != null ? b.displayOrder : 9999;
+        if (orderA !== orderB) return orderA - orderB;
+        return a.id - b.id;
+    });
+
     const categoriesPerPage = 9;
-    const totalCatPages = Math.ceil(categories.length / categoriesPerPage) || 1;
+    const totalCatPages = Math.ceil(sortedCategories.length / categoriesPerPage) || 1;
     const safeCurrentPage = Math.min(categoryCurrentPage, totalCatPages);
     const indexOfLastCat = safeCurrentPage * categoriesPerPage;
     const indexOfFirstCat = indexOfLastCat - categoriesPerPage;
-    const currentCategories = categories.slice(indexOfFirstCat, indexOfLastCat);
+    const currentCategories = sortedCategories.slice(indexOfFirstCat, indexOfLastCat);
 
     return (
         <div className="space-y-6">
@@ -187,7 +222,7 @@ const AdminCategories = ({ categories, products, loadData }) => {
                         className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-4 py-2 rounded-xl shadow-sm transition-all duration-150 flex items-center gap-1.5"
                         onClick={() => {
                             setEditingCategoryId(null);
-                            setCategoryForm({ name: "", description: "", imageUrl: "" });
+                            setCategoryForm({ name: "", description: "", imageUrl: "", displayOrder: (categories.length + 1) * 10 });
                             setShowCategoryModal(true);
                         }}
                     >
@@ -204,6 +239,7 @@ const AdminCategories = ({ categories, products, loadData }) => {
                             <thead>
                                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider">
                                     <th className="py-3.5 px-4 w-12 text-center">#</th>
+                                    <th className="py-3.5 px-4 w-28 text-center" title="Custom sequence order for customer UI cards">Order #</th>
                                     <th className="py-3.5 px-4 w-20">Image</th>
                                     <th className="py-3.5 px-4">Category Name</th>
                                     <th className="py-3.5 px-4">Description</th>
@@ -214,7 +250,7 @@ const AdminCategories = ({ categories, products, loadData }) => {
                             <tbody className="divide-y divide-slate-100 text-sm">
                                 {currentCategories.length === 0 ? (
                                     <tr>
-                                        <td colSpan="6" className="py-8 text-center text-slate-500 font-medium">
+                                        <td colSpan="7" className="py-8 text-center text-slate-500 font-medium">
                                             No organic categories found.
                                         </td>
                                     </tr>
@@ -224,10 +260,37 @@ const AdminCategories = ({ categories, products, loadData }) => {
                                         const productCount = products.filter(
                                             (p) => p.categoryId === c.id || (p.category && p.category.id === c.id)
                                         ).length;
+                                        const currentOrderVal = categoryDisplayOrderInputs[c.id] !== undefined ? categoryDisplayOrderInputs[c.id] : (c.displayOrder != null ? c.displayOrder : 0);
+
                                         return (
                                             <tr key={c.id} className="hover:bg-slate-50/80 transition-colors">
                                                 <td className="py-3 px-4 text-center font-mono font-bold text-slate-400">
                                                     {indexOfFirstCat + idx + 1}
+                                                </td>
+                                                <td className="py-3 px-4 text-center whitespace-nowrap">
+                                                    <div className="flex items-center justify-center gap-1.5">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            className="w-16 px-2 py-1 bg-slate-50 border border-emerald-300 rounded-lg text-xs font-mono font-bold text-center text-emerald-800 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+                                                            value={currentOrderVal}
+                                                            onChange={(e) => setCategoryDisplayOrderInputs({ ...categoryDisplayOrderInputs, [c.id]: e.target.value })}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === "Enter") {
+                                                                    handleCategoryDisplayOrderUpdate(c.id, currentOrderVal);
+                                                                }
+                                                            }}
+                                                            title="Press Enter or click 💾 to save"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 p-1 rounded-lg border border-emerald-200 font-bold text-xs transition-all"
+                                                            onClick={() => handleCategoryDisplayOrderUpdate(c.id, currentOrderVal)}
+                                                            title="Save Order Number"
+                                                        >
+                                                            💾
+                                                        </button>
+                                                    </div>
                                                 </td>
                                                 <td className="py-3 px-4">
                                                     {catImgUrl ? (
@@ -400,15 +463,31 @@ const AdminCategories = ({ categories, products, loadData }) => {
                                     onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
                                 ></textarea>
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Upload Category Image</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="w-full text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-xl p-2"
-                                    onChange={handleCategoryImageUploadInModal}
-                                />
-                                {categoryForm.imageUrl && <p className="text-xs text-emerald-600 font-bold mt-1.5 truncate">Selected: {categoryForm.imageUrl}</p>}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                                        Display Order / Sequence #
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all text-emerald-800"
+                                        placeholder="e.g. 10, 20, 30..."
+                                        value={categoryForm.displayOrder != null ? categoryForm.displayOrder : 0}
+                                        onChange={(e) => setCategoryForm({ ...categoryForm, displayOrder: e.target.value })}
+                                    />
+                                    <p className="text-[10px] text-slate-400 font-medium mt-0.5">Lower numbers appear first on storefront cards</p>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Upload Category Image</label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="w-full text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-xl p-2"
+                                        onChange={handleCategoryImageUploadInModal}
+                                    />
+                                    {categoryForm.imageUrl && <p className="text-xs text-emerald-600 font-bold mt-1.5 truncate">Selected: {categoryForm.imageUrl}</p>}
+                                </div>
                             </div>
 
                             {/* Multilingual Category Names & Descriptions */}

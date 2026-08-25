@@ -51,6 +51,15 @@ public class CheckoutController {
         return ResponseEntity.ok(order);
     }
 
+    @PostMapping("/razorpay-webhook")
+    public ResponseEntity<String> handleRazorpayWebhook(
+            @RequestBody String payload,
+            @RequestHeader(value = "X-Razorpay-Signature", required = false) String signature
+    ) {
+        razorpayService.processRazorpayWebhook(payload, signature);
+        return ResponseEntity.ok("OK");
+    }
+
     @GetMapping("/razorpay-key")
     public ResponseEntity<Map<String, String>> getRazorpayKey() {
         return ResponseEntity.ok(Map.of("keyId", razorpayService.getRazorpayKeyId()));

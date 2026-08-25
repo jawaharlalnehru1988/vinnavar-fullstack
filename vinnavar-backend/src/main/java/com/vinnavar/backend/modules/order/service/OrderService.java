@@ -185,11 +185,20 @@ public class OrderService {
     public Order updateOrderStatus(Long orderId, OrderStatus status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        OrderStatus previousStatus = order.getOrderStatus();
         order.setOrderStatus(status);
-        if (status == OrderStatus.DELIVERED) {
+        if (status == OrderStatus.DELIVERED && order.getPaymentMethod() == PaymentMethod.COD) {
             order.setPaymentStatus("PAID_COD");
         }
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+        if (previousStatus == OrderStatus.PENDING && status == OrderStatus.CONFIRMED) {
+            try {
+                emailService.sendOrderConfirmation(saved);
+            } catch (Exception e) {
+                System.err.println("Failed to send order confirmation on status update: " + e.getMessage());
+            }
+        }
+        return saved;
     }
 
     @Transactional

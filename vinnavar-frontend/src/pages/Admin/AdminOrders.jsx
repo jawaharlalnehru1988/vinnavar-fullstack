@@ -48,6 +48,260 @@ const AdminOrders = ({ orders, loadData }) => {
     const [editOrderModal, setEditOrderModal] = useState(null);
     const [shippingFeeInputs, setShippingFeeInputs] = useState({});
 
+    // Sorting State
+    const [sortField, setSortField] = useState("id");
+    const [sortDirection, setSortDirection] = useState("desc");
+
+    // Global & Quick Filters
+    const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState("ALL");
+    const [paymentFilter, setPaymentFilter] = useState("ALL");
+
+    // Column-level Filters
+    const [showColumnFilters, setShowColumnFilters] = useState(true);
+    const [colFilters, setColFilters] = useState({
+        orderNumber: "",
+        customer: "",
+        items: "",
+        logistics: "",
+        shippingFee: "",
+        totalAmount: "",
+        payment: "ALL",
+        razorpayId: "",
+        status: "ALL"
+    });
+
+    const handleSort = (field) => {
+        if (sortField === field) {
+            setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+        } else {
+            setSortField(field);
+            setSortDirection("asc");
+        }
+    };
+
+    const handleColFilterChange = (key, value) => {
+        setColFilters((prev) => ({ ...prev, [key]: value }));
+    };
+
+    const handleClearAllFilters = () => {
+        setSearchTerm("");
+        setStatusFilter("ALL");
+        setPaymentFilter("ALL");
+        setColFilters({
+            orderNumber: "",
+            customer: "",
+            items: "",
+            logistics: "",
+            shippingFee: "",
+            totalAmount: "",
+            payment: "ALL",
+            razorpayId: "",
+            status: "ALL"
+        });
+    };
+
+    const activeFilterCount =
+        (searchTerm ? 1 : 0) +
+        (statusFilter !== "ALL" ? 1 : 0) +
+        (paymentFilter !== "ALL" ? 1 : 0) +
+        (colFilters.orderNumber ? 1 : 0) +
+        (colFilters.customer ? 1 : 0) +
+        (colFilters.items ? 1 : 0) +
+        (colFilters.logistics ? 1 : 0) +
+        (colFilters.shippingFee ? 1 : 0) +
+        (colFilters.totalAmount ? 1 : 0) +
+        (colFilters.payment !== "ALL" ? 1 : 0) +
+        (colFilters.razorpayId ? 1 : 0) +
+        (colFilters.status !== "ALL" ? 1 : 0);
+
+    const filteredAndSortedOrders = React.useMemo(() => {
+        let list = [...(orders || [])];
+
+        // 1. Global Search Filter
+        if (searchTerm.trim()) {
+            const q = searchTerm.toLowerCase().trim();
+            list = list.filter((o) => {
+                const orderNum = (o.orderNumber || "").toLowerCase();
+                const custName = (o.customerName || "").toLowerCase();
+                const custPhone = (o.customerPhone || "").toLowerCase();
+                const custEmail = (o.customerEmail || "").toLowerCase();
+                const address = `${o.shippingAddress?.streetAddress || ""} ${o.shippingAddress?.city || ""} ${o.shippingAddress?.state || ""} ${o.shippingAddress?.pincode || ""}`.toLowerCase();
+                const itemsText = (o.items || []).map((i) => `${i.productName || ""} ${i.variantName || ""}`).join(" ").toLowerCase();
+                const courier = `${o.courierName || ""} ${o.trackingNumber || ""}`.toLowerCase();
+                const razorpayId = (o.razorpayPaymentId || "").toLowerCase();
+                const pMethod = (o.paymentMethod || "").toLowerCase();
+                const oStatus = (o.orderStatus || "").toLowerCase();
+
+                return (
+                    orderNum.includes(q) ||
+                    custName.includes(q) ||
+                    custPhone.includes(q) ||
+                    custEmail.includes(q) ||
+                    address.includes(q) ||
+                    itemsText.includes(q) ||
+                    courier.includes(q) ||
+                    razorpayId.includes(q) ||
+                    pMethod.includes(q) ||
+                    oStatus.includes(q)
+                );
+            });
+        }
+
+        // 2. Quick Status Filter
+        if (statusFilter !== "ALL") {
+            list = list.filter((o) => o.orderStatus === statusFilter);
+        }
+
+        // 3. Quick Payment Filter
+        if (paymentFilter !== "ALL") {
+            list = list.filter((o) => o.paymentMethod === paymentFilter);
+        }
+
+        // 4. Per-column filters
+        if (colFilters.orderNumber.trim()) {
+            const q = colFilters.orderNumber.toLowerCase().trim();
+            list = list.filter((o) => (o.orderNumber || "").toLowerCase().includes(q));
+        }
+
+        if (colFilters.customer.trim()) {
+            const q = colFilters.customer.toLowerCase().trim();
+            list = list.filter((o) => {
+                const name = (o.customerName || "").toLowerCase();
+                const phone = (o.customerPhone || "").toLowerCase();
+                const email = (o.customerEmail || "").toLowerCase();
+                const addr = `${o.shippingAddress?.streetAddress || ""} ${o.shippingAddress?.city || ""}`.toLowerCase();
+                return name.includes(q) || phone.includes(q) || email.includes(q) || addr.includes(q);
+            });
+        }
+
+        if (colFilters.items.trim()) {
+            const q = colFilters.items.toLowerCase().trim();
+            list = list.filter((o) =>
+                (o.items || []).some(
+                    (i) => (i.productName || "").toLowerCase().includes(q) || (i.variantName || "").toLowerCase().includes(q)
+                )
+            );
+        }
+
+        if (colFilters.logistics.trim()) {
+            const q = colFilters.logistics.toLowerCase().trim();
+            list = list.filter((o) => `${o.courierName || ""} ${o.trackingNumber || ""}`.toLowerCase().includes(q));
+        }
+
+        if (colFilters.shippingFee.trim()) {
+            const feeVal = parseFloat(colFilters.shippingFee);
+            if (!isNaN(feeVal)) {
+                list = list.filter((o) => (o.shippingFee != null ? parseFloat(o.shippingFee) : 0) >= feeVal);
+            }
+        }
+
+        if (colFilters.totalAmount.trim()) {
+            const amountVal = parseFloat(colFilters.totalAmount);
+            if (!isNaN(amountVal)) {
+                list = list.filter((o) => (o.totalAmount != null ? parseFloat(o.totalAmount) : 0) >= amountVal);
+            }
+        }
+
+        if (colFilters.payment !== "ALL") {
+            list = list.filter((o) => o.paymentMethod === colFilters.payment);
+        }
+
+        if (colFilters.razorpayId.trim()) {
+            const q = colFilters.razorpayId.toLowerCase().trim();
+            list = list.filter((o) => (o.razorpayPaymentId || "").toLowerCase().includes(q));
+        }
+
+        if (colFilters.status !== "ALL") {
+            list = list.filter((o) => o.orderStatus === colFilters.status);
+        }
+
+        // 5. Sorting
+        list.sort((a, b) => {
+            let aVal, bVal;
+
+            switch (sortField) {
+                case "orderNumber":
+                    aVal = a.orderNumber || "";
+                    bVal = b.orderNumber || "";
+                    return sortDirection === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+
+                case "customerName":
+                    aVal = (a.customerName || "").toLowerCase();
+                    bVal = (b.customerName || "").toLowerCase();
+                    return sortDirection === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+
+                case "items":
+                    aVal = (a.items || []).length;
+                    bVal = (b.items || []).length;
+                    return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
+
+                case "courierName":
+                    aVal = (a.courierName || "").toLowerCase();
+                    bVal = (b.courierName || "").toLowerCase();
+                    return sortDirection === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+
+                case "shippingFee":
+                    aVal = a.shippingFee != null ? parseFloat(a.shippingFee) : 0;
+                    bVal = b.shippingFee != null ? parseFloat(b.shippingFee) : 0;
+                    return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
+
+                case "totalAmount":
+                    aVal = a.totalAmount != null ? parseFloat(a.totalAmount) : 0;
+                    bVal = b.totalAmount != null ? parseFloat(b.totalAmount) : 0;
+                    return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
+
+                case "paymentMethod":
+                    aVal = (a.paymentMethod || "").toLowerCase();
+                    bVal = (b.paymentMethod || "").toLowerCase();
+                    return sortDirection === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+
+                case "razorpayPaymentId":
+                    aVal = (a.razorpayPaymentId || "").toLowerCase();
+                    bVal = (b.razorpayPaymentId || "").toLowerCase();
+                    return sortDirection === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+
+                case "orderStatus":
+                    aVal = (a.orderStatus || "").toLowerCase();
+                    bVal = (b.orderStatus || "").toLowerCase();
+                    return sortDirection === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+
+                case "createdAt":
+                case "id":
+                default:
+                    aVal = a.id || 0;
+                    bVal = b.id || 0;
+                    return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
+            }
+        });
+
+        return list;
+    }, [orders, searchTerm, statusFilter, paymentFilter, colFilters, sortField, sortDirection]);
+
+    const renderSortHeader = (label, field, className = "") => {
+        const isSorted = sortField === field;
+        return (
+            <th
+                className={`py-3.5 px-4 cursor-pointer select-none hover:bg-slate-100/90 transition-colors ${className}`}
+                onClick={() => handleSort(field)}
+                title={`Sort by ${label} (${isSorted ? (sortDirection === "asc" ? "Ascending" : "Descending") : "Click to sort"})`}
+            >
+                <div className="flex items-center justify-between gap-1.5">
+                    <span>{label}</span>
+                    <span
+                        className={`text-xs font-mono transition-all ${
+                            isSorted ? "text-emerald-700 font-extrabold scale-110" : "text-slate-400 opacity-60"
+                        }`}
+                    >
+                        {isSorted ? (sortDirection === "asc" ? "▲" : "▼") : "⇅"}
+                    </span>
+                </div>
+            </th>
+        );
+    };
+
+    const totalFilteredRevenue = filteredAndSortedOrders.reduce((acc, o) => acc + (parseFloat(o.totalAmount) || 0), 0);
+
     const [editOrderForm, setEditOrderForm] = useState({
         orderStatus: "CONFIRMED",
         paymentMethod: "COD",
@@ -326,43 +580,322 @@ const AdminOrders = ({ orders, loadData }) => {
 
     return (
         <div className="space-y-6">
+            {/* Header with Title & Stats */}
             <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-slate-200">
                 <div>
                     <h2 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
                         <span>🚚</span> Customer Order Processing
                     </h2>
-                    <p className="text-xs text-slate-500 font-medium mt-0.5">Manage customer orders, shipping fees, logistics & PDF invoices</p>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                        Manage customer orders, shipping fees, logistics & PDF invoices
+                    </p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="bg-emerald-50 border border-emerald-200/80 px-3.5 py-1.5 rounded-xl text-xs font-bold text-emerald-800 shadow-2xs">
+                        Showing: <span className="text-emerald-950 font-black">{filteredAndSortedOrders.length}</span> of {orders?.length || 0} Orders
+                    </div>
+                    <div className="bg-slate-100 border border-slate-200 px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-800 shadow-2xs">
+                        Revenue in View: <span className="text-slate-950 font-black">₹{totalFilteredRevenue.toFixed(2)}</span>
+                    </div>
                 </div>
             </div>
 
+            {/* Quick Filter Bar & Global Search */}
+            <div className="bg-white p-4 rounded-2xl shadow-xs border border-slate-200/90 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    {/* Live Search Input */}
+                    <div className="relative flex-1 min-w-[280px]">
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+                        <input
+                            type="text"
+                            className="w-full pl-10 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none transition-all placeholder:text-slate-400"
+                            placeholder="Global Search (Order #, Name, Phone, Email, Address, Items, AWB, Razorpay ID...)"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        {searchTerm && (
+                            <button
+                                type="button"
+                                onClick={() => setSearchTerm("")}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                                title="Clear Search"
+                            >
+                                ✕
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Action Controls */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                            type="button"
+                            onClick={() => setShowColumnFilters((prev) => !prev)}
+                            className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${
+                                showColumnFilters
+                                    ? "bg-emerald-700 text-white border-emerald-700 shadow-xs"
+                                    : "bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200"
+                            }`}
+                        >
+                            <span>⚙️</span>
+                            <span>{showColumnFilters ? "Hide Column Filters" : "Show Column Filters"}</span>
+                        </button>
+
+                        {activeFilterCount > 0 && (
+                            <button
+                                type="button"
+                                onClick={handleClearAllFilters}
+                                className="px-3 py-2 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition-all flex items-center gap-1.5"
+                                title="Clear all search and filters"
+                            >
+                                <span>✕</span>
+                                <span>Clear Filters ({activeFilterCount})</span>
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Quick Status Filter Pills */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs pt-1">
+                    <span className="text-slate-400 font-bold uppercase text-[10px] tracking-wider pr-1">Status:</span>
+                    {[
+                        { key: "ALL", label: "All Statuses" },
+                        { key: "CONFIRMED", label: "Confirmed" },
+                        { key: "PENDING", label: "Pending" },
+                        { key: "PROCESSING", label: "Processing" },
+                        { key: "SHIPPED", label: "Shipped" },
+                        { key: "DELIVERED", label: "Delivered" },
+                        { key: "CANCELLATION_REQUESTED", label: "Cancel Requested" },
+                        { key: "CANCELLED", label: "Cancelled" },
+                        { key: "REFUNDED", label: "Refunded" }
+                    ].map((st) => {
+                        const count = st.key === "ALL" ? orders.length : orders.filter((o) => o.orderStatus === st.key).length;
+                        const isSelected = statusFilter === st.key;
+                        return (
+                            <button
+                                key={st.key}
+                                type="button"
+                                onClick={() => setStatusFilter(st.key)}
+                                className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                                    isSelected
+                                        ? "bg-emerald-700 text-white shadow-xs"
+                                        : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800"
+                                }`}
+                            >
+                                <span>{st.label}</span>
+                                <span
+                                    className={`px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ${
+                                        isSelected ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700"
+                                    }`}
+                                >
+                                    {count}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Quick Payment Method Pills */}
+                <div className="flex items-center gap-1.5 overflow-x-auto text-xs">
+                    <span className="text-slate-400 font-bold uppercase text-[10px] tracking-wider pr-1">Payment:</span>
+                    {[
+                        { key: "ALL", label: "All Payment Methods" },
+                        { key: "COD", label: "💵 COD" },
+                        { key: "ONLINE", label: "💳 Online / Razorpay" },
+                        { key: "UPI", label: "📱 UPI" }
+                    ].map((pm) => {
+                        const isSelected = paymentFilter === pm.key;
+                        const count = pm.key === "ALL" ? orders.length : orders.filter((o) => o.paymentMethod === pm.key).length;
+                        return (
+                            <button
+                                key={pm.key}
+                                type="button"
+                                onClick={() => setPaymentFilter(pm.key)}
+                                className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                                    isSelected
+                                        ? "bg-indigo-700 text-white shadow-xs"
+                                        : "bg-slate-100 text-slate-700 hover:bg-indigo-50 hover:text-indigo-800"
+                                }`}
+                            >
+                                <span>{pm.label}</span>
+                                <span
+                                    className={`px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ${
+                                        isSelected ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700"
+                                    }`}
+                                >
+                                    {count}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Table Container */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse min-w-[1200px]">
+                    <table className="w-full text-left border-collapse min-w-[1300px]">
                         <thead>
+                            {/* Column Header Row with Sort Indicators */}
                             <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider whitespace-nowrap">
-                                <th className="py-3.5 px-4">Order #</th>
-                                <th className="py-3.5 px-4">Customer</th>
-                                <th className="py-3.5 px-4">Items</th>
-                                <th className="py-3.5 px-4">Logistics & Tracking</th>
-                                <th className="py-3.5 px-4">Shipping Fee</th>
-                                <th className="py-3.5 px-4">Total Amount</th>
-                                <th className="py-3.5 px-4">Payment</th>
-                                <th className="py-3.5 px-4">Razorpay ID</th>
-                                <th className="py-3.5 px-4">Status</th>
-                                <th className="py-3.5 px-4">Update Status</th>
-                                <th className="py-3.5 px-4">Full Details</th>
-                                <th className="py-3.5 px-4 text-center">Action</th>
+                                {renderSortHeader("Order #", "orderNumber")}
+                                {renderSortHeader("Customer", "customerName")}
+                                {renderSortHeader("Items", "items")}
+                                {renderSortHeader("Logistics & Tracking", "courierName")}
+                                {renderSortHeader("Shipping Fee", "shippingFee")}
+                                {renderSortHeader("Total Amount", "totalAmount")}
+                                {renderSortHeader("Payment", "paymentMethod")}
+                                {renderSortHeader("Razorpay ID", "razorpayPaymentId")}
+                                {renderSortHeader("Status", "orderStatus")}
+                                <th className="py-3.5 px-4 select-none">Update Status</th>
+                                <th className="py-3.5 px-4 select-none">Full Details</th>
+                                <th className="py-3.5 px-4 text-center select-none">Action</th>
                             </tr>
+
+                            {/* Optional Column Filters Sub-Header Row */}
+                            {showColumnFilters && (
+                                <tr className="bg-slate-100/70 border-b border-slate-200 text-xs">
+                                    {/* Order # filter */}
+                                    <td className="p-2">
+                                        <input
+                                            type="text"
+                                            value={colFilters.orderNumber}
+                                            onChange={(e) => handleColFilterChange("orderNumber", e.target.value)}
+                                            placeholder="Filter Order #"
+                                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+                                        />
+                                    </td>
+                                    {/* Customer filter */}
+                                    <td className="p-2">
+                                        <input
+                                            type="text"
+                                            value={colFilters.customer}
+                                            onChange={(e) => handleColFilterChange("customer", e.target.value)}
+                                            placeholder="Name / Phone / Email"
+                                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-emerald-500"
+                                        />
+                                    </td>
+                                    {/* Items filter */}
+                                    <td className="p-2">
+                                        <input
+                                            type="text"
+                                            value={colFilters.items}
+                                            onChange={(e) => handleColFilterChange("items", e.target.value)}
+                                            placeholder="Filter Product..."
+                                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-emerald-500"
+                                        />
+                                    </td>
+                                    {/* Logistics filter */}
+                                    <td className="p-2">
+                                        <input
+                                            type="text"
+                                            value={colFilters.logistics}
+                                            onChange={(e) => handleColFilterChange("logistics", e.target.value)}
+                                            placeholder="Courier / AWB"
+                                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-emerald-500"
+                                        />
+                                    </td>
+                                    {/* Shipping Fee filter */}
+                                    <td className="p-2">
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={colFilters.shippingFee}
+                                            onChange={(e) => handleColFilterChange("shippingFee", e.target.value)}
+                                            placeholder="Min Fee ₹"
+                                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+                                        />
+                                    </td>
+                                    {/* Total Amount filter */}
+                                    <td className="p-2">
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={colFilters.totalAmount}
+                                            onChange={(e) => handleColFilterChange("totalAmount", e.target.value)}
+                                            placeholder="Min ₹"
+                                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+                                        />
+                                    </td>
+                                    {/* Payment Method filter */}
+                                    <td className="p-2">
+                                        <select
+                                            value={colFilters.payment}
+                                            onChange={(e) => handleColFilterChange("payment", e.target.value)}
+                                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-emerald-500 font-bold"
+                                        >
+                                            <option value="ALL">All Payments</option>
+                                            <option value="COD">COD</option>
+                                            <option value="ONLINE">ONLINE</option>
+                                            <option value="UPI">UPI</option>
+                                        </select>
+                                    </td>
+                                    {/* Razorpay ID filter */}
+                                    <td className="p-2">
+                                        <input
+                                            type="text"
+                                            value={colFilters.razorpayId}
+                                            onChange={(e) => handleColFilterChange("razorpayId", e.target.value)}
+                                            placeholder="Filter Pay ID"
+                                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+                                        />
+                                    </td>
+                                    {/* Status filter */}
+                                    <td className="p-2">
+                                        <select
+                                            value={colFilters.status}
+                                            onChange={(e) => handleColFilterChange("status", e.target.value)}
+                                            className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-emerald-500 font-bold"
+                                        >
+                                            <option value="ALL">All Statuses</option>
+                                            <option value="CONFIRMED">CONFIRMED</option>
+                                            <option value="PENDING">PENDING</option>
+                                            <option value="PROCESSING">PROCESSING</option>
+                                            <option value="SHIPPED">SHIPPED</option>
+                                            <option value="DELIVERED">DELIVERED</option>
+                                            <option value="CANCELLATION_REQUESTED">CANCEL REQUESTED</option>
+                                            <option value="CANCELLED">CANCELLED</option>
+                                            <option value="REFUNDED">REFUNDED</option>
+                                        </select>
+                                    </td>
+                                    {/* Empty cells for action columns */}
+                                    <td className="p-2"></td>
+                                    <td className="p-2"></td>
+                                    <td className="p-2 text-center">
+                                        {activeFilterCount > 0 && (
+                                            <button
+                                                type="button"
+                                                onClick={handleClearAllFilters}
+                                                className="text-[11px] font-bold text-rose-600 hover:text-rose-800 underline"
+                                                title="Reset all filters"
+                                            >
+                                                Reset
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            )}
                         </thead>
                         <tbody className="divide-y divide-slate-100 text-sm">
-                            {orders.length === 0 ? (
+                            {filteredAndSortedOrders.length === 0 ? (
                                 <tr>
-                                    <td colSpan="11" className="py-8 text-center text-slate-500 font-medium">
-                                        No customer orders placed yet.
+                                    <td colSpan="12" className="py-12 text-center text-slate-500 font-medium">
+                                        <div className="flex flex-col items-center justify-center gap-2">
+                                            <span className="text-3xl">🔍</span>
+                                            <span className="text-slate-700 font-bold text-sm">No customer orders match the applied filters.</span>
+                                            {activeFilterCount > 0 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={handleClearAllFilters}
+                                                    className="mt-1 px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-xs hover:bg-emerald-800 transition-all"
+                                                >
+                                                    Clear All Filters
+                                                </button>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ) : (
-                                orders.map((o) => (
+                                filteredAndSortedOrders.map((o) => (
                                     <tr key={o.id} className="hover:bg-slate-50/80 transition-colors">
                                         <td className="py-3 px-4 font-mono font-bold text-emerald-700 whitespace-nowrap">{o.orderNumber}</td>
                                         <td className="py-3 px-4 min-w-[200px]">

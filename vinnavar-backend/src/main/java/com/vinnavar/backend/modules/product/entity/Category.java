@@ -44,6 +44,10 @@ public class Category {
     private java.util.Map<String, String> descriptionTranslations = new java.util.HashMap<>();
 
     @Builder.Default
+    @Column(name = "display_order")
+    private Integer displayOrder = 0;
+
+    @Builder.Default
     private boolean active = true;
 
     private LocalDateTime createdAt;
