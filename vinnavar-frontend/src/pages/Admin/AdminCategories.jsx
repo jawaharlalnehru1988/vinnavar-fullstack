@@ -164,10 +164,58 @@ const AdminCategories = ({ categories, products, loadData }) => {
         }
     };
 
-    const sortedCategories = [...categories].sort((a, b) => {
-        const orderA = a.displayOrder != null ? a.displayOrder : 9999;
-        const orderB = b.displayOrder != null ? b.displayOrder : 9999;
-        if (orderA !== orderB) return orderA - orderB;
+    const [searchQuery, setSearchQuery] = useState("");
+    const [sortField, setSortField] = useState("displayOrder");
+    const [sortDirection, setSortDirection] = useState("asc");
+
+    const handleSort = (field) => {
+        if (sortField === field) {
+            setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+        } else {
+            setSortField(field);
+            setSortDirection("asc");
+        }
+    };
+
+    const renderSortIcon = (field) => {
+        if (sortField !== field) {
+            return <span className="text-slate-300 ml-1 text-xs">↕</span>;
+        }
+        return <span className="text-emerald-600 ml-1 text-xs font-bold">{sortDirection === "asc" ? "▲" : "▼"}</span>;
+    };
+
+    const filteredCategories = categories.filter((c) => {
+        const q = searchQuery.toLowerCase().trim();
+        if (!q) return true;
+        const name = (c.name || "").toLowerCase();
+        const desc = (c.description || "").toLowerCase();
+        return name.includes(q) || desc.includes(q);
+    });
+
+    const sortedCategories = [...filteredCategories].sort((a, b) => {
+        let valA, valB;
+        if (sortField === "id") {
+            valA = a.id || 0;
+            valB = b.id || 0;
+        } else if (sortField === "displayOrder") {
+            valA = a.displayOrder != null ? a.displayOrder : 9999;
+            valB = b.displayOrder != null ? b.displayOrder : 9999;
+        } else if (sortField === "name") {
+            valA = (a.name || "").toLowerCase();
+            valB = (b.name || "").toLowerCase();
+        } else if (sortField === "description") {
+            valA = (a.description || "").toLowerCase();
+            valB = (b.description || "").toLowerCase();
+        } else if (sortField === "productCount") {
+            valA = products.filter((p) => (p.category?.id || p.categoryId) === a.id).length;
+            valB = products.filter((p) => (p.category?.id || p.categoryId) === b.id).length;
+        } else {
+            valA = a.id;
+            valB = b.id;
+        }
+
+        if (valA < valB) return sortDirection === "asc" ? -1 : 1;
+        if (valA > valB) return sortDirection === "asc" ? 1 : -1;
         return a.id - b.id;
     });
 
@@ -180,7 +228,7 @@ const AdminCategories = ({ categories, products, loadData }) => {
 
     return (
         <div className="space-y-6">
-            {/* Header bar with Count, View Toggle, and Add button */}
+            {/* Header bar with Count, Search, View Toggle, and Add button */}
             <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-slate-200">
                 <div className="flex items-center gap-3">
                     <h2 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
@@ -191,7 +239,34 @@ const AdminCategories = ({ categories, products, loadData }) => {
                     </span>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                    {/* Live Search input with icon & clear */}
+                    <div className="relative w-56">
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400 text-xs">
+                            🔍
+                        </span>
+                        <input
+                            type="text"
+                            className="w-full pl-8 pr-7 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 transition-all"
+                            placeholder="Search categories..."
+                            value={searchQuery}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                setCategoryCurrentPage(1);
+                            }}
+                        />
+                        {searchQuery && (
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-slate-600 font-bold text-xs"
+                                onClick={() => setSearchQuery("")}
+                                title="Clear search"
+                            >
+                                ✕
+                            </button>
+                        )}
+                    </div>
+
                     {/* View Toggle */}
                     <div className="bg-slate-200/80 p-1 rounded-xl flex items-center gap-1 shadow-inner">
                         <button
@@ -237,13 +312,43 @@ const AdminCategories = ({ categories, products, loadData }) => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider">
-                                    <th className="py-3.5 px-4 w-12 text-center">#</th>
-                                    <th className="py-3.5 px-4 w-28 text-center" title="Custom sequence order for customer UI cards">Order #</th>
+                                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider select-none">
+                                    <th
+                                        className="py-3.5 px-4 w-12 text-center cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("id")}
+                                        title="Sort by #"
+                                    >
+                                        <span className="inline-flex items-center justify-center gap-0.5"># {renderSortIcon("id")}</span>
+                                    </th>
+                                    <th
+                                        className="py-3.5 px-4 w-28 text-center cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("displayOrder")}
+                                        title="Sort by Order Number"
+                                    >
+                                        <span className="inline-flex items-center justify-center gap-1">Order # {renderSortIcon("displayOrder")}</span>
+                                    </th>
                                     <th className="py-3.5 px-4 w-20">Image</th>
-                                    <th className="py-3.5 px-4">Category Name</th>
-                                    <th className="py-3.5 px-4">Description</th>
-                                    <th className="py-3.5 px-4 text-center">Products</th>
+                                    <th
+                                        className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("name")}
+                                        title="Sort by Category Name"
+                                    >
+                                        <span className="inline-flex items-center gap-1">Category Name {renderSortIcon("name")}</span>
+                                    </th>
+                                    <th
+                                        className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("description")}
+                                        title="Sort by Description"
+                                    >
+                                        <span className="inline-flex items-center gap-1">Description {renderSortIcon("description")}</span>
+                                    </th>
+                                    <th
+                                        className="py-3.5 px-4 text-center cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("productCount")}
+                                        title="Sort by Product Count"
+                                    >
+                                        <span className="inline-flex items-center justify-center gap-1">Products {renderSortIcon("productCount")}</span>
+                                    </th>
                                     <th className="py-3.5 px-4 text-right">Actions</th>
                                 </tr>
                             </thead>

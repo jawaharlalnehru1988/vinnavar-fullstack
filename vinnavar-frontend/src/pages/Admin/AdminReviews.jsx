@@ -142,9 +142,76 @@ const AdminReviews = () => {
       }
   };
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState("createdAt");
+  const [sortDirection, setSortDirection] = useState("desc");
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const renderSortIcon = (field) => {
+    if (sortField !== field) {
+      return <span className="text-slate-300 ml-1 text-xs">↕</span>;
+    }
+    return <span className="text-emerald-600 ml-1 text-xs font-bold">{sortDirection === "asc" ? "▲" : "▼"}</span>;
+  };
+
   const filteredReviews = reviews.filter((r) => {
-    if (filterStatus === "ALL") return true;
-    return r.status === filterStatus;
+    const matchesStatus = filterStatus === "ALL" || r.status === filterStatus;
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return matchesStatus;
+
+    const custName = (r.customerName || "").toLowerCase();
+    const custPhone = (r.customerPhone || "").toLowerCase();
+    const custEmail = (r.customerEmail || "").toLowerCase();
+    const prodName = (r.productName || "").toLowerCase();
+    const ordNum = (r.orderNumber || "").toLowerCase();
+    const title = (r.reviewTitle || "").toLowerCase();
+    const comment = (r.reviewComment || "").toLowerCase();
+
+    const matchesSearch =
+      custName.includes(q) ||
+      custPhone.includes(q) ||
+      custEmail.includes(q) ||
+      prodName.includes(q) ||
+      ordNum.includes(q) ||
+      title.includes(q) ||
+      comment.includes(q);
+
+    return matchesStatus && matchesSearch;
+  });
+
+  const sortedReviews = [...filteredReviews].sort((a, b) => {
+    let valA, valB;
+    if (sortField === "customer") {
+      valA = (a.customerName || "").toLowerCase();
+      valB = (b.customerName || "").toLowerCase();
+    } else if (sortField === "product") {
+      valA = (a.productName || "").toLowerCase();
+      valB = (b.productName || "").toLowerCase();
+    } else if (sortField === "rating") {
+      valA = a.rating || 0;
+      valB = b.rating || 0;
+    } else if (sortField === "status") {
+      valA = (a.status || "").toLowerCase();
+      valB = (b.status || "").toLowerCase();
+    } else if (sortField === "createdAt") {
+      valA = a.createdAt ? new Date(a.createdAt).getTime() : (a.id || 0);
+      valB = b.createdAt ? new Date(b.createdAt).getTime() : (b.id || 0);
+    } else {
+      valA = a.id;
+      valB = b.id;
+    }
+
+    if (valA < valB) return sortDirection === "asc" ? -1 : 1;
+    if (valA > valB) return sortDirection === "asc" ? 1 : -1;
+    return a.id - b.id;
   });
 
   return (
@@ -159,18 +226,43 @@ const AdminReviews = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-bold text-slate-500">Status Filter:</label>
-          <select
-            className="px-3.5 py-1.5 bg-white border border-emerald-300 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 cursor-pointer"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="ALL">All Reviews ({reviews.length})</option>
-            <option value="APPROVED">Approved ({reviews.filter(r => r.status === "APPROVED").length})</option>
-            <option value="PENDING">Pending ({reviews.filter(r => r.status === "PENDING").length})</option>
-            <option value="HIDDEN">Hidden ({reviews.filter(r => r.status === "HIDDEN").length})</option>
-          </select>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Search box */}
+          <div className="relative w-56">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400 text-xs">
+              🔍
+            </span>
+            <input
+              type="text"
+              className="w-full pl-8 pr-7 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 transition-all"
+              placeholder="Search reviews..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-slate-600 font-bold text-xs"
+                onClick={() => setSearchQuery("")}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-bold text-slate-500">Status:</label>
+            <select
+              className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="ALL">All ({reviews.length})</option>
+              <option value="APPROVED">Approved ({reviews.filter((r) => r.status === "APPROVED").length})</option>
+              <option value="PENDING">Pending ({reviews.filter((r) => r.status === "PENDING").length})</option>
+              <option value="HIDDEN">Hidden ({reviews.filter((r) => r.status === "HIDDEN").length})</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -179,29 +271,53 @@ const AdminReviews = () => {
           <div className="inline-block w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
           <p className="text-xs text-slate-500 font-bold mt-2">Loading customer reviews...</p>
         </div>
-      ) : filteredReviews.length === 0 ? (
+      ) : sortedReviews.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
           <div className="text-4xl text-slate-300 mb-2">⭐</div>
           <h4 className="font-extrabold text-slate-900 text-base">No Customer Reviews Found</h4>
-          <p className="text-xs text-slate-400 mt-1">No customer reviews match the selected filter status.</p>
+          <p className="text-xs text-slate-400 mt-1">No customer reviews match the selected filter criteria.</p>
         </div>
       ) : (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider whitespace-nowrap">
-                  <th className="py-3.5 px-4">Customer</th>
-                  <th className="py-3.5 px-4">Product & Order</th>
-                  <th className="py-3.5 px-4">Rating</th>
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider whitespace-nowrap select-none">
+                  <th
+                    className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                    onClick={() => handleSort("customer")}
+                    title="Sort by Customer"
+                  >
+                    <span className="inline-flex items-center gap-1">Customer {renderSortIcon("customer")}</span>
+                  </th>
+                  <th
+                    className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                    onClick={() => handleSort("product")}
+                    title="Sort by Product"
+                  >
+                    <span className="inline-flex items-center gap-1">Product & Order {renderSortIcon("product")}</span>
+                  </th>
+                  <th
+                    className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                    onClick={() => handleSort("rating")}
+                    title="Sort by Rating"
+                  >
+                    <span className="inline-flex items-center gap-1">Rating {renderSortIcon("rating")}</span>
+                  </th>
                   <th className="py-3.5 px-4">Review & Photo</th>
-                  <th className="py-3.5 px-4">Status</th>
+                  <th
+                    className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                    onClick={() => handleSort("status")}
+                    title="Sort by Status"
+                  >
+                    <span className="inline-flex items-center gap-1">Status {renderSortIcon("status")}</span>
+                  </th>
                   <th className="py-3.5 px-4 text-center">Moderate</th>
                   <th className="py-3.5 px-4 text-center">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
-                {filteredReviews.map((rev) => (
+                {sortedReviews.map((rev) => (
                   <tr key={rev.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3 px-4 min-w-[180px]">
                       <div className="font-bold text-slate-900">{rev.customerName || "Anonymous"}</div>

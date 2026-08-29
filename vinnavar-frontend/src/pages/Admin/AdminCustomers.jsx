@@ -127,6 +127,25 @@ const AdminCustomers = () => {
         }
     };
 
+    const [sortField, setSortField] = useState("createdAt");
+    const [sortDirection, setSortDirection] = useState("desc");
+
+    const handleSort = (field) => {
+        if (sortField === field) {
+            setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+        } else {
+            setSortField(field);
+            setSortDirection("asc");
+        }
+    };
+
+    const renderSortIcon = (field) => {
+        if (sortField !== field) {
+            return <span className="text-slate-300 ml-1 text-xs">↕</span>;
+        }
+        return <span className="text-emerald-600 ml-1 text-xs font-bold">{sortDirection === "asc" ? "▲" : "▼"}</span>;
+    };
+
     const filteredCustomers = customers.filter((cust) => {
         const query = searchQuery.toLowerCase().trim();
         if (!query) return true;
@@ -134,6 +153,30 @@ const AdminCustomers = () => {
         const mobile = (cust.mobileNumber || "").toLowerCase();
         const email = (cust.email || "").toLowerCase();
         return name.includes(query) || mobile.includes(query) || email.includes(query);
+    });
+
+    const sortedCustomers = [...filteredCustomers].sort((a, b) => {
+        let valA, valB;
+        if (sortField === "name") {
+            valA = (a.name || "").toLowerCase();
+            valB = (b.name || "").toLowerCase();
+        } else if (sortField === "mobileNumber") {
+            valA = (a.mobileNumber || "").toLowerCase();
+            valB = (b.mobileNumber || "").toLowerCase();
+        } else if (sortField === "email") {
+            valA = (a.email || "").toLowerCase();
+            valB = (b.email || "").toLowerCase();
+        } else if (sortField === "createdAt") {
+            valA = a.createdAt ? new Date(a.createdAt).getTime() : (a.id || 0);
+            valB = b.createdAt ? new Date(b.createdAt).getTime() : (b.id || 0);
+        } else {
+            valA = a.id;
+            valB = b.id;
+        }
+
+        if (valA < valB) return sortDirection === "asc" ? -1 : 1;
+        if (valA > valB) return sortDirection === "asc" ? 1 : -1;
+        return a.id - b.id;
     });
 
     return (
@@ -188,7 +231,7 @@ const AdminCustomers = () => {
                     )}
                 </div>
                 <div className="text-xs text-slate-500 font-medium">
-                    Showing <strong className="text-slate-800">{filteredCustomers.length}</strong> of <strong className="text-slate-800">{customers.length}</strong> customers
+                    Showing <strong className="text-slate-800">{sortedCustomers.length}</strong> of <strong className="text-slate-800">{customers.length}</strong> customers
                 </div>
             </div>
 
@@ -197,11 +240,35 @@ const AdminCustomers = () => {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider">
-                                <th className="py-3.5 px-4">Customer</th>
-                                <th className="py-3.5 px-4">Mobile Number</th>
-                                <th className="py-3.5 px-4">Email Address</th>
-                                <th className="py-3.5 px-4">Joined Date</th>
+                            <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider select-none">
+                                <th
+                                    className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                    onClick={() => handleSort("name")}
+                                    title="Sort by Customer Name"
+                                >
+                                    <span className="inline-flex items-center gap-1">Customer {renderSortIcon("name")}</span>
+                                </th>
+                                <th
+                                    className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                    onClick={() => handleSort("mobileNumber")}
+                                    title="Sort by Mobile Number"
+                                >
+                                    <span className="inline-flex items-center gap-1">Mobile Number {renderSortIcon("mobileNumber")}</span>
+                                </th>
+                                <th
+                                    className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                    onClick={() => handleSort("email")}
+                                    title="Sort by Email Address"
+                                >
+                                    <span className="inline-flex items-center gap-1">Email Address {renderSortIcon("email")}</span>
+                                </th>
+                                <th
+                                    className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                    onClick={() => handleSort("createdAt")}
+                                    title="Sort by Joined Date"
+                                >
+                                    <span className="inline-flex items-center gap-1">Joined Date {renderSortIcon("createdAt")}</span>
+                                </th>
                                 <th className="py-3.5 px-4 text-right">Actions</th>
                             </tr>
                         </thead>

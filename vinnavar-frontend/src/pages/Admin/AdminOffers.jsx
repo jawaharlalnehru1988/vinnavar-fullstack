@@ -80,6 +80,25 @@ const AdminOffers = ({ products, loadData }) => {
         }
     };
 
+    const [sortField, setSortField] = useState("name");
+    const [sortDirection, setSortDirection] = useState("asc");
+
+    const handleSort = (field) => {
+        if (sortField === field) {
+            setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+        } else {
+            setSortField(field);
+            setSortDirection("asc");
+        }
+    };
+
+    const renderSortIcon = (field) => {
+        if (sortField !== field) {
+            return <span className="text-slate-300 ml-1 text-xs">↕</span>;
+        }
+        return <span className="text-emerald-600 ml-1 text-xs font-bold">{sortDirection === "asc" ? "▲" : "▼"}</span>;
+    };
+
     const allOfferProducts = products.filter((p) => {
         const defaultVar = p.variants?.find((v) => v.default) || p.variants?.[0] || {};
         const hasDiscount = defaultVar.discountPrice && defaultVar.discountPrice < defaultVar.price;
@@ -89,6 +108,34 @@ const AdminOffers = ({ products, loadData }) => {
         if (!offerSearch.trim()) return true;
         return p.name.toLowerCase().includes(offerSearch.toLowerCase()) ||
             (p.category?.name && p.category.name.toLowerCase().includes(offerSearch.toLowerCase()));
+    }).sort((a, b) => {
+        const varA = a.variants?.find((v) => v.default) || a.variants?.[0] || {};
+        const varB = b.variants?.find((v) => v.default) || b.variants?.[0] || {};
+
+        let valA, valB;
+        if (sortField === "name") {
+            valA = (a.name || "").toLowerCase();
+            valB = (b.name || "").toLowerCase();
+        } else if (sortField === "category") {
+            valA = (a.category?.name || "").toLowerCase();
+            valB = (b.category?.name || "").toLowerCase();
+        } else if (sortField === "price") {
+            valA = Number(varA.price) || 0;
+            valB = Number(varB.price) || 0;
+        } else if (sortField === "discountPrice") {
+            valA = Number(varA.discountPrice) || 0;
+            valB = Number(varB.discountPrice) || 0;
+        } else if (sortField === "savings") {
+            valA = (Number(varA.price) || 0) - (Number(varA.discountPrice) || Number(varA.price) || 0);
+            valB = (Number(varB.price) || 0) - (Number(varB.discountPrice) || Number(varB.price) || 0);
+        } else {
+            valA = a.id;
+            valB = b.id;
+        }
+
+        if (valA < valB) return sortDirection === "asc" ? -1 : 1;
+        if (valA > valB) return sortDirection === "asc" ? 1 : -1;
+        return a.id - b.id;
     });
 
     const activeDealsCount = products.filter((p) => {
@@ -260,14 +307,44 @@ const AdminOffers = ({ products, loadData }) => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider">
+                                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider select-none">
                                     <th className="py-3.5 px-4 w-12 text-center">#</th>
                                     <th className="py-3.5 px-4 w-16">Image</th>
-                                    <th className="py-3.5 px-4">Product Name</th>
-                                    <th className="py-3.5 px-4">Category</th>
-                                    <th className="py-3.5 px-4 text-right">Original Price</th>
-                                    <th className="py-3.5 px-4 text-right">Offer Price</th>
-                                    <th className="py-3.5 px-4 text-center">Savings</th>
+                                    <th
+                                        className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("name")}
+                                        title="Sort by Product Name"
+                                    >
+                                        <span className="inline-flex items-center gap-1">Product Name {renderSortIcon("name")}</span>
+                                    </th>
+                                    <th
+                                        className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("category")}
+                                        title="Sort by Category"
+                                    >
+                                        <span className="inline-flex items-center gap-1">Category {renderSortIcon("category")}</span>
+                                    </th>
+                                    <th
+                                        className="py-3.5 px-4 text-right cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("price")}
+                                        title="Sort by Original Price"
+                                    >
+                                        <span className="inline-flex items-center justify-end gap-1">Original Price {renderSortIcon("price")}</span>
+                                    </th>
+                                    <th
+                                        className="py-3.5 px-4 text-right cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("discountPrice")}
+                                        title="Sort by Offer Price"
+                                    >
+                                        <span className="inline-flex items-center justify-end gap-1">Offer Price {renderSortIcon("discountPrice")}</span>
+                                    </th>
+                                    <th
+                                        className="py-3.5 px-4 text-center cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("savings")}
+                                        title="Sort by Savings"
+                                    >
+                                        <span className="inline-flex items-center justify-center gap-1">Savings {renderSortIcon("savings")}</span>
+                                    </th>
                                     <th className="py-3.5 px-4 text-center">Status</th>
                                     <th className="py-3.5 px-4 text-right">Action</th>
                                 </tr>

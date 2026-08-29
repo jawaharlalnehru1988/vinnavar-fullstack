@@ -393,10 +393,71 @@ const AdminProducts = ({ products, categories, loadData }) => {
         }
     };
 
-    const sortedProducts = [...products].sort((a, b) => {
-        const orderA = a.displayOrder != null ? a.displayOrder : 9999;
-        const orderB = b.displayOrder != null ? b.displayOrder : 9999;
-        if (orderA !== orderB) return orderA - orderB;
+    const [searchQuery, setSearchQuery] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("");
+    const [statusFilter, setStatusFilter] = useState("ALL");
+    const [sortField, setSortField] = useState("displayOrder");
+    const [sortDirection, setSortDirection] = useState("asc");
+
+    const handleSort = (field) => {
+        if (sortField === field) {
+            setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+        } else {
+            setSortField(field);
+            setSortDirection("asc");
+        }
+    };
+
+    const renderSortIcon = (field) => {
+        if (sortField !== field) {
+            return <span className="text-slate-300 ml-1 text-xs">↕</span>;
+        }
+        return <span className="text-emerald-600 ml-1 text-xs font-bold">{sortDirection === "asc" ? "▲" : "▼"}</span>;
+    };
+
+    const filteredProducts = products.filter((p) => {
+        const q = searchQuery.toLowerCase().trim();
+        const matchesSearch = !q || (
+            (p.name && p.name.toLowerCase().includes(q)) ||
+            (p.hsnCode && p.hsnCode.toLowerCase().includes(q)) ||
+            (p.category?.name && p.category.name.toLowerCase().includes(q)) ||
+            (p.shortDescription && p.shortDescription.toLowerCase().includes(q)) ||
+            (p.variants && p.variants.some((v) => (v.variantName && v.variantName.toLowerCase().includes(q)) || (v.price != null && v.price.toString().includes(q)) || (v.discountPrice != null && v.discountPrice.toString().includes(q))))
+        );
+        const matchesCategory = !categoryFilter || (p.category?.id?.toString() === categoryFilter.toString());
+        const matchesStatus = statusFilter === "ALL" || (statusFilter === "ACTIVE" ? p.active : !p.active);
+        return matchesSearch && matchesCategory && matchesStatus;
+    });
+
+    const sortedProducts = [...filteredProducts].sort((a, b) => {
+        let valA, valB;
+        if (sortField === "displayOrder") {
+            valA = a.displayOrder != null ? a.displayOrder : 9999;
+            valB = b.displayOrder != null ? b.displayOrder : 9999;
+        } else if (sortField === "name") {
+            valA = (a.name || "").toLowerCase();
+            valB = (b.name || "").toLowerCase();
+        } else if (sortField === "hsnCode") {
+            valA = (a.hsnCode || "").toLowerCase();
+            valB = (b.hsnCode || "").toLowerCase();
+        } else if (sortField === "category") {
+            valA = (a.category?.name || "").toLowerCase();
+            valB = (b.category?.name || "").toLowerCase();
+        } else if (sortField === "price") {
+            const pA = a.variants?.[0]?.discountPrice != null && a.variants?.[0]?.discountPrice !== "" ? a.variants[0].discountPrice : (a.variants?.[0]?.price || 0);
+            const pB = b.variants?.[0]?.discountPrice != null && b.variants?.[0]?.discountPrice !== "" ? b.variants[0].discountPrice : (b.variants?.[0]?.price || 0);
+            valA = Number(pA) || 0;
+            valB = Number(pB) || 0;
+        } else if (sortField === "status") {
+            valA = a.active ? 1 : 0;
+            valB = b.active ? 1 : 0;
+        } else {
+            valA = a.id;
+            valB = b.id;
+        }
+
+        if (valA < valB) return sortDirection === "asc" ? -1 : 1;
+        if (valA > valB) return sortDirection === "asc" ? 1 : -1;
         return a.id - b.id;
     });
 
@@ -427,19 +488,128 @@ const AdminProducts = ({ products, categories, loadData }) => {
                 </button>
             </div>
 
+            {/* Search and Filters Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
+                <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+                    {/* Search input with icon & clear button */}
+                    <div className="relative flex-1 min-w-[220px]">
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400 text-sm">
+                            🔍
+                        </span>
+                        <input
+                            type="text"
+                            className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+                            placeholder="Search products by name, HSN, category, variant, price..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        {searchQuery && (
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-slate-600 font-bold text-xs"
+                                onClick={() => setSearchQuery("")}
+                                title="Clear search"
+                            >
+                                ✕
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Category Filter Dropdown */}
+                    <select
+                        className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                    >
+                        <option value="">📁 All Categories</option>
+                        {categories.map((c) => (
+                            <option key={c.id} value={c.id}>
+                                {c.name}
+                            </option>
+                        ))}
+                    </select>
+
+                    {/* Status Filter */}
+                    <select
+                        className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                        <option value="ALL">All Status</option>
+                        <option value="ACTIVE">🟢 Active Only</option>
+                        <option value="INACTIVE">⚪ Inactive Only</option>
+                    </select>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs font-mono text-slate-500">
+                    <span>
+                        Showing <strong className="text-emerald-700 font-bold">{sortedProducts.length}</strong> of {products.length} products
+                    </span>
+                    {(searchQuery || categoryFilter || statusFilter !== "ALL") && (
+                        <button
+                            type="button"
+                            className="text-xs text-rose-600 hover:text-rose-700 font-bold underline ml-1 cursor-pointer"
+                            onClick={() => {
+                                setSearchQuery("");
+                                setCategoryFilter("");
+                                setStatusFilter("ALL");
+                            }}
+                        >
+                            Reset Filters
+                        </button>
+                    )}
+                </div>
+            </div>
+
             {/* Product Table */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider">
-                                <th className="py-3.5 px-4 w-28 text-center" title="Custom sequence order for customer storefront UI cards">Order #</th>
+                            <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider select-none">
+                                <th
+                                    className="py-3.5 px-4 w-28 text-center cursor-pointer hover:bg-slate-100 transition-colors"
+                                    onClick={() => handleSort("displayOrder")}
+                                    title="Sort by Order Number"
+                                >
+                                    <span className="inline-flex items-center justify-center gap-1">Order # {renderSortIcon("displayOrder")}</span>
+                                </th>
                                 <th className="py-3.5 px-4 text-center">Image</th>
-                                <th className="py-3.5 px-4">Product Name</th>
-                                <th className="py-3.5 px-4">HSN Code</th>
-                                <th className="py-3.5 px-4">Category</th>
-                                <th className="py-3.5 px-4">Variant / Price</th>
-                                <th className="py-3.5 px-4">Status</th>
+                                <th
+                                    className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                    onClick={() => handleSort("name")}
+                                    title="Sort by Product Name"
+                                >
+                                    <span className="inline-flex items-center gap-1">Product Name {renderSortIcon("name")}</span>
+                                </th>
+                                <th
+                                    className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                    onClick={() => handleSort("hsnCode")}
+                                    title="Sort by HSN Code"
+                                >
+                                    <span className="inline-flex items-center gap-1">HSN Code {renderSortIcon("hsnCode")}</span>
+                                </th>
+                                <th
+                                    className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                    onClick={() => handleSort("category")}
+                                    title="Sort by Category"
+                                >
+                                    <span className="inline-flex items-center gap-1">Category {renderSortIcon("category")}</span>
+                                </th>
+                                <th
+                                    className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                    onClick={() => handleSort("price")}
+                                    title="Sort by Price"
+                                >
+                                    <span className="inline-flex items-center gap-1">Variant / Price {renderSortIcon("price")}</span>
+                                </th>
+                                <th
+                                    className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                    onClick={() => handleSort("status")}
+                                    title="Sort by Status"
+                                >
+                                    <span className="inline-flex items-center gap-1">Status {renderSortIcon("status")}</span>
+                                </th>
                                 <th className="py-3.5 px-4 text-right">Actions</th>
                             </tr>
                         </thead>

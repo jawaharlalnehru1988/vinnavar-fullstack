@@ -681,19 +681,35 @@ const ProductDetails = () => {
                                 </div>
                             </div>
 
-                            {/* SHORT DESCRIPTION */}
+                            {/* SHORT DESCRIPTION / HIGHLIGHTS */}
                             {(product.descriptionTranslations?.[currentLang] || product.shortDescription) && (
-                                <div>
-                                    <h3 className="text-sm font-bold text-slate-900 mb-1">Highlights & Key Details:</h3>
-                                    <p className="text-slate-600 text-sm leading-relaxed">{product.descriptionTranslations?.[currentLang] || product.shortDescription}</p>
+                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1.5">
+                                        <span>✨</span> Highlights & Key Details
+                                    </h3>
+                                    <p className="text-slate-800 text-sm leading-relaxed font-medium">
+                                        {product.descriptionTranslations?.[currentLang] || product.shortDescription}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* FULL DETAILED DESCRIPTION */}
+                            {product.fullDescription && (
+                                <div className="p-4 bg-emerald-50/40 rounded-2xl border border-emerald-100/90">
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-900 mb-2 flex items-center gap-1.5">
+                                        <span>📖</span> Product Overview & Description
+                                    </h3>
+                                    <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-line">
+                                        {product.fullDescription}
+                                    </p>
                                 </div>
                             )}
 
                             {/* HEALTH BENEFITS */}
                             {product.benefits && (
                                 <div className="p-4 bg-emerald-50/70 rounded-2xl border-l-4 border-emerald-600">
-                                    <h3 className="text-sm font-bold text-emerald-800 mb-1 flex items-center gap-1.5">
-                                        <span>🌿</span> Health Benefits & Nutrition:
+                                    <h3 className="text-sm font-bold text-emerald-800 mb-1.5 flex items-center gap-1.5">
+                                        <span>🌿</span> Health Benefits & Culinary Uses:
                                     </h3>
                                     <p className="text-slate-700 text-sm whitespace-pre-line leading-relaxed">
                                         {product.benefits}

@@ -124,9 +124,34 @@ const AdminShippingRates = () => {
         }
     };
 
-    const filteredRates = rates.filter(r => {
+    const [sortField, setSortField] = useState("weightKg");
+    const [sortDirection, setSortDirection] = useState("asc");
+
+    const handleSort = (field) => {
+        if (sortField === field) {
+            setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+        } else {
+            setSortField(field);
+            setSortDirection("asc");
+        }
+    };
+
+    const renderSortIcon = (field) => {
+        if (sortField !== field) {
+            return <span className="text-slate-300 ml-1 text-xs">↕</span>;
+        }
+        return <span className="text-emerald-600 ml-1 text-xs font-bold">{sortDirection === "asc" ? "▲" : "▼"}</span>;
+    };
+
+    const filteredRates = rates.filter((r) => {
         if (!searchWeight) return true;
         return String(r.weightKg).includes(searchWeight.trim());
+    }).sort((a, b) => {
+        let valA = Number(a[sortField]) || 0;
+        let valB = Number(b[sortField]) || 0;
+        if (valA < valB) return sortDirection === "asc" ? -1 : 1;
+        if (valA > valB) return sortDirection === "asc" ? 1 : -1;
+        return a.id - b.id;
     });
 
     return (
@@ -243,13 +268,49 @@ const AdminShippingRates = () => {
                     ) : (
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider">
-                                    <th className="py-3.5 px-4">Weight (kg)</th>
-                                    <th className="py-3.5 px-4">Local (TN)</th>
-                                    <th className="py-3.5 px-4">Regional (South)</th>
-                                    <th className="py-3.5 px-4">Metro</th>
-                                    <th className="py-3.5 px-4">National</th>
-                                    <th className="py-3.5 px-4">Remote</th>
+                                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider select-none">
+                                    <th
+                                        className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("weightKg")}
+                                        title="Sort by Weight"
+                                    >
+                                        <span className="inline-flex items-center gap-1">Weight (kg) {renderSortIcon("weightKg")}</span>
+                                    </th>
+                                    <th
+                                        className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("localRate")}
+                                        title="Sort by Local Rate"
+                                    >
+                                        <span className="inline-flex items-center gap-1">Local (TN) {renderSortIcon("localRate")}</span>
+                                    </th>
+                                    <th
+                                        className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("regionalRate")}
+                                        title="Sort by Regional Rate"
+                                    >
+                                        <span className="inline-flex items-center gap-1">Regional (South) {renderSortIcon("regionalRate")}</span>
+                                    </th>
+                                    <th
+                                        className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("metroRate")}
+                                        title="Sort by Metro Rate"
+                                    >
+                                        <span className="inline-flex items-center gap-1">Metro {renderSortIcon("metroRate")}</span>
+                                    </th>
+                                    <th
+                                        className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("nationalRate")}
+                                        title="Sort by National Rate"
+                                    >
+                                        <span className="inline-flex items-center gap-1">National {renderSortIcon("nationalRate")}</span>
+                                    </th>
+                                    <th
+                                        className="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onClick={() => handleSort("remoteRate")}
+                                        title="Sort by Remote Rate"
+                                    >
+                                        <span className="inline-flex items-center gap-1">Remote {renderSortIcon("remoteRate")}</span>
+                                    </th>
                                     <th className="py-3.5 px-4 text-center">Action</th>
                                 </tr>
                             </thead>
