@@ -29,7 +29,7 @@ spring:
 
 app:
   media:
-    dir: ${MEDIA_DIR:/var/www/vinnavar-fullstack/vinnavar-backend/media}
+    dir: ${MEDIA_DIR:/var/www/myclients-fullstacts/vinnavar-fullstack/vinnavar-backend/media}
     url-prefix: /media/
   google:
     clientId: ${GOOGLE_CLIENT_ID:}

@@ -127,6 +127,8 @@ public class PdfInvoiceService {
 
             try {
                 String[] possibleLogoPaths = {
+                    "/var/www/myclients-fullstacts/vinnavar-fullstack/vinnavar-backend/media/site/logo_vinnavar.png",
+                    "/var/www/myclients-fullstacts/vinnavar-fullstack/vinnavar-frontend/public/logo_vinnavar.png",
                     "/var/www/vinnavar-fullstack/vinnavar-backend/media/site/logo_vinnavar.png",
                     "/var/www/vinnavar-fullstack/vinnavar-frontend/public/logo_vinnavar.png",
                     "/var/www/vinnavar-fullstack/vinnavar-frontend/public/logo_vinnavar.webp",
@@ -444,9 +446,19 @@ public class PdfInvoiceService {
 
             // Embed Signature Image — resized to 150x55px at 50% quality to keep file size tiny
             try {
-                String sigPath = "/var/www/vinnavar-fullstack/vinnavar-backend/media/site/signature.png";
-                java.io.File sigFile = new java.io.File(sigPath);
-                if (sigFile.exists()) {
+                String[] possibleSigPaths = {
+                    "/var/www/myclients-fullstacts/vinnavar-fullstack/vinnavar-backend/media/site/signature.png",
+                    "/var/www/vinnavar-fullstack/vinnavar-backend/media/site/signature.png"
+                };
+                java.io.File sigFile = null;
+                for (String sp : possibleSigPaths) {
+                    java.io.File sf = new java.io.File(sp);
+                    if (sf.exists()) {
+                        sigFile = sf;
+                        break;
+                    }
+                }
+                if (sigFile != null) {
                     byte[] sigBytes = resizeImageToJpeg(sigFile, 150, 55, 0.50f);
                     if (sigBytes != null) {
                         Image sigImage = Image.getInstance(sigBytes);
