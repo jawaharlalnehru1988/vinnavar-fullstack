@@ -78,7 +78,7 @@ const TrackOrder = () => {
             <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-widest bg-emerald-400/20 text-emerald-200 border border-emerald-400/30 backdrop-blur-md">
               Live Order Tracking
             </span>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight text-white" style={{ color: "#ffffff" }}>
               Track Your Package & Shipment
             </h1>
             <p className="text-emerald-100 text-sm sm:text-base max-w-2xl mx-auto">

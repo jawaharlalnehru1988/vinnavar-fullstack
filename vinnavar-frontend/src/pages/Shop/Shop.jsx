@@ -10,7 +10,8 @@ import { useTranslation } from "react-i18next";
 const assortment = getImageUrl("/media/site/assortment-citrus-fruits.png");
 
 const Product = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || "en";
   const [searchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
@@ -92,10 +93,11 @@ const Product = () => {
 
       if (response.ok) {
         window.dispatchEvent(new Event("cartUpdated"));
+        const prodName = product.nameTranslations?.[currentLang] || product.name;
         Swal.fire({
           icon: "success",
-          title: "Added to Cart",
-          text: `${product.name} (${variant.variantName}) added to cart!`,
+          title: t("added_to_cart") || "Added to Cart",
+          text: `${prodName} (${variant.variantName}) added to cart!`,
           timer: 2000,
           showConfirmButton: false
         });
@@ -109,10 +111,11 @@ const Product = () => {
     const variant = selectedVariants[product.id] || product.variants?.[0];
     try {
       await toggleWishlist(product.id, variant?.id);
+      const prodName = product.nameTranslations?.[currentLang] || product.name;
       Swal.fire({
         icon: "success",
         title: "Wishlist Updated",
-        text: `${product.name} updated in your wishlist!`,
+        text: `${prodName} updated in your wishlist!`,
         timer: 1200,
         showConfirmButton: false
       });
@@ -127,11 +130,21 @@ const Product = () => {
   // Filter products based on category & search term
   let filteredProducts = products.filter((p) => {
     const matchesCategory = selectedCategoryId ? p.category?.id === selectedCategoryId : true;
-    const matchesSearch = searchTerm.trim()
-      ? p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.shortDescription?.toLowerCase().includes(searchTerm.toLowerCase())
-      : true;
-    return matchesCategory && matchesSearch;
+    if (!matchesCategory) return false;
+    if (!searchTerm.trim()) return true;
+
+    const term = searchTerm.toLowerCase();
+    const pName = (p.name || "").toLowerCase();
+    const pDesc = (p.shortDescription || "").toLowerCase();
+    const tName = (p.nameTranslations?.[currentLang] || "").toLowerCase();
+    const tDesc = (p.descriptionTranslations?.[currentLang] || "").toLowerCase();
+
+    return (
+      pName.includes(term) ||
+      pDesc.includes(term) ||
+      tName.includes(term) ||
+      tDesc.includes(term)
+    );
   });
 
   // Sort products
@@ -209,7 +222,7 @@ const Product = () => {
                       }`}
                       onClick={() => setSelectedCategoryId(cat.id)}
                     >
-                      {cat.name}
+                      {cat.nameTranslations?.[currentLang] || cat.name}
                     </button>
                   ))}
                 </div>
@@ -278,10 +291,12 @@ const Product = () => {
                     {t("catalog_view")}
                   </span>
                   <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-                    {selectedCategoryObj ? selectedCategoryObj.name : t("all_organic_products")}
+                    {selectedCategoryObj
+                      ? (selectedCategoryObj.nameTranslations?.[currentLang] || selectedCategoryObj.name)
+                      : t("all_organic_products")}
                   </h1>
                   <p className="text-emerald-100 text-xs sm:text-sm max-w-xl">
-                    {selectedCategoryObj?.description || t("browse_complete_range")}
+                    {(selectedCategoryObj?.descriptionTranslations?.[currentLang] || selectedCategoryObj?.description) || t("browse_complete_range")}
                   </p>
                   <p className="text-emerald-200/80 text-[10px] sm:text-xs max-w-xl italic mt-1">
                     Disclaimer: Photos are for illustration purposes only. Actual product or results may vary.
@@ -320,7 +335,7 @@ const Product = () => {
                       Products are being updated in Admin side. kindly contact Owner
                     </h3>
                     <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                      We are currently populating products for <span className="font-bold text-emerald-700">{selectedCategoryObj?.name || "this category"}</span>. For instant queries or bulk availability, please contact the store owner directly.
+                      We are currently populating products for <span className="font-bold text-emerald-700">{(selectedCategoryObj?.nameTranslations?.[currentLang] || selectedCategoryObj?.name) || "this category"}</span>. For instant queries or bulk availability, please contact the store owner directly.
                     </p>
                   </div>
 
@@ -392,7 +407,7 @@ const Product = () => {
                             <Link to={`/product/${product.slug}`} className="w-full h-full flex items-center justify-center">
                               <img
                                 src={imgUrl}
-                                alt={product.name}
+                                alt={product.nameTranslations?.[currentLang] || product.name}
                                 className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
                                 onError={(e) => {
                                   e.target.onerror = null;
@@ -405,15 +420,15 @@ const Product = () => {
                           {/* Details */}
                           <div>
                             <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wide">
-                              {product.category?.name || "Organic Staples"}
+                              {product.category?.nameTranslations?.[currentLang] || product.category?.name || "Organic Staples"}
                             </span>
                             <h3 className="font-bold text-slate-900 text-sm mt-1 truncate hover:text-emerald-700 transition-colors">
                               <Link to={`/product/${product.slug}`}>
-                                {product.name}
+                                {product.nameTranslations?.[currentLang] || product.name}
                               </Link>
                             </h3>
                             <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                              {product.shortDescription}
+                              {product.descriptionTranslations?.[currentLang] || product.shortDescription}
                             </p>
                           </div>
 

@@ -22,7 +22,11 @@ public class BlogController {
 
     @GetMapping("/featured")
     public ResponseEntity<BlogPostResponse> getFeaturedBlog() {
-        return ResponseEntity.ok(blogService.getFeaturedBlog());
+        BlogPostResponse featured = blogService.getFeaturedBlog();
+        if (featured == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(featured);
     }
 
     @GetMapping("/categories")

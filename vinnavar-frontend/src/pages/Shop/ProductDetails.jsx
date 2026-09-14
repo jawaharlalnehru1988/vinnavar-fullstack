@@ -438,15 +438,15 @@ const ProductDetails = () => {
                 <nav className="flex items-center space-x-2 text-xs sm:text-sm text-slate-500 mb-6 overflow-x-auto pb-1 scrollbar-none">
                     <Link to="/" className="hover:text-emerald-600 transition-colors">Home</Link>
                     <span className="text-slate-300">/</span>
-                    <Link to="/Product" className="hover:text-emerald-600 transition-colors">Shop</Link>
+                    <Link to="/Product" className="hover:text-emerald-600 transition-colors">{t("nav_shop_catalog") || "Shop"}</Link>
                     {product.category && (
                         <>
                             <span className="text-slate-300">/</span>
-                            <span className="text-slate-600 font-medium">{product.category.name}</span>
+                            <span className="text-slate-600 font-medium">{product.category.nameTranslations?.[currentLang] || product.category.name}</span>
                         </>
                     )}
                     <span className="text-slate-300">/</span>
-                    <span className="text-emerald-700 font-bold truncate max-w-[200px] sm:max-w-xs">{product.name}</span>
+                    <span className="text-emerald-700 font-bold truncate max-w-[200px] sm:max-w-xs">{product.nameTranslations?.[currentLang] || product.name}</span>
                 </nav>
 
                 {/* MAIN PRODUCT CARD */}

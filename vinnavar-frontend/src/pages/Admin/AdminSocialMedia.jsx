@@ -4,9 +4,16 @@ import {
   createSocialMediaLink,
   updateSocialMediaLink,
   deleteSocialMediaLink,
-  uploadImageFile, // Re-using the settings asset upload endpoint we verified
+  uploadImageFile,
   API_BASE_URL
 } from "../../services/api";
+
+const PRESET_PLATFORMS = [
+  { name: "YouTube", icon: "/media/site/youtube.svg", placeholder: "https://youtube.com/@your-channel" },
+  { name: "Facebook", icon: "/media/site/facebook.svg", placeholder: "https://facebook.com/your-page" },
+  { name: "Instagram", icon: "/media/site/instagram.svg", placeholder: "https://instagram.com/your-handle" },
+  { name: "WhatsApp", icon: "/media/site/whatsapp.svg", placeholder: "https://wa.me/91XXXXXXXXXX" }
+];
 
 const AdminSocialMedia = () => {
   const [links, setLinks] = useState([]);
@@ -32,6 +39,7 @@ const AdminSocialMedia = () => {
       setLoading(true);
       const data = await fetchSocialMediaLinks();
       setLinks(data || []);
+      setError(null);
     } catch (err) {
       setError("Failed to load social media links");
     } finally {
@@ -58,9 +66,29 @@ const AdminSocialMedia = () => {
     setEditingLink(null);
   };
 
+  const handleSelectPreset = (preset) => {
+    setFormData((prev) => ({
+      ...prev,
+      name: preset.name,
+      iconImageUrl: preset.icon,
+      link: prev.link || ""
+    }));
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
+      if (name === "name" && !prev.iconImageUrl) {
+        const found = PRESET_PLATFORMS.find(
+          (p) => p.name.toLowerCase() === value.trim().toLowerCase()
+        );
+        if (found) {
+          updated.iconImageUrl = found.icon;
+        }
+      }
+      return updated;
+    });
   };
 
   const handleFileChange = async (e) => {
@@ -80,21 +108,38 @@ const AdminSocialMedia = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.iconImageUrl) {
-      alert("Name and Icon Image are required.");
+    let finalIcon = formData.iconImageUrl;
+    if (!finalIcon && formData.name) {
+      const found = PRESET_PLATFORMS.find(
+        (p) => p.name.toLowerCase() === formData.name.trim().toLowerCase()
+      );
+      if (found) finalIcon = found.icon;
+    }
+
+    if (!formData.name) {
+      alert("Name is required.");
+      return;
+    }
+    if (!finalIcon) {
+      alert("Please choose a preset or upload an icon image.");
       return;
     }
 
     try {
+      const payload = {
+        ...formData,
+        iconImageUrl: finalIcon
+      };
+
       if (editingLink) {
-        await updateSocialMediaLink(editingLink.id, formData);
+        await updateSocialMediaLink(editingLink.id, payload);
       } else {
-        await createSocialMediaLink(formData);
+        await createSocialMediaLink(payload);
       }
       handleCloseModal();
       loadLinks();
     } catch (err) {
-      alert("Error saving social media link");
+      alert("Error saving social media link: " + (err.message || "Please check server logs"));
     }
   };
 
@@ -112,14 +157,17 @@ const AdminSocialMedia = () => {
   const getImageUrl = (url) => {
     if (!url) return "";
     if (url.startsWith("http")) return url;
-    return `${API_BASE_URL.replace("/api", "")}${url}`;
+    return `${API_BASE_URL.replace("/api/v1", "").replace("/api", "")}${url}`;
   };
 
   return (
     <div className="bg-white p-4 rounded shadow-sm">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h5 className="mb-0 text-success fw-bold">Social Media Manager</h5>
-        <button className="btn btn-sm btn-success" onClick={() => handleOpenModal()}>
+        <div>
+          <h5 className="mb-1 text-success fw-bold">Social Media Manager</h5>
+          <p className="text-muted small mb-0">Manage social channel links displayed in the footer</p>
+        </div>
+        <button className="btn btn-sm btn-success px-3" onClick={() => handleOpenModal()}>
           + Add New Link
         </button>
       </div>
@@ -139,31 +187,31 @@ const AdminSocialMedia = () => {
           <table className="table table-hover align-middle border">
             <thead className="table-light">
               <tr>
-                <th scope="col">Icon</th>
-                <th scope="col">Name</th>
-                <th scope="col">Link</th>
-                <th scope="col" className="text-center">Actions</th>
+                <th scope="col" style={{ width: "80px" }}>Icon</th>
+                <th scope="col">Platform Name</th>
+                <th scope="col">Target Link</th>
+                <th scope="col" className="text-center" style={{ width: "160px" }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {links.map((sLink) => (
                 <tr key={sLink.id}>
-                  <td style={{ width: "80px" }}>
+                  <td>
                     <img
                       src={getImageUrl(sLink.iconImageUrl)}
                       alt={sLink.name}
-                      style={{ height: "30px", width: "30px", objectFit: "contain", borderRadius: "50%" }}
+                      style={{ height: "34px", width: "34px", objectFit: "contain", borderRadius: "50%" }}
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = "https://via.placeholder.com/30?text=?";
+                        e.target.src = "https://via.placeholder.com/34?text=?";
                       }}
                     />
                   </td>
-                  <td className="fw-medium">{sLink.name}</td>
+                  <td className="fw-semibold text-dark">{sLink.name}</td>
                   <td>
                     {sLink.link ? (
                       <a href={sLink.link} target="_blank" rel="noopener noreferrer" className="text-primary text-decoration-none small">
-                        {sLink.link}
+                        {sLink.link} <i className="bi bi-box-arrow-up-right ms-1 small"></i>
                       </a>
                     ) : (
                       <span className="text-muted small">-</span>
@@ -195,19 +243,39 @@ const AdminSocialMedia = () => {
               </div>
               <form onSubmit={handleSubmit}>
                 <div className="modal-body">
+                  {!editingLink && (
+                    <div className="mb-3">
+                      <label className="form-label small fw-bold text-muted d-block">Quick Select Preset</label>
+                      <div className="d-flex flex-wrap gap-2">
+                        {PRESET_PLATFORMS.map((preset) => (
+                          <button
+                            key={preset.name}
+                            type="button"
+                            className={`btn btn-sm ${formData.name === preset.name ? "btn-success" : "btn-outline-secondary"} d-flex align-items-center gap-1`}
+                            onClick={() => handleSelectPreset(preset)}
+                          >
+                            <img src={getImageUrl(preset.icon)} alt={preset.name} style={{ width: 18, height: 18 }} />
+                            {preset.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="mb-3">
-                    <label className="form-label fw-bold">Name (e.g., Whatsapp, Facebook)</label>
+                    <label className="form-label fw-bold">Platform Name <span className="text-danger">*</span></label>
                     <input
                       type="text"
                       className="form-control"
                       name="name"
+                      placeholder="e.g., YouTube, Facebook, WhatsApp"
                       value={formData.name}
                       onChange={handleChange}
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label fw-bold">Link (URL)</label>
+                    <label className="form-label fw-bold">Link (URL) <span className="text-danger">*</span></label>
                     <input
                       type="url"
                       className="form-control"
@@ -215,13 +283,14 @@ const AdminSocialMedia = () => {
                       value={formData.link}
                       onChange={handleChange}
                       placeholder="https://..."
+                      required
                     />
                   </div>
                   <div className="mb-3">
                     <label className="form-label fw-bold">Icon Image</label>
                     <div className="d-flex align-items-center gap-3">
                       {formData.iconImageUrl && (
-                        <div className="border rounded p-1">
+                        <div className="border rounded p-1 bg-light">
                           <img
                             src={getImageUrl(formData.iconImageUrl)}
                             alt="Preview"
@@ -229,13 +298,20 @@ const AdminSocialMedia = () => {
                           />
                         </div>
                       )}
-                      <input
-                        type="file"
-                        className="form-control"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        disabled={uploading}
-                      />
+                      <div className="flex-grow-1">
+                        <input
+                          type="file"
+                          className="form-control"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          disabled={uploading}
+                        />
+                        <div className="form-text text-muted">
+                          {formData.iconImageUrl
+                            ? "Icon selected. Uploading a file will override it."
+                            : "Upload custom icon or choose a preset platform above."}
+                        </div>
+                      </div>
                     </div>
                     {uploading && <div className="form-text text-primary mt-1">Uploading image...</div>}
                   </div>

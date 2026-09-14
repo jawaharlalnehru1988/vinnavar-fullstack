@@ -135,8 +135,7 @@ const Footer = () => {
                         <span className="text-muted small">Stay tuned!</span>
                       ) : (
                         socialLinks.map((social) => {
-                          const isWhatsapp = social.name && social.name.toLowerCase() === "whatsapp";
-                          const href = isWhatsapp && social.link ? social.link : undefined;
+                          const href = social.link || undefined;
                           return (
                             <a 
                               key={social.id}

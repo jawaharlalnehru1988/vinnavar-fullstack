@@ -20,7 +20,8 @@ const loadRazorpayScript = () => {
 };
 
 const ProductCheckOut = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const currentLang = i18n.language || 'en';
     const navigate = useNavigate();
     const [loaderStatus, setLoaderStatus] = useState(true);
     const [cart, setCart] = useState(null);
@@ -677,7 +678,7 @@ const ProductCheckOut = () => {
                                                                 />
                                                                 <div>
                                                                     <h4 className="font-bold text-slate-900 text-xs truncate max-w-[130px]">
-                                                                        {product.name}
+                                                                        {product.nameTranslations?.[currentLang] || product.name}
                                                                     </h4>
                                                                     <span className="text-[10px] text-emerald-700 font-semibold">
                                                                         {variant.variantName} x {item.quantity}

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { fetchTestimonials } from "../services/api";
 
 const TestimonialsCarousel = () => {
+    const { t } = useTranslation();
     const [testimonials, setTestimonials] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -127,11 +129,11 @@ const TestimonialsCarousel = () => {
                 {/* Section Header */}
                 <div className="text-center mb-4">
                     <span className="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-2 rounded-pill mb-2" style={{ color: "#2d6a4f" }}>
-                        💚 CUSTOMER REVIEWS & TESTIMONIALS
+                        💚 {t("testimonials_badge", "CUSTOMER REVIEWS & TESTIMONIALS")}
                     </span>
-                    <h2 className="fw-bold text-dark fs-1 mb-2">What Our Happy Customers Say</h2>
+                    <h2 className="fw-bold text-dark fs-1 mb-2">{t("testimonials_title", "What Our Happy Customers Say")}</h2>
                     <p className="text-muted fs-5 mb-0" style={{ maxWidth: "600px", margin: "0 auto" }}>
-                        Real reviews and verified experiences from organic food buyers across India.
+                        {t("testimonials_subtitle", "Real reviews and verified experiences from organic food buyers across India.")}
                     </p>
                 </div>
 
@@ -193,7 +195,7 @@ const TestimonialsCarousel = () => {
                                     {"★".repeat(currentItem.rating || 5)}
                                 </div>
                                 <span className="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-1.5 rounded-pill" style={{ fontSize: "12px" }}>
-                                    ✓ Verified Buyer
+                                    ✓ {t("testimonials_verified_buyer", "Verified Buyer")}
                                 </span>
                             </div>
 

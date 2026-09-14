@@ -8,7 +8,8 @@ import { CartSkeleton } from "../../Component/Skeleton";
 import { useTranslation } from "react-i18next";
 
 const ProductWishList = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const [loaderStatus, setLoaderStatus] = useState(true);
   const [wishlist, setWishlist] = useState({ items: [], totalItemCount: 0 });
   const [selectedItems, setSelectedItems] = useState([]);
@@ -276,16 +277,16 @@ const ProductWishList = () => {
                                   className="w-16 h-16 object-contain rounded-2xl bg-slate-50 border border-slate-100 p-1.5"
                                 />
                               </Link>
-                              <div>
-                                <h3 className="font-bold text-slate-900 text-xs sm:text-sm hover:text-emerald-700 transition-colors">
-                                  <Link to={`/product/${product.slug || product.id}`}>
-                                    {product.name}
-                                  </Link>
-                                </h3>
-                                <p className="text-[11px] text-emerald-700 font-semibold mt-0.5">
-                                  {product.category?.name || "Organic Staples"}
-                                </p>
-                              </div>
+                                <div>
+                                  <h3 className="font-bold text-slate-900 text-xs sm:text-sm hover:text-emerald-700 transition-colors">
+                                    <Link to={`/product/${product.slug || product.id}`}>
+                                      {product.nameTranslations?.[currentLang] || product.name}
+                                    </Link>
+                                  </h3>
+                                  <p className="text-[11px] text-emerald-700 font-semibold mt-0.5">
+                                    {product.category?.nameTranslations?.[currentLang] || product.category?.name || "Organic Staples"}
+                                  </p>
+                                </div>
                             </div>
                           </td>
 

@@ -8,7 +8,8 @@ import { CartSkeleton } from "../../Component/Skeleton";
 import { useTranslation } from "react-i18next";
 
 const ProductCart = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const navigate = useNavigate();
   const [loaderStatus, setLoaderStatus] = useState(true);
   const [cart, setCart] = useState(null);
@@ -251,7 +252,7 @@ const ProductCart = () => {
                           </Link>
                           <div className="space-y-1">
                             <h3 className="font-bold text-slate-900 text-sm hover:text-emerald-700 transition-colors">
-                              <Link to={`/product/${product.slug}`}>{product.name}</Link>
+                              <Link to={`/product/${product.slug}`}>{product.nameTranslations?.[currentLang] || product.name}</Link>
                             </h3>
                             <div className="flex items-center gap-2">
                               <span className="inline-block px-2.5 py-0.5 bg-slate-100 text-emerald-800 text-[10px] font-extrabold rounded-full border border-slate-200/60">

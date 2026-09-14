@@ -639,7 +639,7 @@ const Header = () => {
                               className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center gap-2"
                             >
                               <span className="text-emerald-600">📁</span>
-                              <span className="font-medium">{cat.name}</span>
+                              <span className="font-medium">{cat.nameTranslations?.[currentLang] || cat.name}</span>
                             </button>
                           ))}
                         </div>
@@ -656,11 +656,11 @@ const Header = () => {
                               onClick={() => handleProductSelect(prod.slug)}
                               className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-emerald-50 transition-colors flex items-center gap-3"
                             >
-                              <img src={getImageUrl(prod.imageUrl)} alt={prod.name} className="w-8 h-8 rounded object-cover border border-slate-200" />
+                              <img src={getImageUrl(prod.imageUrl)} alt={prod.nameTranslations?.[currentLang] || prod.name} className="w-8 h-8 rounded object-cover border border-slate-200" />
                               <div className="flex-1 min-w-0">
-                                <div className="font-semibold text-slate-800 truncate">{prod.name}</div>
-                                {prod.shortDescription && (
-                                  <div className="text-[10px] text-slate-500 truncate">{prod.shortDescription}</div>
+                                <div className="font-semibold text-slate-800 truncate">{prod.nameTranslations?.[currentLang] || prod.name}</div>
+                                {(prod.descriptionTranslations?.[currentLang] || prod.shortDescription) && (
+                                  <div className="text-[10px] text-slate-500 truncate">{prod.descriptionTranslations?.[currentLang] || prod.shortDescription}</div>
                                 )}
                               </div>
                             </button>
@@ -732,10 +732,10 @@ const Header = () => {
               <Link
                 to="/ProductWishList"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all shadow-xs"
-                title="Wishlist"
+                title={t("wishlist", "Wishlist")}
               >
                 <span className="text-sm">❤️</span>
-                <span className="hidden sm:inline">Wishlist</span>
+                <span className="hidden sm:inline">{t("wishlist", "Wishlist")}</span>
                 <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-red-500 text-white">
                   {wishlistCount}
                 </span>
@@ -930,7 +930,7 @@ const Header = () => {
                           className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors flex items-center gap-2"
                         >
                           <span className="text-emerald-600">📁</span>
-                          <span className="font-medium">{cat.name}</span>
+                          <span className="font-medium">{cat.nameTranslations?.[currentLang] || cat.name}</span>
                         </button>
                       ))}
                     </div>
@@ -947,11 +947,11 @@ const Header = () => {
                           onClick={() => handleProductSelect(prod.slug)}
                           className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-emerald-50 transition-colors flex items-center gap-3"
                         >
-                          <img src={getImageUrl(prod.imageUrl)} alt={prod.name} className="w-8 h-8 rounded object-cover border border-slate-200 flex-shrink-0" />
+                          <img src={getImageUrl(prod.imageUrl)} alt={prod.nameTranslations?.[currentLang] || prod.name} className="w-8 h-8 rounded object-cover border border-slate-200 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-slate-800 truncate">{prod.name}</div>
-                            {prod.shortDescription && (
-                              <div className="text-[10px] text-slate-500 truncate">{prod.shortDescription}</div>
+                            <div className="font-semibold text-slate-800 truncate">{prod.nameTranslations?.[currentLang] || prod.name}</div>
+                            {(prod.descriptionTranslations?.[currentLang] || prod.shortDescription) && (
+                              <div className="text-[10px] text-slate-500 truncate">{prod.descriptionTranslations?.[currentLang] || prod.shortDescription}</div>
                             )}
                           </div>
                         </button>
@@ -1008,7 +1008,7 @@ const Header = () => {
                 isActive("/ProductWishList") ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
               }`}
             >
-              ❤️ Wishlist
+              ❤️ {t("wishlist", "Wishlist")}
             </Link>
             <Link
               to="/ProductCart"
@@ -1016,7 +1016,7 @@ const Header = () => {
                 isActive("/ProductCart") ? "bg-emerald-700 text-white shadow-sm" : "bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
               }`}
             >
-              🛍️ Cart
+              🛍️ {t("cart_label", "Cart")}
             </Link>
             <a
               href="#corporate-contact"
@@ -1442,7 +1442,7 @@ const Header = () => {
                           </div>
                           <div className="col-5">
                             <h6 className="mb-0 text-truncate" style={{ fontSize: "14px" }}>
-                              {product.name}
+                              {product.nameTranslations?.[currentLang] || product.name}
                             </h6>
                             <span className="badge bg-light text-success border">
                               {variant.variantName}

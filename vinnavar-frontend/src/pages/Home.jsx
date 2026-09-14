@@ -16,7 +16,8 @@ const bannerdeal = getImageUrl("/media/site/banner-deal1.jpg");
 const product11 = getImageUrl("/media/products/product-img-11.jpg");
 
 const Home = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [categories, setCategories] = useState([]);
   const [offerProducts, setOfferProducts] = useState([]);
@@ -340,10 +341,10 @@ const Home = () => {
                                       overflow: "hidden",
                                       height: "44px"
                                     }}
-                                    title={cat.name}
+                                    title={cat.nameTranslations?.[currentLang] || cat.name}
                                   >
                                     <Link to={`/Product?category=${cat.id}`} className="text-dark text-decoration-none">
-                                      {cat.name}
+                                      {cat.nameTranslations?.[currentLang] || cat.name}
                                     </Link>
                                   </h4>
                                   <p
@@ -355,9 +356,9 @@ const Home = () => {
                                       overflow: "hidden",
                                       height: "40px"
                                     }}
-                                    title={cat.description}
+                                    title={cat.descriptionTranslations?.[currentLang] || cat.description}
                                   >
-                                    {cat.description || "Premium quality organically grown products."}
+                                    {cat.descriptionTranslations?.[currentLang] || cat.description || "Premium quality organically grown products."}
                                   </p>
                                   <Link
                                     to={`/Product?category=${cat.id}`}

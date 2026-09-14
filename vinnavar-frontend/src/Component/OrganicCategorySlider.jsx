@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { fetchCategories } from "../services/api";
+import { useTranslation } from "react-i18next";
 
 const OrganicCategorySlider = ({ selectedCategoryId, onSelectCategory }) => {
+    const { t, i18n } = useTranslation();
+    const currentLang = i18n.language || 'en';
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -48,7 +51,7 @@ const OrganicCategorySlider = ({ selectedCategoryId, onSelectCategory }) => {
                             className={`btn ${selectedCategoryId === cat.id ? 'btn-success' : 'btn-outline-success'}`}
                             onClick={() => onSelectCategory(cat.id)}
                         >
-                            {cat.name}
+                            {cat.nameTranslations?.[currentLang] || cat.name}
                         </button>
                     ))}
                 </div>
