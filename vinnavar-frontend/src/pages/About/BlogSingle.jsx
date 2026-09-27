@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import ScrollToTop from "../ScrollToTop";
-import { fetchBlogBySlug, fetchBlogsByCategory, fetchBlogs, getImageUrl } from "../../services/api";
+import { fetchBlogBySlug, fetchBlogById, fetchBlogsByCategory, fetchBlogs, getImageUrl } from "../../services/api";
+import { useTranslation } from "react-i18next";
 
 const BlogSingle = () => {
-  const { slug: routeSlug } = useParams();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || "en";
+
+  const { slug: routeSlug, id: routeId } = useParams();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const slug = routeSlug || queryParams.get("slug") || "garlic-cream-bucatini-peas-asparagus";
+
+  const identifier = routeId || routeSlug || queryParams.get("id") || queryParams.get("slug");
 
   const [blog, setBlog] = useState(null);
   const [relatedBlogs, setRelatedBlogs] = useState([]);
@@ -18,11 +23,22 @@ const BlogSingle = () => {
     const loadBlogDetail = async () => {
       try {
         setLoading(true);
-        let article = await fetchBlogBySlug(slug);
-        
+        let article = null;
+
+        if (identifier) {
+          // Try fetching by slug or ID
+          article = await fetchBlogBySlug(identifier);
+          if (!article && !isNaN(identifier)) {
+            article = await fetchBlogById(identifier);
+          }
+        }
+
+        // If still no article, fallback to featured or first active blog
         if (!article) {
           const all = await fetchBlogs();
-          if (all && all.length > 0) article = all[0];
+          if (all && all.length > 0) {
+            article = all[0];
+          }
         }
 
         setBlog(article);
@@ -40,7 +56,7 @@ const BlogSingle = () => {
     };
 
     loadBlogDetail();
-  }, [slug]);
+  }, [identifier]);
 
   // Robust Markdown & List Parser
   const renderFormattedContent = (content) => {
@@ -56,9 +72,9 @@ const BlogSingle = () => {
 
       if (listType === "bullet") {
         elements.push(
-          <div key={`list-${keyPrefix}`} className="bg-slate-50 border border-slate-200/80 p-6 rounded-3xl my-6 space-y-3 shadow-xs">
+          <div key={`list-${keyPrefix}`} className="bg-emerald-50/50 border border-emerald-100 p-6 rounded-3xl my-6 space-y-3 shadow-xs">
             <h4 className="font-extrabold text-emerald-800 text-sm flex items-center gap-2 uppercase tracking-wide">
-              <span>🥗</span> Key Ingredients &amp; Items Required
+              <span>🥗</span> Key Details &amp; Highlights
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               {currentList.map((item, iIdx) => (
@@ -135,7 +151,7 @@ const BlogSingle = () => {
         );
       } else {
         elements.push(
-          <p key={idx} className="text-slate-600 text-sm leading-relaxed mb-4">
+          <p key={idx} className="text-slate-700 text-sm leading-relaxed mb-4 font-normal">
             {renderInlineStyles(trimmed)}
           </p>
         );
@@ -160,6 +176,11 @@ const BlogSingle = () => {
     });
   };
 
+  // Resolve current active language fields with graceful fallbacks
+  const currentTitle = blog?.titleTranslations?.[currentLang] || blog?.titleTranslations?.en || blog?.titleTranslations?.ta || blog?.title || "";
+  const currentShortDesc = blog?.shortDescriptionTranslations?.[currentLang] || blog?.shortDescriptionTranslations?.en || blog?.shortDescriptionTranslations?.ta || blog?.shortDescription || "";
+  const currentContent = blog?.contentTranslations?.[currentLang] || blog?.contentTranslations?.en || blog?.contentTranslations?.ta || blog?.content || "";
+
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       {loading ? (
@@ -169,8 +190,9 @@ const BlogSingle = () => {
           <div className="w-full h-80 bg-slate-200/80 rounded-3xl"></div>
         </div>
       ) : !blog ? (
-        <div className="max-w-md mx-auto text-center py-16 space-y-4 bg-white rounded-3xl border border-slate-100 p-8">
+        <div className="max-w-md mx-auto text-center py-16 space-y-4 bg-white rounded-3xl border border-slate-100 p-8 shadow-sm">
           <h3 className="font-black text-slate-900 text-lg">Article Not Found</h3>
+          <p className="text-xs text-slate-500">The requested article could not be loaded.</p>
           <Link to="/Blog" className="inline-block px-5 py-2.5 bg-emerald-700 text-white font-bold text-xs rounded-full">
             Back to All Articles
           </Link>
@@ -194,34 +216,41 @@ const BlogSingle = () => {
             {/* Main Article Container */}
             <article className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 sm:p-10 space-y-6">
               <div>
-                <Link
-                  to={`/BlogCategory?category=${encodeURIComponent(blog.category)}`}
-                  className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-extrabold uppercase tracking-widest rounded-full border border-emerald-200/60 mb-3"
-                >
-                  {blog.category}
-                </Link>
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <Link
+                    to={`/BlogCategory?category=${encodeURIComponent(blog.category)}`}
+                    className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-extrabold uppercase tracking-widest rounded-full border border-emerald-200/60"
+                  >
+                    {blog.category}
+                  </Link>
+                  <span className="text-[11px] font-mono text-slate-400">
+                    Article #{blog.id}
+                  </span>
+                </div>
+
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 leading-tight">
-                  {blog.title}
+                  {currentTitle}
                 </h1>
-                {blog.shortDescription && (
-                  <p className="text-sm sm:text-base text-slate-500 mt-3 leading-relaxed font-medium">
-                    {blog.shortDescription}
+
+                {currentShortDesc && (
+                  <p className="text-sm sm:text-base text-slate-600 mt-3 leading-relaxed font-normal bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    {currentShortDesc}
                   </p>
                 )}
               </div>
 
               {/* Featured Image */}
-              <div className="rounded-3xl overflow-hidden max-h-[480px] bg-slate-100">
+              <div className="rounded-3xl overflow-hidden max-h-[480px] bg-slate-100 border border-slate-100">
                 <img
                   src={getImageUrl(blog.imageUrl)}
-                  alt={blog.title}
+                  alt={currentTitle}
                   className="w-full h-full object-cover"
                 />
               </div>
 
-              {/* Formatted Content */}
+              {/* Formatted Content in active language */}
               <div className="pt-4 border-t border-slate-100">
-                {renderFormattedContent(blog.content)}
+                {renderFormattedContent(currentContent)}
               </div>
 
               {/* Article Actions Bar */}
@@ -230,7 +259,7 @@ const BlogSingle = () => {
                   to="/Blog"
                   className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-full transition-all"
                 >
-                  ← Back to All Articles
+                  ← {t("all_articles") || "Back to All Articles"}
                 </Link>
                 <Link
                   to={`/BlogCategory?category=${encodeURIComponent(blog.category)}`}
@@ -248,38 +277,42 @@ const BlogSingle = () => {
                   Related Articles You Might Enjoy
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                  {relatedBlogs.map((rel) => (
-                    <div
-                      key={rel.id}
-                      className="group bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all p-4 flex flex-col justify-between"
-                    >
-                      <div className="space-y-3">
-                        <div className="h-36 rounded-2xl overflow-hidden bg-slate-100">
-                          <Link to={`/blog/${rel.slug}`}>
-                            <img
-                              src={getImageUrl(rel.imageUrl)}
-                              alt={rel.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
+                  {relatedBlogs.map((rel) => {
+                    const relTitle = rel.titleTranslations?.[currentLang] || rel.titleTranslations?.en || rel.titleTranslations?.ta || rel.title;
+                    const relLink = `/blog/${rel.slug || rel.id}`;
+                    return (
+                      <div
+                        key={rel.id}
+                        className="group bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all p-4 flex flex-col justify-between"
+                      >
+                        <div className="space-y-3">
+                          <div className="h-36 rounded-2xl overflow-hidden bg-slate-100">
+                            <Link to={relLink}>
+                              <img
+                                src={getImageUrl(rel.imageUrl)}
+                                alt={relTitle}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            </Link>
+                          </div>
+                          <span className="text-[10px] font-extrabold text-emerald-700 uppercase tracking-widest">
+                            {rel.category}
+                          </span>
+                          <h4 className="font-bold text-slate-900 text-sm line-clamp-2 group-hover:text-emerald-700 transition-colors">
+                            <Link to={relLink}>{relTitle}</Link>
+                          </h4>
+                        </div>
+                        <div className="pt-3 mt-3 border-t border-slate-100">
+                          <Link
+                            to={relLink}
+                            className="text-xs font-bold text-emerald-700 hover:text-emerald-800"
+                          >
+                            Read Article ➔
                           </Link>
                         </div>
-                        <span className="text-[10px] font-extrabold text-emerald-700 uppercase tracking-widest">
-                          {rel.category}
-                        </span>
-                        <h4 className="font-bold text-slate-900 text-sm line-clamp-2 group-hover:text-emerald-700 transition-colors">
-                          <Link to={`/blog/${rel.slug}`}>{rel.title}</Link>
-                        </h4>
                       </div>
-                      <div className="pt-3 mt-3 border-t border-slate-100">
-                        <Link
-                          to={`/blog/${rel.slug}`}
-                          className="text-xs font-bold text-emerald-700 hover:text-emerald-800"
-                        >
-                          Read Article ➔
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

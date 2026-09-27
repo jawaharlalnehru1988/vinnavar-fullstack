@@ -10,8 +10,6 @@ import com.vinnavar.backend.modules.cart.repository.CartItemRepository;
 import com.vinnavar.backend.modules.wishlist.repository.WishlistItemRepository;
 import com.vinnavar.backend.modules.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,6 +97,8 @@ public class ProductService {
                 .active(dto.isActive())
                 .nameTranslations(dto.getNameTranslations() != null ? new java.util.HashMap<>(dto.getNameTranslations()) : new java.util.HashMap<>())
                 .descriptionTranslations(dto.getDescriptionTranslations() != null ? new java.util.HashMap<>(dto.getDescriptionTranslations()) : new java.util.HashMap<>())
+                .fullDescriptionTranslations(dto.getFullDescriptionTranslations() != null ? new java.util.HashMap<>(dto.getFullDescriptionTranslations()) : new java.util.HashMap<>())
+                .benefitsTranslations(dto.getBenefitsTranslations() != null ? new java.util.HashMap<>(dto.getBenefitsTranslations()) : new java.util.HashMap<>())
                 .variants(new ArrayList<>())
                 .build();
 
@@ -168,6 +168,14 @@ public class ProductService {
         if (dto.getDescriptionTranslations() != null) {
             product.getDescriptionTranslations().clear();
             product.getDescriptionTranslations().putAll(dto.getDescriptionTranslations());
+        }
+        if (dto.getFullDescriptionTranslations() != null) {
+            product.getFullDescriptionTranslations().clear();
+            product.getFullDescriptionTranslations().putAll(dto.getFullDescriptionTranslations());
+        }
+        if (dto.getBenefitsTranslations() != null) {
+            product.getBenefitsTranslations().clear();
+            product.getBenefitsTranslations().putAll(dto.getBenefitsTranslations());
         }
         product.setFeatured(dto.isFeatured());
         product.setActive(dto.isActive());

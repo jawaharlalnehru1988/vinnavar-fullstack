@@ -39,6 +39,11 @@ public class BlogController {
         return ResponseEntity.ok(blogService.getBlogsByCategory(category));
     }
 
+    @GetMapping("/id/{id}")
+    public ResponseEntity<BlogPostResponse> getBlogById(@PathVariable Long id) {
+        return ResponseEntity.ok(blogService.getBlogById(id));
+    }
+
     @GetMapping("/{slug}")
     public ResponseEntity<BlogPostResponse> getBlogBySlug(@PathVariable String slug) {
         return ResponseEntity.ok(blogService.getBlogBySlug(slug));

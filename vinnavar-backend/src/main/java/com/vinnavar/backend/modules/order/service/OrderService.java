@@ -54,15 +54,11 @@ public class OrderService {
         String destState = request.getShippingAddress() != null ? request.getShippingAddress().getState() : "Tamil Nadu";
         String pMethod = request.getPaymentMethod() != null ? request.getPaymentMethod().name() : "COD";
 
-        com.vinnavar.backend.modules.shipping.service.ShippingService.ShippingCalculationResult calcResult =
-                shippingService.calculateShippingFee(totalWeightKg, destState, pMethod, subtotal);
-        BigDecimal shippingFee = calcResult.getTotalShippingFee();
-
-        BigDecimal productGst = subtotal.multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);
-        BigDecimal shippingGst = shippingFee.multiply(new BigDecimal("0.18")).setScale(2, java.math.RoundingMode.HALF_UP);
-        BigDecimal gstTax = productGst.add(shippingGst);
-        BigDecimal unroundedTotal = subtotal.add(shippingFee).add(gstTax).setScale(2, java.math.RoundingMode.HALF_UP);
-        BigDecimal totalAmount = unroundedTotal.setScale(0, java.math.RoundingMode.FLOOR).setScale(2, java.math.RoundingMode.HALF_UP);
+        // All-inclusive pricing: Admin enters final price directly.
+        // Temporarily bypass shipping charge table calculation and extra tax additions.
+        BigDecimal shippingFee = BigDecimal.ZERO;
+        BigDecimal gstTax = BigDecimal.ZERO;
+        BigDecimal totalAmount = subtotal.setScale(2, java.math.RoundingMode.HALF_UP);
 
         String datePrefix = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String randomSuffix = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
@@ -181,6 +177,14 @@ public class OrderService {
         return orderRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
+    @Transactional(readOnly = true)
+    public List<Order> getOrdersByCustomerPhone(String customerPhone) {
+        if (customerPhone == null || customerPhone.trim().isEmpty()) {
+            return List.of();
+        }
+        return orderRepository.findByCustomerPhoneOrderByCreatedAtDesc(customerPhone.trim());
+    }
+
     @Transactional
     public Order updateOrderStatus(Long orderId, OrderStatus status) {
         Order order = orderRepository.findById(orderId)
@@ -257,14 +261,11 @@ public class OrderService {
     public Order updateOrderShippingFee(Long orderId, BigDecimal shippingFee) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
-        BigDecimal oldFee = order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO;
         BigDecimal newFee = shippingFee != null ? shippingFee : BigDecimal.ZERO;
         order.setShippingFee(newFee);
 
-        if (order.getTotalAmount() != null) {
-            BigDecimal diff = newFee.subtract(oldFee);
-            order.setTotalAmount(order.getTotalAmount().add(diff));
-        }
+        BigDecimal sub = order.getSubtotal() != null ? order.getSubtotal() : BigDecimal.ZERO;
+        order.setTotalAmount(sub.add(newFee).setScale(2, java.math.RoundingMode.HALF_UP));
         return orderRepository.save(order);
     }
 

@@ -52,6 +52,7 @@ const AdminSidebar = ({
 
     const navItems = [
         { id: "overview", label: "📊 Dashboard", desc: "Store stats" },
+        { id: "analytics", label: "📈 Site Analytics", desc: "Live visitors & traffic" },
         { id: "categories", label: "🗂️ Categories", desc: "Product categories" },
         { id: "products", label: "📦 Products", desc: "Manage catalog" },
         { id: "offers", label: "🏷️ Offers & Discounts", desc: "Deals & special prices" },
@@ -61,14 +62,15 @@ const AdminSidebar = ({
         { id: "reviews", label: "⭐ Customer Reviews", desc: "Ratings & photo reviews" },
         { id: "customers", label: "👥 Customers", desc: "Customer profiles" },
         { id: "testimonials", label: "💬 Testimonials", desc: "Customer reviews" },
+        { id: "marquee", label: "📢 Top Marquee", desc: "Live header ticker" },
         { id: "assets", label: "🖼️ Site Assets", desc: "Banners & sliders", isDropdown: true },
         { id: "complaints", label: "📢 Complaints", desc: "Support tickets" },
         { id: "blogs", label: "📝 Blog Articles", desc: "Posts & recipes" },
         { id: "social-media", label: "🌐 Social Media", desc: "Manage footer links" }
     ];
 
-    const primaryItems = navItems.slice(0, 9);
-    const secondaryItems = navItems.slice(9);
+    const primaryItems = navItems.slice(0, 10);
+    const secondaryItems = navItems.slice(10);
     const allGroupsList = ["ALL", ...assetGroups.filter((g) => g !== "ALL")];
 
     // Find current active item label for mobile header

@@ -9,6 +9,7 @@ public interface BlogService {
     List<BlogPostResponse> getAllActiveBlogs();
     List<BlogPostResponse> getBlogsByCategory(String category);
     BlogPostResponse getBlogBySlug(String slug);
+    BlogPostResponse getBlogById(Long id);
     BlogPostResponse getFeaturedBlog();
     List<String> getBlogCategories();
 

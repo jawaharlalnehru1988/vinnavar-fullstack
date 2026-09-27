@@ -221,19 +221,19 @@ const Footer = () => {
                 <div className="border-top mt-4 pt-4">
                   <div className="d-flex flex-wrap justify-content-center gap-2 mb-3">
                     <Link to="/terms-conditions" className="text-muted small text-decoration-none px-2 py-1 rounded hover-text-success" style={{ transition: "color 0.2s" }}>
-                      Terms &amp; Conditions
+                      {t("terms_conditions", "Terms & Conditions")}
                     </Link>
                     <span className="text-muted small">|</span>
                     <Link to="/privacy-policy" className="text-muted small text-decoration-none px-2 py-1 rounded">
-                      Privacy Policy
+                      {t("privacy_policy", "Privacy Policy")}
                     </Link>
                     <span className="text-muted small">|</span>
                     <Link to="/return-policy" className="text-muted small text-decoration-none px-2 py-1 rounded">
-                      Return Policy
+                      {t("return_policy", "Return Policy")}
                     </Link>
                     <span className="text-muted small">|</span>
                     <Link to="/refund-policy" className="text-muted small text-decoration-none px-2 py-1 rounded">
-                      Refund Policy
+                      {t("refund_policy", "Refund Policy")}
                     </Link>
                   </div>
                 </div>

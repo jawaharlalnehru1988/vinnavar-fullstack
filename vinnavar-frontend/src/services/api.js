@@ -79,7 +79,15 @@ export const fetchBlogsByCategory = async (category) => {
 };
 
 export const fetchBlogBySlug = async (slug) => {
-    const res = await fetch(`${API_BASE_URL}/blogs/${slug}`);
+    if (!slug) return null;
+    const res = await fetch(`${API_BASE_URL}/blogs/${encodeURIComponent(slug)}`);
+    if (!res.ok) return null;
+    return res.json();
+};
+
+export const fetchBlogById = async (id) => {
+    if (!id) return null;
+    const res = await fetch(`${API_BASE_URL}/blogs/id/${encodeURIComponent(id)}`);
     if (!res.ok) return null;
     return res.json();
 };

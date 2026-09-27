@@ -46,6 +46,7 @@ const Header = () => {
       localStorage.setItem("vinnavar_customer_token", res.token);
       localStorage.setItem("vinnavar_customer", JSON.stringify(res));
       setCurrentUser(res);
+      window.dispatchEvent(new Event("userAuthChanged"));
       await processPostLoginSync(res);
       closeModal();
       Swal.fire({
@@ -64,8 +65,26 @@ const Header = () => {
   const [cart, setCart] = useState(null);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [logoUrl, setLogoUrl] = useState(getImageUrl("/media/site/logo_vinnavar.webp"));
+  const [topMarqueeText, setTopMarqueeText] = useState("");
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = React.useRef(null);
+
+  useEffect(() => {
+    const fetchMarquee = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/settings`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.top_marquee || data.header_announcement) {
+            setTopMarqueeText(data.top_marquee || data.header_announcement);
+          }
+        }
+      } catch (err) {
+        // Fallback to translation if fetch fails
+      }
+    };
+    fetchMarquee();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -227,6 +246,7 @@ const Header = () => {
       localStorage.setItem("vinnavar_customer_token", res.token);
       localStorage.setItem("vinnavar_customer", JSON.stringify(res));
       setCurrentUser(res);
+      window.dispatchEvent(new Event("userAuthChanged"));
       await processPostLoginSync(res);
       closeModal();
       Swal.fire({
@@ -262,6 +282,7 @@ const Header = () => {
       localStorage.setItem("vinnavar_customer_token", res.token);
       localStorage.setItem("vinnavar_customer", JSON.stringify(res));
       setCurrentUser(res);
+      window.dispatchEvent(new Event("userAuthChanged"));
       await processPostLoginSync(res);
       closeModal();
       Swal.fire({
@@ -297,6 +318,7 @@ const Header = () => {
       localStorage.setItem("vinnavar_customer_token", res.token);
       localStorage.setItem("vinnavar_customer", JSON.stringify(res));
       setCurrentUser(res);
+      window.dispatchEvent(new Event("userAuthChanged"));
       await processPostLoginSync(res);
       closeModal();
       Swal.fire({
@@ -325,6 +347,7 @@ const Header = () => {
     setCurrentUser(null);
     setCart({ items: [], totalItemCount: 0, subtotal: 0 });
     setWishlistCount(0);
+    window.dispatchEvent(new Event("userAuthChanged"));
     window.dispatchEvent(new Event("cartUpdated"));
     window.dispatchEvent(new Event("wishlistUpdated"));
     Swal.fire({
@@ -474,7 +497,7 @@ const Header = () => {
         <div className="w-full py-1.5 bg-emerald-800 text-white font-medium text-xs tracking-wide overflow-hidden">
           {/* eslint-disable-next-line jsx-a11y/no-distracting-elements */}
           <marquee behavior="scroll" direction="left" scrollamount="6" className="m-0 align-middle">
-            {t("header_marquee")}
+            {topMarqueeText || t("header_marquee")}
           </marquee>
         </div>
 
@@ -1027,13 +1050,50 @@ const Header = () => {
             </a>
           </div>
         </div>
+
+        {/* Amazon & Platform Trust Line (Below Navbar) */}
+        <div className="w-full bg-gradient-to-r from-amber-50 via-emerald-50/70 to-amber-50 border-t border-b border-amber-200/60 py-1.5 px-3">
+          <div className="max-w-7xl mx-auto flex items-center justify-center flex-wrap gap-x-3 gap-y-1 text-center text-xs tracking-wide text-slate-800">
+            <a
+              href="https://2shr.ink/aULyIj"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 font-bold text-slate-900 hover:text-amber-800 transition-all hover:scale-[1.03] cursor-pointer group bg-amber-100/90 hover:bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-300 shadow-xs"
+              title="Visit Vinnavar Organics on Amazon"
+            >
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#131921] text-[#ff9900] text-[10px] sm:text-[11px] font-black tracking-tight shadow-xs group-hover:bg-[#232f3e] transition-colors">
+                <svg className="w-3 h-3 fill-current inline-block -mt-0.5" viewBox="0 0 448 512">
+                  <path d="M257.2 162.7c-48.7 1.8-169.5 15.5-169.5 117.5 0 109.5 138.3 114 183.5 43.2 6.5 10.2 35.4 37.5 45.3 46.8l56.8-56S341 288.9 341 261.4V114.3C341 89 316.5 32 228.7 32 140.7 32 94 87 94 136.3l73.5 6.8c16.3-49.5 54.2-49.5 54.2-49.5 40.7-.1 35.5 29.8 35.5 69.1zm0 86.8c0 80-84.2 68-84.2 17.2 0-47.2 50.5-56.7 84.2-57.8v40.6zm136 163.5c-7.7 10-70 67-174.5 67S34.2 408.5 9.7 379c-6.8-7.7 1-11.3 5.5-8.3C88.5 415.2 203 488.5 387.7 401c7.5-3.7 13.3 2 5.5 12zm39.8 2.2c-6.5 15.8-16 26.8-21.2 31-5.5 4.5-9.5 2.7-6.5-3.8s19.3-46.5 12.7-55c-6.5-8.3-37-4.3-48-3.2-10.8 1-13 2-14-.3-2.3-5.7 21.7-15.5 37.5-17.5 15.7-1.8 41-.8 46 5.7 3.7 5.1 0 27.1-6.5 43.1z"/>
+                </svg>
+                <span>amazon</span>
+              </span>
+              <span className="group-hover:underline underline-offset-2 text-color-blink">
+                {t("header_trust_amazon", "Selling on Amazon for Over 3 Years")}
+              </span>
+              <span className="text-[10px] text-amber-600 font-black ml-0.5 group-hover:translate-x-0.5 transition-transform inline-block">↗</span>
+            </a>
+            
+            <span className="text-amber-400 font-black hidden sm:inline">•</span>
+
+            <div className="inline-flex items-center gap-1.5 font-bold text-emerald-800">
+              <span className="text-emerald-600">🛡️</span>
+              <span className="text-platform-color-blink">{t("header_trust_platform", "100% Trustable Platform & Verified Organic Quality")}</span>
+            </div>
+
+            <span className="text-amber-400 font-black hidden md:inline">•</span>
+
+            <div className="hidden md:inline-flex items-center gap-1 text-[11px] font-bold text-amber-900 bg-amber-100/90 px-2 py-0.5 rounded-full border border-amber-300/80 shadow-2xs">
+              <span>⭐⭐⭐⭐⭐</span>
+              <span className="text-rating-color-blink">{t("header_trust_rating", "Trusted by Thousands of Happy Customers")}</span>
+            </div>
+          </div>
+        </div>
       </header>
 
       {/* Sub-Header Brand Bar */}
       <div className="hidden md:block w-full sticky top-0 z-40 bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center gap-3 py-2 drop-shadow-md">
-            <span style={{ fontSize: "32px" }}>🌿</span>
             <div className="flex flex-col items-center justify-center">
               <span className="text-3xl font-black leading-tight tracking-widest golden-text">
                 Vinnavar
@@ -1042,7 +1102,6 @@ const Header = () => {
                 Organic E - Commerce
               </span>
             </div>
-            <span style={{ fontSize: "32px" }}>🌿</span>
           </div>
         </div>
       </div>
@@ -1235,13 +1294,13 @@ const Header = () => {
                     />
                     <label className="form-check-label small text-muted font-medium" htmlFor="agreeTermsCheck">
                       I agree to the{" "}
-                      <span className="text-emerald-700 font-bold cursor-pointer underline" onClick={() => openPolicyHeader("TERMS")}>
+                      <Link to="/terms-conditions" target="_blank" rel="noopener noreferrer" className="text-emerald-700 font-bold cursor-pointer underline">
                         Terms &amp; Conditions
-                      </span>{" "}
+                      </Link>{" "}
                       and{" "}
-                      <span className="text-emerald-700 font-bold cursor-pointer underline" onClick={() => openPolicyHeader("PRIVACY")}>
+                      <Link to="/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-emerald-700 font-bold cursor-pointer underline">
                         Privacy Policy
-                      </span>.
+                      </Link>.
                     </label>
                   </div>
 
@@ -1475,66 +1534,73 @@ const Header = () => {
                 </ul>
               </div>
 
-              <div className="border-top pt-3 mt-2">
-                <details className="mb-3">
-                  <summary className="fw-bold text-muted cursor-pointer" style={{ listStyle: "none", fontSize: "14px" }}>
-                    Price Breakup <span className="float-end">▼</span>
-                  </summary>
-                  <div className="mt-2 small text-muted ps-2 pe-2">
-                    <div className="d-flex justify-content-between mb-1">
-                      <span>Base Price</span>
-                      <span>₹{(cart.subtotal || 0).toLocaleString('en-IN')}</span>
+              {(() => {
+                const totalPayable = cart.totalAmount ?? (cart.subtotal || 0);
+
+                return (
+                  <div className="border-top pt-3 mt-2">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <span className="fw-bold fs-6">{t("total_payable", "Total Payable")} <br/><span className="text-muted" style={{fontSize: "12px"}}>({t("inclusive_all", "All-Inclusive Price")})</span></span>
+                      <span className="fw-bold fs-5 text-success">
+                        ₹{totalPayable.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
                     </div>
-                    <div className="d-flex justify-content-between mb-1">
-                      <span>Shipping Fee</span>
-                      <span>₹{(cart.shippingFee ?? 48).toLocaleString('en-IN')}</span>
-                    </div>
-                    <div className="d-flex justify-content-between mb-1">
-                      <span>GST Tax</span>
-                      <span>₹{(cart.gstTax ?? 0).toLocaleString('en-IN')}</span>
+                    <div className="d-grid gap-2">
+                      <button
+                        type="button"
+                        className="btn btn-outline-success fw-bold py-2"
+                        onClick={() => handleNavigateFromCart("/ProductCart")}
+                      >
+                        {t("sliding_cart_view_full")}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-success btn-lg fw-bold d-flex justify-content-between align-items-center py-2.5 px-3"
+                        onClick={() => handleNavigateFromCart("/ProductCheckOut")}
+                      >
+                        <span>{t("sliding_cart_proceed_checkout")}</span>
+                        <span>₹{totalPayable.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} &rsaquo;</span>
+                      </button>
                     </div>
                   </div>
-                </details>
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <span className="fw-bold fs-6">Total Payable <br/><span className="text-muted" style={{fontSize: "12px"}}>(Inclusive of all)</span></span>
-                  <span className="fw-bold fs-5 text-success">
-                    ₹{(cart.totalAmount ?? ((cart.subtotal || 0) + (cart.shippingFee ?? 48) + ((cart.subtotal || 0) * 0.05))).toLocaleString('en-IN')}
-                  </span>
-                </div>
-                <div className="d-grid gap-2">
-                  <button
-                    type="button"
-                    className="btn btn-outline-success fw-bold py-2"
-                    onClick={() => handleNavigateFromCart("/ProductCart")}
-                  >
-                    {t("sliding_cart_view_full")}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-success btn-lg fw-bold d-flex justify-content-between align-items-center py-2.5 px-3"
-                    onClick={() => handleNavigateFromCart("/ProductCheckOut")}
-                  >
-                    <span>{t("sliding_cart_proceed_checkout")}</span>
-                    <span>₹{(cart.totalAmount ?? ((cart.subtotal || 0) + (cart.shippingFee ?? 48) + ((cart.subtotal || 0) * 0.05))).toLocaleString('en-IN')} &rsaquo;</span>
-                  </button>
-                </div>
-              </div>
+                );
+              })()}
             </div>
           )}
 
           {/* Customer Support & Policy Links */}
           <div className="border-top pt-3 mt-4 text-center">
             <div className="small text-muted fw-semibold mb-2">{t("sliding_cart_guarantees")}</div>
-            <div className="d-flex justify-content-center gap-2 small font-semibold">
-              <button type="button" className="btn btn-link text-success text-decoration-none fw-bold p-0 border-0" onClick={() => openPolicyHeader("REFUND")}>
+            <div className="d-flex flex-wrap justify-content-center align-items-center gap-2 small font-semibold">
+              <button 
+                type="button" 
+                className="btn btn-link text-success text-decoration-none fw-bold p-0 border-0 hover:underline" 
+                onClick={() => handleNavigateFromCart("/refund-policy")}
+              >
                 {t("sliding_cart_refund")}
               </button>
               <span className="text-muted">•</span>
-              <button type="button" className="btn btn-link text-success text-decoration-none fw-bold p-0 border-0" onClick={() => openPolicyHeader("PRIVACY")}>
+              <button 
+                type="button" 
+                className="btn btn-link text-success text-decoration-none fw-bold p-0 border-0 hover:underline" 
+                onClick={() => handleNavigateFromCart("/return-policy")}
+              >
+                {t("sliding_cart_return")}
+              </button>
+              <span className="text-muted">•</span>
+              <button 
+                type="button" 
+                className="btn btn-link text-success text-decoration-none fw-bold p-0 border-0 hover:underline" 
+                onClick={() => handleNavigateFromCart("/privacy-policy")}
+              >
                 {t("sliding_cart_privacy")}
               </button>
               <span className="text-muted">•</span>
-              <button type="button" className="btn btn-link text-success text-decoration-none fw-bold p-0 border-0" onClick={() => openPolicyHeader("TERMS")}>
+              <button 
+                type="button" 
+                className="btn btn-link text-success text-decoration-none fw-bold p-0 border-0 hover:underline" 
+                onClick={() => handleNavigateFromCart("/terms-conditions")}
+              >
                 {t("sliding_cart_terms")}
               </button>
             </div>

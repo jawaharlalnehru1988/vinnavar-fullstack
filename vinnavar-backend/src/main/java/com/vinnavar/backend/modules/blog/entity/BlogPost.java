@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Table(name = "blog_posts")
@@ -46,6 +48,27 @@ public class BlogPost {
 
     @Builder.Default
     private Boolean active = true;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "blog_title_translations", joinColumns = @JoinColumn(name = "blog_id"))
+    @MapKeyColumn(name = "lang_code")
+    @Column(name = "translated_title")
+    @Builder.Default
+    private Map<String, String> titleTranslations = new HashMap<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "blog_desc_translations", joinColumns = @JoinColumn(name = "blog_id"))
+    @MapKeyColumn(name = "lang_code")
+    @Column(name = "translated_desc", columnDefinition = "TEXT")
+    @Builder.Default
+    private Map<String, String> shortDescriptionTranslations = new HashMap<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "blog_content_translations", joinColumns = @JoinColumn(name = "blog_id"))
+    @MapKeyColumn(name = "lang_code")
+    @Column(name = "translated_content", columnDefinition = "TEXT")
+    @Builder.Default
+    private Map<String, String> contentTranslations = new HashMap<>();
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

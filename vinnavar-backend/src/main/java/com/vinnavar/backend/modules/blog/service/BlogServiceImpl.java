@@ -9,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,8 +44,31 @@ public class BlogServiceImpl implements BlogService {
 
     @Override
     public BlogPostResponse getBlogBySlug(String slug) {
-        BlogPost post = repository.findBySlugAndActiveTrue(slug)
-                .orElseThrow(() -> new RuntimeException("Blog post not found for slug: " + slug));
+        if (slug == null || slug.trim().isEmpty()) {
+            throw new RuntimeException("Blog identifier (slug or ID) is required");
+        }
+
+        String cleanSlug = slug.trim();
+        Optional<BlogPost> postOpt = repository.findBySlugAndActiveTrue(cleanSlug);
+
+        // Fallback: If not found by slug, check if the parameter is a numeric ID
+        if (postOpt.isEmpty()) {
+            try {
+                Long id = Long.parseLong(cleanSlug);
+                postOpt = repository.findById(id).filter(b -> Boolean.TRUE.equals(b.getActive()));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        BlogPost post = postOpt.orElseThrow(() -> new RuntimeException("Blog post not found for slug or id: " + cleanSlug));
+        return mapToResponse(post);
+    }
+
+    @Override
+    public BlogPostResponse getBlogById(Long id) {
+        BlogPost post = repository.findById(id)
+                .filter(b -> Boolean.TRUE.equals(b.getActive()))
+                .orElseThrow(() -> new RuntimeException("Blog post not found with id: " + id));
         return mapToResponse(post);
     }
 
@@ -77,8 +102,16 @@ public class BlogServiceImpl implements BlogService {
     @Transactional
     public BlogPostResponse createBlog(BlogPostRequest request) {
         String slug = request.getSlug();
-        if (slug == null || slug.trim().isEmpty()) {
-            slug = request.getTitle().toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
+        if (slug != null) {
+            slug = slug.trim().toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
+        }
+        if (slug == null || slug.isEmpty()) {
+            if (request.getTitle() != null) {
+                slug = request.getTitle().toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
+            }
+        }
+        if (slug == null || slug.isEmpty()) {
+            slug = "article-" + System.currentTimeMillis();
         }
 
         BlogPost post = BlogPost.builder()
@@ -92,6 +125,9 @@ public class BlogServiceImpl implements BlogService {
                 .readTimeMinutes(request.getReadTimeMinutes() != null ? request.getReadTimeMinutes() : 5)
                 .featured(request.getFeatured() != null ? request.getFeatured() : false)
                 .active(request.getActive() != null ? request.getActive() : true)
+                .titleTranslations(request.getTitleTranslations() != null ? new HashMap<>(request.getTitleTranslations()) : new HashMap<>())
+                .shortDescriptionTranslations(request.getShortDescriptionTranslations() != null ? new HashMap<>(request.getShortDescriptionTranslations()) : new HashMap<>())
+                .contentTranslations(request.getContentTranslations() != null ? new HashMap<>(request.getContentTranslations()) : new HashMap<>())
                 .build();
 
         return mapToResponse(repository.save(post));
@@ -114,7 +150,23 @@ public class BlogServiceImpl implements BlogService {
         if (request.getActive() != null) post.setActive(request.getActive());
 
         if (request.getSlug() != null && !request.getSlug().trim().isEmpty()) {
-            post.setSlug(request.getSlug());
+            String cleanSlug = request.getSlug().trim().toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
+            if (!cleanSlug.isEmpty()) {
+                post.setSlug(cleanSlug);
+            }
+        }
+        if (post.getSlug() == null || post.getSlug().trim().isEmpty()) {
+            post.setSlug("article-" + post.getId());
+        }
+
+        if (request.getTitleTranslations() != null) {
+            post.setTitleTranslations(new HashMap<>(request.getTitleTranslations()));
+        }
+        if (request.getShortDescriptionTranslations() != null) {
+            post.setShortDescriptionTranslations(new HashMap<>(request.getShortDescriptionTranslations()));
+        }
+        if (request.getContentTranslations() != null) {
+            post.setContentTranslations(new HashMap<>(request.getContentTranslations()));
         }
 
         return mapToResponse(repository.save(post));
@@ -141,6 +193,9 @@ public class BlogServiceImpl implements BlogService {
                 .active(post.getActive())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
+                .titleTranslations(post.getTitleTranslations() != null ? new HashMap<>(post.getTitleTranslations()) : new HashMap<>())
+                .shortDescriptionTranslations(post.getShortDescriptionTranslations() != null ? new HashMap<>(post.getShortDescriptionTranslations()) : new HashMap<>())
+                .contentTranslations(post.getContentTranslations() != null ? new HashMap<>(post.getContentTranslations()) : new HashMap<>())
                 .build();
     }
 }

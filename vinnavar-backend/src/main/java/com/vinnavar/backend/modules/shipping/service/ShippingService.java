@@ -31,16 +31,12 @@ public class ShippingService {
     private final ShippingConfigRepository configRepository;
     private final com.vinnavar.backend.modules.order.repository.OrderRepository orderRepository;
 
-    private static final String EXCEL_PATH = "/var/www/vinnavar-fullstack/SWA-IN-OA.xlsx";
+    private static final String EXCEL_PATH = "/var/www/myclients-fullstacts/vinnavar-fullstack/SWA-IN-OA.xlsx";
 
     @EventListener(ApplicationReadyEvent.class)
-    public void seedInitialDataIfEmpty() {
-        if (rateRepository.count() == 0) {
-            log.info("Shipping rates database table is empty. Seeding from Excel: {}", EXCEL_PATH);
-            seedFromExcel();
-        } else {
-            recalculateAllOrders();
-        }
+    public void onApplicationReady() {
+        log.info("Weight-based shipping fee calculation is completely removed. Resetting orders to all-inclusive.");
+        resetAllOrdersToAllInclusive();
     }
 
     @Transactional
@@ -83,38 +79,27 @@ public class ShippingService {
             }
 
             log.info("Successfully seeded shipping rates and configurations from Excel file.");
-            recalculateAllOrders();
+            resetAllOrdersToAllInclusive();
         } catch (Exception e) {
             log.error("Failed to parse and seed Excel rate card: ", e);
         }
     }
 
     @Transactional
-    public void recalculateAllOrders() {
+    public void resetAllOrdersToAllInclusive() {
         try {
             List<com.vinnavar.backend.modules.order.entity.Order> orders = orderRepository.findAll();
             for (com.vinnavar.backend.modules.order.entity.Order o : orders) {
-                double w = o.getTotalWeightKg();
-                String st = o.getShippingAddress() != null ? o.getShippingAddress().getState() : "Tamil Nadu";
-                String pm = o.getPaymentMethod() != null ? o.getPaymentMethod().name() : "ONLINE";
-                BigDecimal sub = o.getSubtotal();
-
-                ShippingCalculationResult calc = calculateShippingFee(w, st, pm, sub);
-                BigDecimal sf = calc.getTotalShippingFee();
-                BigDecimal productGst = sub.multiply(new BigDecimal("0.05")).setScale(2, RoundingMode.HALF_UP);
-                BigDecimal shippingGst = sf.multiply(new BigDecimal("0.18")).setScale(2, RoundingMode.HALF_UP);
-                BigDecimal gst = productGst.add(shippingGst);
-                BigDecimal tot = sub.add(sf).add(gst).setScale(2, RoundingMode.HALF_UP);
-
-                o.setTotalWeightKg(w);
-                o.setShippingFee(sf);
-                o.setGstTax(gst);
-                o.setTotalAmount(tot);
+                o.setShippingFee(BigDecimal.ZERO);
+                o.setGstTax(BigDecimal.ZERO);
+                if (o.getSubtotal() != null) {
+                    o.setTotalAmount(o.getSubtotal().setScale(2, RoundingMode.HALF_UP));
+                }
                 orderRepository.save(o);
             }
-            log.info("Recalculated shipping fees and grand totals for {} existing orders.", orders.size());
+            log.info("Reset {} existing orders to 100% all-inclusive pricing (shippingFee=0, gstTax=0, totalAmount=subtotal).", orders.size());
         } catch (Exception e) {
-            log.error("Error recalculating existing order shipping fees: ", e);
+            log.error("Error resetting orders to all-inclusive pricing: ", e);
         }
     }
 
@@ -253,61 +238,14 @@ public class ShippingService {
 
     @Transactional(readOnly = true)
     public ShippingCalculationResult calculateShippingFee(double totalWeightKg, String destinationState, String paymentMethod, BigDecimal orderSubtotal) {
-        double weight = totalWeightKg <= 0 ? 0.5 : totalWeightKg;
-        String zone = resolveZone(destinationState);
-
-        // Find closest slab >= weight
-        Optional<ShippingRate> rateOpt = rateRepository.findFirstMatchingSlab("FORWARD", weight);
-        if (rateOpt.isEmpty()) {
-            rateOpt = rateRepository.findMaxWeightSlab("FORWARD");
-        }
-
-        BigDecimal baseRate = BigDecimal.ZERO;
-        double slabWeight = weight;
-        if (rateOpt.isPresent()) {
-            ShippingRate rate = rateOpt.get();
-            slabWeight = rate.getWeightKg();
-            switch (zone) {
-                case "LOCAL" -> baseRate = rate.getLocalRate();
-                case "REGIONAL" -> baseRate = rate.getRegionalRate();
-                case "METRO" -> baseRate = rate.getMetroRate();
-                case "REMOTE" -> baseRate = rate.getRemoteRate();
-                default -> baseRate = rate.getNationalRate();
-            }
-        } else {
-            baseRate = new BigDecimal("48.00");
-        }
-
-        BigDecimal codFixedFee = BigDecimal.ZERO;
-        BigDecimal codVarFee = BigDecimal.ZERO;
-
-        if ("COD".equalsIgnoreCase(paymentMethod)) {
-            String fixedStr = configRepository.findByConfigKey("COD Fixed").map(ShippingConfig::getConfigValue).orElse("10.0");
-            try {
-                codFixedFee = new BigDecimal(fixedStr).setScale(2, RoundingMode.HALF_UP);
-            } catch (Exception e) {
-                codFixedFee = new BigDecimal("10.00");
-            }
-
-            String varStr = configRepository.findByConfigKey("COD Variable (%)").map(ShippingConfig::getConfigValue).orElse("0.0");
-            try {
-                BigDecimal varPercent = new BigDecimal(varStr);
-                if (orderSubtotal != null && orderSubtotal.compareTo(BigDecimal.ZERO) > 0 && varPercent.compareTo(BigDecimal.ZERO) > 0) {
-                    codVarFee = orderSubtotal.multiply(varPercent).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-                }
-            } catch (Exception ignored) {}
-        }
-
-        BigDecimal totalShippingFee = baseRate.add(codFixedFee).add(codVarFee).setScale(2, RoundingMode.HALF_UP);
-
         return ShippingCalculationResult.builder()
                 .totalWeightKg(totalWeightKg)
-                .appliedSlabKg(slabWeight)
-                .zone(zone)
-                .baseShippingFee(baseRate)
-                .codFixedFee(codFixedFee)
-                .codVariableFee(codVarFee)
-                .totalShippingFee(totalShippingFee)
+                .appliedSlabKg(0.0)
+                .zone("ALL_INCLUSIVE")
+                .baseShippingFee(BigDecimal.ZERO)
+                .codFixedFee(BigDecimal.ZERO)
+                .codVariableFee(BigDecimal.ZERO)
+                .totalShippingFee(BigDecimal.ZERO)
                 .build();
     }
 

@@ -26,6 +26,8 @@ public class ProductRequestDto {
     private boolean active = true;
     private java.util.Map<String, String> nameTranslations;
     private java.util.Map<String, String> descriptionTranslations;
+    private java.util.Map<String, String> fullDescriptionTranslations;
+    private java.util.Map<String, String> benefitsTranslations;
     private List<VariantDto> variants;
 
     @Data

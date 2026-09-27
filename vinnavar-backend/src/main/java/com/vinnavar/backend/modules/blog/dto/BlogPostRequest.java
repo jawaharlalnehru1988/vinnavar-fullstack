@@ -3,6 +3,8 @@ package com.vinnavar.backend.modules.blog.dto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.util.Map;
+
 @Data
 public class BlogPostRequest {
     @NotBlank(message = "Title is required")
@@ -22,4 +24,8 @@ public class BlogPostRequest {
     private Integer readTimeMinutes;
     private Boolean featured;
     private Boolean active;
+
+    private Map<String, String> titleTranslations;
+    private Map<String, String> shortDescriptionTranslations;
+    private Map<String, String> contentTranslations;
 }

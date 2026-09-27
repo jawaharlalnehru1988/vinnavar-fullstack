@@ -64,15 +64,11 @@ public class RazorpayService {
         String destState = request.getShippingAddress() != null ? request.getShippingAddress().getState() : "Tamil Nadu";
         String pMethod = "ONLINE";
 
-        com.vinnavar.backend.modules.shipping.service.ShippingService.ShippingCalculationResult calcResult =
-                shippingService.calculateShippingFee(totalWeightKg, destState, pMethod, subtotal);
-        BigDecimal shippingFee = calcResult.getTotalShippingFee();
-
-        BigDecimal productGst = subtotal.multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);
-        BigDecimal shippingGst = shippingFee.multiply(new BigDecimal("0.18")).setScale(2, java.math.RoundingMode.HALF_UP);
-        BigDecimal gstTax = productGst.add(shippingGst);
-        BigDecimal unroundedTotal = subtotal.add(shippingFee).add(gstTax).setScale(2, java.math.RoundingMode.HALF_UP);
-        BigDecimal totalAmount = unroundedTotal.setScale(0, java.math.RoundingMode.FLOOR).setScale(2, java.math.RoundingMode.HALF_UP);
+        // All-inclusive pricing: Admin enters final price directly.
+        // Temporarily bypass shipping charge table calculation and extra tax additions.
+        BigDecimal shippingFee = BigDecimal.ZERO;
+        BigDecimal gstTax = BigDecimal.ZERO;
+        BigDecimal totalAmount = subtotal.setScale(2, java.math.RoundingMode.HALF_UP);
 
         int amountInPaise = totalAmount.multiply(new BigDecimal(100)).intValue();
 

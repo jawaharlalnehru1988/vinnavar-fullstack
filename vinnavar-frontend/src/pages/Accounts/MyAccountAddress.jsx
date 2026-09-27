@@ -10,14 +10,16 @@ const MyAccountAddress = () => {
   const [addresses, setAddresses] = useState([]);
   const [activeTab, setActiveTab] = useState("DELIVERY"); // "DELIVERY" or "BILLING"
 
-  const currentUser = (() => {
+  const getStoredUser = () => {
     try {
       const saved = localStorage.getItem("vinnavar_customer");
       return saved ? JSON.parse(saved) : null;
     } catch (e) {
       return null;
     }
-  })();
+  };
+
+  const [currentUser, setCurrentUser] = useState(getStoredUser);
 
   // Modal / Form States
   const [showModal, setShowModal] = useState(false);
@@ -34,28 +36,50 @@ const MyAccountAddress = () => {
     isDefault: false
   });
 
-  const fetchAddresses = async () => {
-    if (!currentUser || !currentUser.mobileNumber) {
+  const fetchAddresses = async (userToFetch = currentUser) => {
+    if (!userToFetch || !userToFetch.mobileNumber) {
+      setAddresses([]);
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/customer/addresses?mobile=${encodeURIComponent(currentUser.mobileNumber)}`);
+      const res = await fetch(`${API_BASE_URL}/customer/addresses?mobile=${encodeURIComponent(userToFetch.mobileNumber)}`);
       if (res.ok) {
         const data = await res.json();
         setAddresses(data || []);
+      } else {
+        setAddresses([]);
       }
     } catch (err) {
       console.error("Failed to fetch customer addresses", err);
+      setAddresses([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAddresses();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const syncAuthAndAddresses = () => {
+      const activeUser = getStoredUser();
+      setCurrentUser(activeUser);
+      if (!activeUser || !activeUser.mobileNumber) {
+        setAddresses([]);
+        setLoading(false);
+      } else {
+        fetchAddresses(activeUser);
+      }
+    };
+
+    syncAuthAndAddresses();
+
+    window.addEventListener("userAuthChanged", syncAuthAndAddresses);
+    window.addEventListener("storage", syncAuthAndAddresses);
+
+    return () => {
+      window.removeEventListener("userAuthChanged", syncAuthAndAddresses);
+      window.removeEventListener("storage", syncAuthAndAddresses);
+    };
   }, []);
 
   const openAddModal = (type = "DELIVERY") => {

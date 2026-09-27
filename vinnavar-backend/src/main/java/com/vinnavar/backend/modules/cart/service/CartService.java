@@ -53,17 +53,9 @@ public class CartService {
         BigDecimal roundOff = BigDecimal.ZERO;
 
         if (totalCount > 0) {
-            com.vinnavar.backend.modules.shipping.service.ShippingService.ShippingCalculationResult calcResult =
-                    shippingService.calculateShippingFee(totalWeightKg, state, paymentMethod, subtotal);
-            shippingFee = calcResult.getTotalShippingFee();
-
-            BigDecimal productGst = subtotal.multiply(new BigDecimal("0.05")).setScale(2, java.math.RoundingMode.HALF_UP);
-            BigDecimal shippingGst = shippingFee.multiply(new BigDecimal("0.18")).setScale(2, java.math.RoundingMode.HALF_UP);
-            gstTax = productGst.add(shippingGst);
-
-            BigDecimal unroundedTotal = subtotal.add(shippingFee).add(gstTax).setScale(2, java.math.RoundingMode.HALF_UP);
-            totalAmount = unroundedTotal.setScale(0, java.math.RoundingMode.FLOOR).setScale(2, java.math.RoundingMode.HALF_UP);
-            roundOff = totalAmount.subtract(unroundedTotal).setScale(2, java.math.RoundingMode.HALF_UP);
+            // All-inclusive pricing: Admin enters final price directly.
+            // Temporarily bypass shipping charge table calculation and extra tax/roundoff additions.
+            totalAmount = subtotal.setScale(2, java.math.RoundingMode.HALF_UP);
         }
 
         return CartResponseDto.builder()

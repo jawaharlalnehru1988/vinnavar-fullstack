@@ -74,7 +74,7 @@ public class EmailService {
                     "Order Confirmation - " + order.getOrderNumber(),
                     buildCustomerEmailContent(order),
                     pdfBytes,
-                    "Invoice_" + order.getOrderNumber().replace("/", "_") + ".pdf"
+                    "DC_" + order.getOrderNumber().replace("/", "_") + ".pdf"
                 );
             } else {
                 log.info("No valid custom email for customer on order: {} (email value: {})", order.getOrderNumber(), customerEmail);
@@ -88,7 +88,7 @@ public class EmailService {
                     "New Order Received: " + order.getOrderNumber() + " [" + order.getPaymentMethod() + "]",
                     buildAdminEmailContent(order),
                     pdfBytes,
-                    "Invoice_" + order.getOrderNumber().replace("/", "_") + ".pdf"
+                    "DC_" + order.getOrderNumber().replace("/", "_") + ".pdf"
                 );
             } else {
                 log.warn("No admin email configured for order notification.");
@@ -113,7 +113,7 @@ public class EmailService {
                 attachments.setType("application/pdf");
                 attachments.setFilename(attachmentName);
                 attachments.setDisposition("attachment");
-                attachments.setContentId("Invoice");
+                attachments.setContentId("DeliveryChallan");
                 mail.addAttachments(attachments);
             } catch (Exception e) {
                 log.error("Failed to add PDF attachment to email for {}: {}", toEmailStr, e.getMessage());
@@ -140,7 +140,7 @@ public class EmailService {
                "<p><strong>Total Amount:</strong> Rs. " + order.getTotalAmount() + "</p>" +
                "<p><strong>Payment Method:</strong> " + order.getPaymentMethod() + "</p>" +
                "<p><strong>Payment Status:</strong> " + (order.getPaymentStatus() != null ? order.getPaymentStatus() : "PAID") + "</p>" +
-               "<p>Your official tax invoice is attached with this email.</p>" +
+               "<p>Your Order Confirmation/ Delivery Challan is attached with this email.</p>" +
                "<p>We will notify you once it ships. Thank you for shopping with Vinnavar Organics!</p>";
     }
 
@@ -156,6 +156,6 @@ public class EmailService {
                "<li><strong>Payment Method:</strong> " + order.getPaymentMethod() + "</li>" +
                "<li><strong>Payment Status:</strong> " + (order.getPaymentStatus() != null ? order.getPaymentStatus() : "CONFIRMED") + "</li>" +
                "</ul>" +
-               "<p>Please check the admin dashboard for full details. Invoice is attached.</p>";
+               "<p>Please check the admin dashboard for full details. Delivery Challan is attached.</p>";
     }
 }

@@ -21,14 +21,21 @@ public class OrderController {
     private final OrderService orderService;
     private final PdfInvoiceService pdfInvoiceService;
 
-    @GetMapping
-    public ResponseEntity<List<Order>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
-    }
-
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Order>> getOrdersByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(orderService.getOrdersByUserId(userId));
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<List<Order>> getOrdersByPhone(
+            @RequestParam(required = false) String customerMobile,
+            @RequestParam(required = false) String customerPhone
+    ) {
+        String phone = customerMobile != null ? customerMobile : customerPhone;
+        if (phone == null || phone.trim().isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+        return ResponseEntity.ok(orderService.getOrdersByCustomerPhone(phone.trim()));
     }
 
     @GetMapping("/by-number")

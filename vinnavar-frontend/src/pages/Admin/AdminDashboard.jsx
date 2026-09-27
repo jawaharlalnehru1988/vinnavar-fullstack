@@ -15,6 +15,8 @@ import AdminOrders from "./AdminOrders";
 import AdminOffers from "./AdminOffers";
 import AdminTransactions from "./AdminTransactions";
 import AdminSocialMedia from "./AdminSocialMedia";
+import AdminAnalytics from "./AdminAnalytics";
+import AdminMarquee from "./AdminMarquee";
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -241,10 +243,19 @@ const AdminDashboard = () => {
                                 >
                                     <span>💳</span> Razorpay & Payment Audit
                                 </button>
+                                <button
+                                    onClick={() => setActiveTab("analytics")}
+                                    className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm px-4 py-2.5 rounded-xl shadow-sm transition-all duration-150 flex items-center gap-2"
+                                >
+                                    <span>📈</span> Live Site Analytics
+                                </button>
                             </div>
                         </div>
                     </div>
                 )}
+
+                {/* ANALYTICS SECTION */}
+                {activeTab === "analytics" && <AdminAnalytics />}
 
                 {/* PRODUCTS SECTION */}
                 {activeTab === "products" && (
@@ -299,6 +310,9 @@ const AdminDashboard = () => {
                         }}
                     />
                 )}
+
+                {/* TOP MARQUEE SECTION */}
+                {activeTab === "marquee" && <AdminMarquee />}
 
                 {/* BLOGS SECTION */}
                 {activeTab === "blogs" && <AdminBlog />}

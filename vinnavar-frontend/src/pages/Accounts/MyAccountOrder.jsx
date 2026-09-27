@@ -100,14 +100,16 @@ const MyAccountOrder = () => {
     }
   };
 
-  const currentUser = (() => {
+  const getStoredUser = () => {
     try {
       const saved = localStorage.getItem("vinnavar_customer");
       return saved ? JSON.parse(saved) : null;
     } catch (e) {
       return null;
     }
-  })();
+  };
+
+  const [currentUser, setCurrentUser] = useState(getStoredUser);
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -131,39 +133,63 @@ const MyAccountOrder = () => {
     }
   };
 
-  const fetchUserOrders = async () => {
+  const fetchUserOrders = async (userToFetch = currentUser) => {
+    if (!userToFetch || (!userToFetch.id && !userToFetch.mobileNumber)) {
+      setOrders([]);
+      setLoaderStatus(false);
+      return;
+    }
+
     setLoaderStatus(true);
     try {
-      if (currentUser && currentUser.id) {
-        const res = await fetch(`${API_BASE_URL}/orders/user/${currentUser.id}`);
+      if (userToFetch.id) {
+        const res = await fetch(`${API_BASE_URL}/orders/user/${userToFetch.id}`);
         if (res.ok) {
           const data = await res.json();
           setOrders(data || []);
+        } else {
+          setOrders([]);
         }
-      } else {
-        // Fallback if no user id
-        const res = await fetch(`${API_BASE_URL}/orders`);
+      } else if (userToFetch.mobileNumber) {
+        const res = await fetch(`${API_BASE_URL}/orders/user?customerMobile=${encodeURIComponent(userToFetch.mobileNumber)}`);
         if (res.ok) {
-          let data = await res.json();
-          if (currentUser && currentUser.mobileNumber) {
-            const userMobile = String(currentUser.mobileNumber).trim();
-            const filtered = data.filter(o => o.customerPhone && String(o.customerPhone).trim().endsWith(userMobile.slice(-10)));
-            if (filtered.length > 0) {
-              data = filtered;
-            }
-          }
+          const data = await res.json();
           setOrders(data || []);
+        } else {
+          setOrders([]);
         }
       }
     } catch (err) {
       console.error("Failed to load user orders", err);
+      setOrders([]);
     } finally {
       setLoaderStatus(false);
     }
   };
 
   useEffect(() => {
-    fetchUserOrders();
+    const syncAuthAndOrders = () => {
+      const activeUser = getStoredUser();
+      setCurrentUser(activeUser);
+      if (!activeUser || (!activeUser.id && !activeUser.mobileNumber)) {
+        setOrders([]);
+        setLoaderStatus(false);
+      } else {
+        fetchUserOrders(activeUser);
+      }
+    };
+
+    // Load initial orders
+    syncAuthAndOrders();
+
+    // Listen to custom auth events and cross-tab storage events
+    window.addEventListener("userAuthChanged", syncAuthAndOrders);
+    window.addEventListener("storage", syncAuthAndOrders);
+
+    return () => {
+      window.removeEventListener("userAuthChanged", syncAuthAndOrders);
+      window.removeEventListener("storage", syncAuthAndOrders);
+    };
   }, []);
 
   const handleDownloadBill = async (orderNumber) => {
@@ -290,11 +316,27 @@ const MyAccountOrder = () => {
                   <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2 className="mb-0 fw-black text-dark">📦 Your Order History</h2>
                     <span className="badge bg-success-subtle text-success border border-success px-3 py-2 rounded-pill fw-bold">
-                      {orders.length} Order(s)
+                      {currentUser ? `${orders.length} Order(s)` : "Not Signed In"}
                     </span>
                   </div>
 
-                  {orders.length === 0 ? (
+                  {!currentUser ? (
+                    <div className="text-center py-12 space-y-3">
+                      <div className="fs-1">🔒</div>
+                      <h4 className="fw-bold text-slate-800">Sign In Required</h4>
+                      <p className="text-muted small">
+                        Please sign in to your Vinnavar account to view your order history and download invoices.
+                      </p>
+                      <button
+                        type="button"
+                        className="btn btn-success rounded-pill px-4 font-bold shadow-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#userModal"
+                      >
+                        Sign In / Register ➔
+                      </button>
+                    </div>
+                  ) : orders.length === 0 ? (
                     <div className="text-center py-12 space-y-3">
                       <div className="fs-1">🛍️</div>
                       <h4 className="fw-bold text-slate-800">No Orders Found</h4>
@@ -313,7 +355,7 @@ const MyAccountOrder = () => {
                             <th>Items</th>
                             <th>Total Amount</th>
                             <th>Status</th>
-                            <th className="text-end">Invoice / Bill</th>
+                            <th className="text-end">Bill</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -448,23 +490,14 @@ const MyAccountOrder = () => {
                               </table>
                             </div>
 
-                            {/* Price Breakdown Card */}
-                            <div className="p-3 bg-emerald-50 rounded-3 border border-emerald-200 ms-auto max-w-sm text-xs font-medium space-y-1">
-                              <div className="d-flex justify-content-between text-slate-700">
-                                <span>Base Price (Subtotal):</span>
-                                <span className="font-bold">₹{selectedOrder.subtotal || selectedOrder.totalAmount}</span>
-                              </div>
-                              <div className="d-flex justify-content-between text-slate-700">
-                                <span>Weight Based Shipping:</span>
-                                <span className="font-bold text-emerald-700">₹{selectedOrder.shippingFee || "48.00"}</span>
-                              </div>
-                              <div className="d-flex justify-content-between text-slate-700">
-                                <span>GST Tax:</span>
-                                <span className="font-bold text-emerald-700">₹{selectedOrder.gstTax || "0.00"}</span>
-                              </div>
-                              <div className="d-flex justify-content-between text-slate-900 font-bold fs-6 pt-2 border-top border-emerald-200">
-                                <span>Total Amount:</span>
-                                <span className="text-emerald-800 fs-5">₹{selectedOrder.totalAmount}</span>
+                            {/* All-Inclusive Total Card */}
+                            <div className="p-3 bg-emerald-50 rounded-3 border border-emerald-200 ms-auto max-w-sm text-xs font-medium">
+                              <div className="d-flex justify-content-between align-items-center text-slate-900 font-bold fs-6">
+                                <div>
+                                  <span>Total Amount:</span>
+                                  <div className="text-emerald-700 text-[11px] font-semibold">All-Inclusive Price</div>
+                                </div>
+                                <span className="text-emerald-800 fs-4 fw-black">₹{selectedOrder.totalAmount}</span>
                               </div>
                             </div>
                           </div>

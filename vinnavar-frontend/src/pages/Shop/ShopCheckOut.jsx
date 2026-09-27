@@ -661,77 +661,56 @@ const ProductCheckOut = () => {
                                         </div>
                                     ) : (
                                         <>
-                                            <div className="max-h-64 overflow-y-auto space-y-3 pr-1 divide-y divide-slate-100">
-                                                {cart.items.map((item) => {
-                                                    const product = item.product || {};
-                                                    const variant = item.variant || {};
-                                                    const imgUrl = getImageUrl(product.imageUrl || product.imageUrls?.[0]);
-                                                    const itemTotal = item.unitPrice ? item.unitPrice * item.quantity : 0;
+                                            {(() => {
+                                                const totalPayable = cart ? (cart.totalAmount ?? (cart.subtotal || 0)) : 0;
 
-                                                    return (
-                                                        <div key={item.id} className="pt-3 first:pt-0 flex items-center justify-between gap-3 text-xs">
-                                                            <div className="flex items-center gap-3">
-                                                                <img
-                                                                    src={imgUrl}
-                                                                    alt={product.name}
-                                                                    className="w-10 h-10 object-contain rounded-xl bg-slate-50 border border-slate-100 p-1"
-                                                                />
+                                                return (
+                                                    <>
+                                                        <div className="max-h-64 overflow-y-auto space-y-3 pr-1 divide-y divide-slate-100">
+                                                            {cart.items.map((item) => {
+                                                                const product = item.product || {};
+                                                                const variant = item.variant || {};
+                                                                const imgUrl = getImageUrl(product.imageUrl || product.imageUrls?.[0]);
+                                                                const itemTotal = item.unitPrice ? item.unitPrice * item.quantity : 0;
+
+                                                                return (
+                                                                    <div key={item.id} className="pt-3 first:pt-0 flex items-center justify-between gap-3 text-xs">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <img
+                                                                                src={imgUrl}
+                                                                                alt={product.name}
+                                                                                className="w-10 h-10 object-contain rounded-xl bg-slate-50 border border-slate-100 p-1"
+                                                                            />
+                                                                            <div>
+                                                                                <h4 className="font-bold text-slate-900 text-xs truncate max-w-[150px]">
+                                                                                    {product.nameTranslations?.[currentLang] || product.name}
+                                                                                </h4>
+                                                                                <span className="text-[10px] text-emerald-700 font-semibold block">
+                                                                                    {variant.variantName} x {item.quantity}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <span className="font-extrabold text-slate-900 text-sm">
+                                                                            ₹{itemTotal.toFixed(2)}
+                                                                        </span>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                        <div className="space-y-2 text-xs font-medium pt-2">
+                                                            <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-sm font-black text-slate-900">
                                                                 <div>
-                                                                    <h4 className="font-bold text-slate-900 text-xs truncate max-w-[130px]">
-                                                                        {product.nameTranslations?.[currentLang] || product.name}
-                                                                    </h4>
-                                                                    <span className="text-[10px] text-emerald-700 font-semibold">
-                                                                        {variant.variantName} x {item.quantity}
-                                                                    </span>
+                                                                    <span className="text-slate-800 text-base">{t("total_payable", "Total Amount")}</span><br/>
+                                                                    <span className="text-[11px] font-semibold text-emerald-700">({t("inclusive_all", "All-Inclusive Price")})</span>
                                                                 </div>
+                                                                <span className="text-2xl text-emerald-700 font-black">
+                                                                    ₹{totalPayable.toFixed(2)}
+                                                                </span>
                                                             </div>
-                                                            <span className="font-extrabold text-slate-900">
-                                                                ₹{itemTotal.toLocaleString("en-IN")}
-                                                            </span>
                                                         </div>
-                                                    );
-                                                })}
-                                            </div>
-                                            <div className="space-y-2 text-xs font-medium">
-                                                <details className="group">
-                                                    <summary className="font-bold text-slate-600 cursor-pointer flex justify-between items-center pb-2 border-b border-slate-50" style={{ listStyle: "none" }}>
-                                                        <span>Price Breakup</span>
-                                                        <span className="text-slate-400">▼</span>
-                                                    </summary>
-                                                    <div className="pt-3 space-y-3 px-2">
-                                                        <div className="flex justify-between text-slate-700">
-                                                            <span className="font-bold text-slate-900">{t("subtotal_label", "Base Price")}</span>
-                                                            <span className="font-black text-emerald-700">₹{(cart.subtotal || 0).toFixed(2)}</span>
-                                                        </div>
-                                                        <div className="flex justify-between items-center text-slate-700">
-                                                            <span className="font-bold text-slate-900">{t("shipment", "Shipping Fee")}</span>
-                                                            <span className="text-right">
-                                                                <span className="text-[10px] text-slate-500 block">{t("weight_based")} ({(cart.totalWeightKg || 0).toFixed(1)} kg):</span>
-                                                                <span className="font-black text-emerald-700">₹{(cart.shippingFee ?? 48).toFixed(2)}</span>
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex justify-between text-slate-700">
-                                                            <span className="font-bold text-slate-900">{t("tax_gst", "GST Tax")}</span>
-                                                            <span className="font-black text-emerald-700">₹{(cart.gstTax ?? 0).toFixed(2)}</span>
-                                                        </div>
-                                                        {cart?.roundOff !== undefined && cart?.roundOff !== null && cart.roundOff !== 0 && (
-                                                            <div className="flex justify-between text-slate-700">
-                                                                <span className="font-bold text-slate-900">{t("round_off", "Round Off")}</span>
-                                                                <span className="font-black text-emerald-700">{cart.roundOff > 0 ? `+₹${cart.roundOff.toFixed(2)}` : `-₹${Math.abs(cart.roundOff).toFixed(2)}`}</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </details>
-                                                <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-sm font-black text-slate-900">
-                                                    <div>
-                                                        <span>Total Payable</span><br/>
-                                                        <span className="text-[10px] font-medium text-slate-500">(Inclusive of all)</span>
-                                                    </div>
-                                                    <span className="text-xl text-emerald-700">
-                                                        ₹{(cart.totalAmount ?? ((cart.subtotal || 0) + (cart.shippingFee ?? 48) + ((cart.subtotal || 0) * 0.05))).toFixed(2)}
-                                                    </span>
-                                                </div>
-                                            </div>
+                                                    </>
+                                                );
+                                            })()}
 
                                             <div className="mb-4 p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-center">
                                                 <p className="text-[12px] font-bold text-emerald-800">

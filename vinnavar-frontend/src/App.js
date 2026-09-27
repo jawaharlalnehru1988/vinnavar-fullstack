@@ -96,9 +96,13 @@ const AppContent = () => {
         <Route path="/MyAccountForgetPassword" element={<Navigate to="/" replace />} />
         <Route path="/MyAccountSignIn" element={<Navigate to="/" replace />} />
         <Route path="/MyAccountSignUp" element={<Navigate to="/" replace />} />
-        {/* About pages */}
+        {/* About & Blog pages */}
         <Route path="/Blog" element={<Blog />} />
+        <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogSingle />} />
+        <Route path="/blog/id/:id" element={<BlogSingle />} />
+        <Route path="/Blog/:slug" element={<BlogSingle />} />
+        <Route path="/Blog/id/:id" element={<BlogSingle />} />
         <Route path="/BlogSingle" element={<BlogSingle />} />
         <Route path="/BlogCategory" element={<BlogCategory />} />
         <Route path="/Contact" element={<Navigate to="/" replace />} />

@@ -157,6 +157,7 @@ const ProductCart = () => {
 
   const subtotal = cart?.subtotal || 0;
   const items = cart?.items || [];
+  const totalPayable = cart ? (cart.totalAmount ?? subtotal) : 0;
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -237,7 +238,7 @@ const ProductCart = () => {
                     const product = item.product || {};
                     const variant = item.variant || {};
                     const imgUrl = getImageUrl(product.imageUrl || product.imageUrls?.[0]);
-                    const itemTotal = item.unitPrice ? item.unitPrice * item.quantity : 0;
+                    const itemRawTotal = item.unitPrice ? item.unitPrice * item.quantity : 0;
 
                     return (
                       <div key={item.id} className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -258,7 +259,7 @@ const ProductCart = () => {
                               <span className="inline-block px-2.5 py-0.5 bg-slate-100 text-emerald-800 text-[10px] font-extrabold rounded-full border border-slate-200/60">
                                 {variant.variantName || t("standard_pack")}
                               </span>
-                              <span className="text-xs font-medium text-slate-500">₹{item.unitPrice} / {t("unit")}</span>
+                              <span className="text-xs font-bold text-slate-700">₹{item.unitPrice.toFixed(2)} / {t("unit")}</span>
                             </div>
                             <button
                               type="button"
@@ -299,7 +300,7 @@ const ProductCart = () => {
                           {/* Item Total */}
                           <div className="text-right">
                             <span className="text-base font-black text-slate-900">
-                              ₹{itemTotal.toLocaleString("en-IN")}
+                              ₹{itemRawTotal.toFixed(2)}
                             </span>
                           </div>
                         </div>
@@ -336,15 +337,15 @@ const ProductCart = () => {
                     {items.map((item, idx) => {
                       const p = item.product || {};
                       const v = item.variant || {};
-                      const lineTotal = item.unitPrice ? item.unitPrice * item.quantity : 0;
+                      const itemRawTotal = item.unitPrice ? item.unitPrice * item.quantity : 0;
                       return (
                         <div key={idx} className="flex justify-between items-start text-xs gap-3">
                           <span className="text-slate-600 font-medium leading-tight">
-                            {p.name} {v.variantName ? `- ${v.variantName}` : ''}<br />
+                            {p.nameTranslations?.[currentLang] || p.name} {v.variantName ? `- ${v.variantName}` : ''}<br />
                             <strong className="text-slate-900">× {item.quantity}</strong>
                           </span>
                           <span className="font-semibold text-slate-800 whitespace-nowrap">
-                            ₹{lineTotal.toFixed(2)}
+                            ₹{itemRawTotal.toFixed(2)}
                           </span>
                         </div>
                       );
@@ -352,46 +353,25 @@ const ProductCart = () => {
                   </div>
 
                   <div className="space-y-3 text-xs font-medium">
-                    <details className="group">
-                      <summary className="font-bold text-slate-600 cursor-pointer flex justify-between items-center pb-2 border-b border-slate-50" style={{ listStyle: "none" }}>
-                        <span>Price Breakup</span>
-                        <span className="text-slate-400">▼</span>
-                      </summary>
-                      <div className="pt-3 space-y-3 px-2">
-                        <div className="flex justify-content-between text-slate-700">
-                          <span className="font-bold text-slate-900">{t("subtotal_label", "Base Price")}</span>
-                          <span className="font-black text-emerald-700">₹{subtotal.toFixed(2)}</span>
-                        </div>
+                    <div className="flex justify-between text-slate-700">
+                      <span className="font-bold text-slate-900">{t("subtotal_col", "Subtotal")}</span>
+                      <span className="font-black text-slate-800">₹{totalPayable.toFixed(2)}</span>
+                    </div>
 
-                        <div className="flex justify-between items-center text-slate-700">
-                          <span className="font-bold text-slate-900">{t("shipment", "Shipping Fee")}</span>
-                          <span className="text-right">
-                            <span className="text-[11px] text-slate-500 block">{(cart?.totalWeightKg || 0).toFixed(1)} kg</span>
-                            <span className="font-black text-emerald-700">₹{(cart?.shippingFee ?? 48).toFixed(2)}</span>
-                          </span>
-                        </div>
-
-                        <div className="flex justify-between text-slate-700">
-                          <span className="font-bold text-slate-900">{t("tax_gst", "GST Tax")}</span>
-                          <span className="font-black text-emerald-700">₹{(cart?.gstTax ?? 0).toFixed(2)}</span>
-                        </div>
-
-                        {cart?.roundOff !== undefined && cart?.roundOff !== null && cart.roundOff !== 0 && (
-                          <div className="flex justify-between text-slate-700">
-                            <span className="font-bold text-slate-900">{t("round_off", "Round Off")}</span>
-                            <span className="font-black text-emerald-700">{cart.roundOff > 0 ? `+₹${cart.roundOff.toFixed(2)}` : `-₹${Math.abs(cart.roundOff).toFixed(2)}`}</span>
-                          </div>
-                        )}
-                      </div>
-                    </details>
+                    <div className="flex justify-between items-center text-slate-700">
+                      <span className="font-bold text-slate-900">{t("delivery_charges", "Doorstep Delivery")}</span>
+                      <span className="font-black text-emerald-700">
+                        {t("free_delivery_val", "FREE (Included)")}
+                      </span>
+                    </div>
 
                     <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-sm font-black text-slate-900">
                       <div>
-                        <span>Total Payable</span><br/>
-                        <span className="text-[10px] font-medium text-slate-500">(Inclusive of all)</span>
+                        <span>{t("total_payable", "Total Payable")}</span><br/>
+                        <span className="text-[10px] font-medium text-slate-500">({t("inclusive_all", "All-Inclusive Price")})</span>
                       </div>
                       <span className="text-2xl text-emerald-700">
-                        ₹{(cart?.totalAmount ?? (subtotal + (cart?.shippingFee ?? 48) + (subtotal * 0.05))).toFixed(2)}
+                        ₹{totalPayable.toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -402,7 +382,7 @@ const ProductCart = () => {
                     onClick={() => navigate("/ProductCheckOut")}
                   >
                     <span>{t("proceed_to_checkout")}</span>
-                    <span>₹{(cart?.totalAmount ?? (subtotal + (cart?.shippingFee ?? 48) + (subtotal * 0.05))).toFixed(2)} ➔</span>
+                    <span>₹{totalPayable.toFixed(2)} ➔</span>
                   </button>
 
                   <div className="text-center pt-3 border-t border-slate-100 space-y-2">
@@ -410,11 +390,13 @@ const ProductCart = () => {
                       🔒 {t("safe_checkout")}
                     </p>
                     <div className="flex flex-wrap justify-center gap-2 text-[11px] font-bold text-emerald-700">
-                      <button type="button" onClick={() => openPolicy("REFUND")} className="hover:underline cursor-pointer border-0 bg-transparent text-emerald-700 p-0 font-bold">{t("refund_policy")}</button>
+                      <Link to="/refund-policy" className="hover:underline text-emerald-700 font-bold">{t("refund_policy")}</Link>
                       <span>•</span>
-                      <button type="button" onClick={() => openPolicy("PRIVACY")} className="hover:underline cursor-pointer border-0 bg-transparent text-emerald-700 p-0 font-bold">{t("privacy_policy")}</button>
+                      <Link to="/return-policy" className="hover:underline text-emerald-700 font-bold">{t("return_policy")}</Link>
                       <span>•</span>
-                      <button type="button" onClick={() => openPolicy("TERMS")} className="hover:underline cursor-pointer border-0 bg-transparent text-emerald-700 p-0 font-bold">{t("terms_conditions")}</button>
+                      <Link to="/privacy-policy" className="hover:underline text-emerald-700 font-bold">{t("privacy_policy")}</Link>
+                      <span>•</span>
+                      <Link to="/terms-conditions" className="hover:underline text-emerald-700 font-bold">{t("terms_conditions")}</Link>
                     </div>
                   </div>
                 </div>

@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Data
 @Builder
@@ -21,4 +22,8 @@ public class BlogPostResponse {
     private Boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private Map<String, String> titleTranslations;
+    private Map<String, String> shortDescriptionTranslations;
+    private Map<String, String> contentTranslations;
 }

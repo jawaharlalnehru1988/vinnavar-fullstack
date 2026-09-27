@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-cd /var/www/vinnavar-fullstack
+cd /var/www/myclients-fullstacts/vinnavar-fullstack
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "master")
 
@@ -13,14 +13,14 @@ echo "=== [1/5] Pulling latest changes from Git (branch: $BRANCH) ==="
 git pull origin "$BRANCH" --rebase --autostash || true
 
 echo "=== [2/5] Building Spring Boot Backend ==="
-cd /var/www/vinnavar-fullstack/vinnavar-backend
+cd /var/www/myclients-fullstacts/vinnavar-fullstack/vinnavar-backend
 mvn clean package -DskipTests
 
 echo "=== [3/5] Restarting vinnavar-backend Service ==="
 sudo systemctl restart vinnavar-backend || systemctl restart vinnavar-backend
 
 echo "=== [4/5] Building React Frontend ==="
-cd /var/www/vinnavar-fullstack/vinnavar-frontend
+cd /var/www/myclients-fullstacts/vinnavar-fullstack/vinnavar-frontend
 npm install --legacy-peer-deps
 npm run build
 

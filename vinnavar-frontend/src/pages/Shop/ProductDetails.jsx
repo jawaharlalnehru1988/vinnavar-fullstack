@@ -522,7 +522,7 @@ const ProductDetails = () => {
                             {/* Payment Partners */}
                             <div className="p-4 bg-slate-50 rounded-2xl text-center border border-slate-200/80 mt-4">
                                 <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">
-                                    100% Safe & Secure Payments
+                                    {t("safe_secure_payments", "100% Safe & Secure Payments")}
                                 </div>
                                 <div className="flex items-center justify-center gap-4">
                                     <img src={amazonpay} alt="Amazon Pay" className="h-6 object-contain" />
@@ -595,7 +595,7 @@ const ProductDetails = () => {
                                 </a>
                                 <span className="h-4 w-px bg-slate-300"></span>
                                 <span className="text-emerald-600 text-xs font-bold flex items-center gap-1">
-                                    <span>✓</span> 100% Authentic Organic
+                                    <span>✓</span> {t("authentic_organic", "100% Authentic Organic")}
                                 </span>
                             </div>
 
@@ -616,12 +616,23 @@ const ProductDetails = () => {
                                         </>
                                     )}
                                 </div>
-                                <div className="text-xs text-slate-500 mt-2 flex items-start gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                                    <span className="text-amber-500 mt-0.5">ℹ️</span>
-                                    <span>
-                                        <span className="font-semibold text-slate-700">Base Price of Item Shown Here.</span>{" "}
-                                        <span className="text-slate-500">Price Break up Available in Cart / Check Out Section.</span>
-                                    </span>
+                                <div className="mt-3 flex flex-col gap-2">
+                                    <div className="flex items-center gap-2 text-xs font-semibold text-emerald-900 bg-emerald-50/90 border border-emerald-300/80 rounded-xl px-3 py-2 shadow-xs">
+                                        <span className="text-base leading-none">🛡️</span>
+                                        <span>
+                                            <strong className="font-extrabold text-color-blink mr-1">{t("all_inclusive_price_title", "All-Inclusive Price:")}</strong>
+                                            <span className="text-platform-color-blink font-semibold">
+                                                {t("all_inclusive_price_desc", "Covers Base Price + Doorstep Delivery + All Taxes across India.")}
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[11px] font-bold text-slate-600 px-1 flex-wrap">
+                                        <span className="inline-flex items-center gap-1 text-emerald-800 bg-emerald-100/90 px-2.5 py-0.5 rounded-full border border-emerald-300 shadow-2xs">
+                                            <span>🚚</span> <span className="text-color-blink font-extrabold">{t("free_delivery_included", "FREE Doorstep Delivery Included")}</span>
+                                        </span>
+                                        <span className="text-slate-400">•</span>
+                                        <span className="text-slate-500 font-medium">{t("no_hidden_charges", "No extra shipping charges added at checkout")}</span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -629,7 +640,7 @@ const ProductDetails = () => {
                             {product.variants && product.variants.length > 0 && (
                                 <div>
                                     <label className="block text-sm font-bold text-slate-900 mb-2.5">
-                                        Select Weight / Size Variation:
+                                        {t("select_variation", "Select Weight / Size Variation:")}
                                     </label>
                                     <div className="flex flex-wrap gap-2.5">
                                         {product.variants.map((variant) => {
@@ -659,7 +670,7 @@ const ProductDetails = () => {
 
                             {/* QUANTITY SELECTOR */}
                             <div className="flex items-center gap-4">
-                                <label className="text-sm font-bold text-slate-900">Quantity:</label>
+                                <label className="text-sm font-bold text-slate-900">{t("quantity_label", "Quantity:")}</label>
                                 <div className="flex items-center border border-slate-300 rounded-xl bg-white shadow-sm overflow-hidden">
                                     <button
                                         type="button"
@@ -685,7 +696,7 @@ const ProductDetails = () => {
                             {(product.descriptionTranslations?.[currentLang] || product.shortDescription) && (
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
                                     <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1.5">
-                                        <span>✨</span> Highlights & Key Details
+                                        <span>✨</span> {t("highlights_key_details", "Highlights & Key Details")}
                                     </h3>
                                     <p className="text-slate-800 text-sm leading-relaxed font-medium">
                                         {product.descriptionTranslations?.[currentLang] || product.shortDescription}
@@ -694,56 +705,56 @@ const ProductDetails = () => {
                             )}
 
                             {/* FULL DETAILED DESCRIPTION */}
-                            {product.fullDescription && (
+                            {(product.fullDescriptionTranslations?.[currentLang] || product.fullDescription) && (
                                 <div className="p-4 bg-emerald-50/40 rounded-2xl border border-emerald-100/90">
                                     <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-900 mb-2 flex items-center gap-1.5">
-                                        <span>📖</span> Product Overview & Description
+                                        <span>📖</span> {t("product_overview_desc", "Product Overview & Description")}
                                     </h3>
                                     <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-line">
-                                        {product.fullDescription}
+                                        {product.fullDescriptionTranslations?.[currentLang] || product.fullDescription}
                                     </p>
                                 </div>
                             )}
 
                             {/* HEALTH BENEFITS */}
-                            {product.benefits && (
+                            {(product.benefitsTranslations?.[currentLang] || product.benefits) && (
                                 <div className="p-4 bg-emerald-50/70 rounded-2xl border-l-4 border-emerald-600">
                                     <h3 className="text-sm font-bold text-emerald-800 mb-1.5 flex items-center gap-1.5">
-                                        <span>🌿</span> Health Benefits & Culinary Uses:
+                                        <span>🌿</span> {t("health_benefits_culinary_uses", "Health Benefits & Culinary Uses:")}
                                     </h3>
                                     <p className="text-slate-700 text-sm whitespace-pre-line leading-relaxed">
-                                        {product.benefits}
+                                        {product.benefitsTranslations?.[currentLang] || product.benefits}
                                     </p>
                                 </div>
                             )}
 
                             {/* SPECIFICATIONS TABLE */}
                             <div>
-                                <h3 className="text-sm font-bold text-slate-900 mb-3">Product Specifications:</h3>
+                                <h3 className="text-sm font-bold text-slate-900 mb-3">{t("product_specifications", "Product Specifications:")}</h3>
                                 <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-200 text-xs sm:text-sm">
                                     <div className="flex bg-slate-50">
-                                        <span className="w-1/3 p-3 font-semibold text-slate-600">Brand</span>
+                                        <span className="w-1/3 p-3 font-semibold text-slate-600">{t("spec_brand", "Brand")}</span>
                                         <span className="w-2/3 p-3 font-medium text-slate-800">Vinnavar Organic</span>
                                     </div>
                                     <div className="flex bg-white">
-                                        <span className="w-1/3 p-3 font-semibold text-slate-600">Category</span>
+                                        <span className="w-1/3 p-3 font-semibold text-slate-600">{t("spec_category", "Category")}</span>
                                         <span className="w-2/3 p-3 font-medium text-slate-800">{product.category?.nameTranslations?.[currentLang] || product.category?.name || "Organic Staples"}</span>
                                     </div>
                                     <div className="flex bg-slate-50">
-                                        <span className="w-1/3 p-3 font-semibold text-slate-600">Selected Pack Size</span>
+                                        <span className="w-1/3 p-3 font-semibold text-slate-600">{t("spec_pack_size", "Selected Pack Size")}</span>
                                         <span className="w-2/3 p-3 font-medium text-slate-800">{selectedVariant?.variantName || "Standard"}</span>
                                     </div>
                                     <div className="flex bg-white">
-                                        <span className="w-1/3 p-3 font-semibold text-slate-600">Country of Origin</span>
-                                        <span className="w-2/3 p-3 font-medium text-slate-800">India (Tamil Nadu)</span>
+                                        <span className="w-1/3 p-3 font-semibold text-slate-600">{t("spec_origin", "Country of Origin")}</span>
+                                        <span className="w-2/3 p-3 font-medium text-slate-800">{t("spec_origin_val", "India (Tamil Nadu)")}</span>
                                     </div>
                                     <div className="flex bg-slate-50">
-                                        <span className="w-1/3 p-3 font-semibold text-slate-600">Form & Quality</span>
-                                        <span className="w-2/3 p-3 font-medium text-slate-800">100% Unpolished & Pure Natural</span>
+                                        <span className="w-1/3 p-3 font-semibold text-slate-600">{t("spec_quality", "Form & Quality")}</span>
+                                        <span className="w-2/3 p-3 font-medium text-slate-800">{t("spec_quality_val", "100% Unpolished & Pure Natural")}</span>
                                     </div>
                                     <div className="flex bg-white">
-                                        <span className="w-1/3 p-3 font-semibold text-slate-600">Storage Instructions</span>
-                                        <span className="w-2/3 p-3 font-medium text-slate-800">Store in a cool and dry place. Keep container tightly closed.</span>
+                                        <span className="w-1/3 p-3 font-semibold text-slate-600">{t("spec_storage", "Storage Instructions")}</span>
+                                        <span className="w-2/3 p-3 font-medium text-slate-800">{t("spec_storage_val", "Store in a cool and dry place. Keep container tightly closed.")}</span>
                                     </div>
                                 </div>
                             </div>
@@ -756,10 +767,10 @@ const ProductDetails = () => {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                             <div>
                                 <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
-                                    ⭐ Customer Ratings & Photo Reviews
+                                    ⭐ {t("customer_ratings_reviews", "Customer Ratings & Photo Reviews")}
                                 </h2>
                                 <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
-                                    Real photos & authentic reviews from verified buyers of Vinnavar Organics.
+                                    {t("customer_ratings_subtitle", "Real photos & authentic reviews from verified buyers of Vinnavar Organics.")}
                                 </p>
                             </div>
                             <button
@@ -767,7 +778,7 @@ const ProductDetails = () => {
                                 className="self-start sm:self-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md transition-colors flex items-center gap-2"
                                 onClick={() => setShowWriteReviewModal(true)}
                             >
-                                ✏️ Write a Review
+                                ✏️ {t("write_review_btn", "Write a Review")}
                             </button>
                         </div>
 

@@ -30252,3 +30252,106 @@ background-color: #f3f6ff;
 .support-btn:hover {
   background-color: #1b5e20;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Text-Level Blinking & Multi-Color Transformations
+   (Applied directly to text spans rather than section containers)
+   ───────────────────────────────────────────────────────────── */
+@keyframes textColorTransformBlink {
+  0% {
+    color: #b45309; /* Deep Warm Amber */
+    opacity: 1;
+    text-shadow: 0 0 1px rgba(180, 83, 9, 0.4);
+  }
+  20% {
+    color: #047857; /* Rich Emerald Green */
+    opacity: 0.9;
+    text-shadow: 0 0 1px rgba(4, 120, 87, 0.4);
+  }
+  40% {
+    color: #c2410c; /* Vivid Sunset Orange */
+    opacity: 1;
+    text-shadow: 0 0 1px rgba(194, 65, 12, 0.4);
+  }
+  60% {
+    color: #1e40af; /* Royal Indigo Blue */
+    opacity: 0.85;
+    text-shadow: 0 0 1px rgba(30, 64, 175, 0.4);
+  }
+  80% {
+    color: #be123c; /* Ruby Crimson Red */
+    opacity: 1;
+    text-shadow: 0 0 1px rgba(190, 18, 60, 0.4);
+  }
+  100% {
+    color: #b45309; /* Deep Warm Amber */
+    opacity: 1;
+    text-shadow: 0 0 1px rgba(180, 83, 9, 0.4);
+  }
+}
+
+.text-color-blink {
+  animation: textColorTransformBlink 3.2s ease-in-out infinite;
+  display: inline-block;
+  font-weight: 800;
+  transition: color 0.3s ease;
+}
+
+@keyframes textPlatformColorBlink {
+  0% {
+    color: #047857; /* Emerald Green */
+    opacity: 1;
+  }
+  25% {
+    color: #0284c7; /* Sky Blue */
+    opacity: 0.9;
+  }
+  50% {
+    color: #b45309; /* Warm Amber */
+    opacity: 1;
+  }
+  75% {
+    color: #4f46e5; /* Royal Indigo */
+    opacity: 0.9;
+  }
+  100% {
+    color: #047857; /* Emerald Green */
+    opacity: 1;
+  }
+}
+
+.text-platform-color-blink {
+  animation: textPlatformColorBlink 4s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes textRatingColorBlink {
+  0% {
+    color: #92400e; /* Golden Bronze */
+    opacity: 1;
+  }
+  25% {
+    color: #047857; /* Rich Emerald */
+    opacity: 0.9;
+  }
+  50% {
+    color: #c2410c; /* Deep Amber Orange */
+    opacity: 1;
+  }
+  75% {
+    color: #1e3a8a; /* Indigo Navy */
+    opacity: 0.9;
+  }
+  100% {
+    color: #92400e; /* Golden Bronze */
+    opacity: 1;
+  }
+}
+
+.text-rating-color-blink {
+  animation: textRatingColorBlink 3.5s ease-in-out infinite;
+  display: inline-block;
+  font-weight: 800;
+}
+
+

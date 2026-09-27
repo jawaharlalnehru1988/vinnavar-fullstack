@@ -9,7 +9,6 @@ import com.vinnavar.backend.modules.order.entity.ShippingAddress;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import com.vinnavar.backend.modules.shipping.service.ShippingService;
 
 import javax.imageio.ImageIO;
 import java.awt.Color;
@@ -21,12 +20,15 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
+import com.vinnavar.backend.modules.product.entity.Product;
+import com.vinnavar.backend.modules.product.entity.ProductVariant;
+import com.vinnavar.backend.modules.product.repository.ProductRepository;
 
 @Service
 @RequiredArgsConstructor
 public class PdfInvoiceService {
 
-    private final ShippingService shippingService;
+    private final ProductRepository productRepository;
 
     /**
      * Resizes an image file to max dimensions and returns compressed JPEG bytes.
@@ -177,14 +179,14 @@ public class PdfInvoiceService {
             PdfPCell cellRight = new PdfPCell();
             cellRight.setBorder(Rectangle.NO_BORDER);
             cellRight.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            Paragraph pInvoice = new Paragraph("TAX INVOICE / BILL", titleFont);
+            Paragraph pInvoice = new Paragraph("Order Confirmation / Delivery Challan", titleFont);
             pInvoice.setAlignment(Element.ALIGN_RIGHT);
             cellRight.addElement(pInvoice);
 
             Paragraph pDetails = new Paragraph(
-                    "Invoice #: VIN/" + getFinancialYear(order.getCreatedAt()) + "/" + String.format("%04d", order.getId()) + "\n" +
+                    "Document #: VIN/" + getFinancialYear(order.getCreatedAt()) + "/" + String.format("%04d", order.getId()) + "\n" +
                     "Date: " + (order.getCreatedAt() != null ? order.getCreatedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm")) : "N/A") + "\n" +
-                    "Status: " + (order.getOrderStatus() != null ? order.getOrderStatus().name() : "PAID") + 
+                    "Status: " + (order.getOrderStatus() != null ? order.getOrderStatus().name() : "CONFIRMED") + 
                     (order.getPaymentMethod() != null ? " (" + order.getPaymentMethod() + ")" : ""),
                     fontSmallBold
             );
@@ -242,25 +244,35 @@ public class PdfInvoiceService {
             document.add(infoTable);
             document.add(new Paragraph(" "));
 
-            // 3. Items Table
-            PdfPTable itemTable = new PdfPTable(8);
+            // 3. Items Table (with MRP, Unit Price, Discount, Your Savings)
+            PdfPTable itemTable = new PdfPTable(9);
             itemTable.setWidthPercentage(100);
-            itemTable.setWidths(new float[]{0.4f, 3.1f, 0.9f, 0.5f, 1.0f, 1.0f, 1.1f, 1.2f});
+            itemTable.setWidths(new float[]{0.4f, 2.8f, 0.9f, 0.5f, 1.0f, 1.0f, 0.9f, 1.2f, 1.1f});
 
-            String[] headers = {"#", "Product Description", "HSN Code", "Qty", "MRP", "Discount %", "Unit Price", "Total (Rs.)"};
+            Font tableHdrFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7.5f, Color.WHITE);
+            Font tableCellFont = FontFactory.getFont(FontFactory.HELVETICA, 7.5f, Color.BLACK);
+            Font tableCellBold = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7.5f, Color.BLACK);
+            Font tableSavingsFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7.5f, new Color(4, 120, 87));
+
+            String[] headers = {"#", "Product Description", "HSN Code", "Qty", "MRP", "Unit Price", "Discount", "Your Savings", "Total (Rs.)"};
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell();
                 cell.setBackgroundColor(emeraldDark);
-                cell.setPadding(5);
-                cell.setHorizontalAlignment(header.contains("Total") || header.contains("Price") || header.contains("MRP") || header.contains("Discount") ? Element.ALIGN_RIGHT : Element.ALIGN_LEFT);
-                cell.setPhrase(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.WHITE)));
+                cell.setPadding(4.5f);
+                if (header.contains("Total") || header.contains("Price") || header.contains("MRP") || header.contains("Savings")) {
+                    cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                } else if (header.contains("Qty") || header.contains("HSN") || header.contains("Discount") || header.equals("#")) {
+                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                } else {
+                    cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+                }
+                cell.setPhrase(new Phrase(header, tableHdrFont));
                 itemTable.addCell(cell);
             }
 
             int index = 1;
             int totalQty = 0;
-            BigDecimal calculatedTotalMrp = BigDecimal.ZERO;
-            BigDecimal calculatedTotalSavings = BigDecimal.ZERO;
+            BigDecimal totalOrderSavings = BigDecimal.ZERO;
 
             if (order.getItems() != null) {
                 for (OrderItem item : order.getItems()) {
@@ -269,135 +281,159 @@ public class PdfInvoiceService {
                     totalQty += qty;
                     BigDecimal lineTotal = item.getTotalPrice() != null ? item.getTotalPrice() : unitPrice.multiply(BigDecimal.valueOf(qty));
 
+                    // Lookup MRP from Product and ProductVariant
+                    BigDecimal mrp = unitPrice;
+                    try {
+                        Product product = null;
+                        if (item.getProductId() != null) {
+                            product = productRepository.findById(item.getProductId()).orElse(null);
+                        }
+                        if (product == null && item.getProductName() != null) {
+                            product = productRepository.findAll().stream()
+                                    .filter(p -> p.getName() != null && p.getName().trim().equalsIgnoreCase(item.getProductName().trim()))
+                                    .findFirst()
+                                    .orElse(null);
+                        }
+                        if (product != null && product.getVariants() != null && !product.getVariants().isEmpty()) {
+                            ProductVariant matched = null;
+                            if (item.getVariantName() != null && !item.getVariantName().isBlank()) {
+                                matched = product.getVariants().stream()
+                                        .filter(v -> v.getVariantName() != null && v.getVariantName().trim().equalsIgnoreCase(item.getVariantName().trim()))
+                                        .findFirst()
+                                        .orElse(null);
+                            }
+                            if (matched == null) {
+                                matched = product.getVariants().stream()
+                                        .filter(ProductVariant::isDefault)
+                                        .findFirst()
+                                        .orElse(product.getVariants().get(0));
+                            }
+                            if (matched != null && matched.getPrice() != null && matched.getPrice().compareTo(BigDecimal.ZERO) > 0) {
+                                mrp = matched.getPrice();
+                            }
+                        }
+                    } catch (Exception e) {
+                        mrp = unitPrice;
+                    }
+
+                    if (mrp.compareTo(unitPrice) < 0) {
+                        mrp = unitPrice;
+                    }
+
+                    BigDecimal discountPerUnit = mrp.subtract(unitPrice);
+                    BigDecimal lineSavings = discountPerUnit.multiply(BigDecimal.valueOf(qty));
+                    totalOrderSavings = totalOrderSavings.add(lineSavings);
+
+                    String discountStr = "-";
+                    if (mrp.compareTo(BigDecimal.ZERO) > 0 && discountPerUnit.compareTo(BigDecimal.ZERO) > 0) {
+                        int discountPercent = (int) Math.round((discountPerUnit.doubleValue() / mrp.doubleValue()) * 100);
+                        if (discountPercent > 0) {
+                            discountStr = discountPercent + "% OFF";
+                        }
+                    }
+
+                    String savingsStr = lineSavings.compareTo(BigDecimal.ZERO) > 0 ? "Rs." + String.format("%.2f", lineSavings) : "Rs.0.00";
                     String hsnCode = (item.getHsnCode() != null && !item.getHsnCode().isBlank()) ? item.getHsnCode() : "1006";
 
-                    BigDecimal mrp = unitPrice.multiply(new BigDecimal("1.15")).setScale(2, RoundingMode.HALF_UP);
-                    BigDecimal lineMrpTotal = mrp.multiply(BigDecimal.valueOf(qty));
-                    BigDecimal lineDiscountAmount = lineMrpTotal.subtract(lineTotal);
-
-                    calculatedTotalMrp = calculatedTotalMrp.add(lineMrpTotal);
-                    calculatedTotalSavings = calculatedTotalSavings.add(lineDiscountAmount);
-
-                    double discountPercent = 13.0;
-
-                    PdfPCell c1 = new PdfPCell(new Phrase(String.valueOf(index++), fontRegular));
+                    PdfPCell c1 = new PdfPCell(new Phrase(String.valueOf(index++), tableCellFont));
                     c1.setPadding(4);
+                    c1.setHorizontalAlignment(Element.ALIGN_CENTER);
                     itemTable.addCell(c1);
 
-                    PdfPCell c2 = new PdfPCell(new Phrase(item.getProductName() + " (" + item.getVariantName() + ")", fontRegular));
+                    PdfPCell c2 = new PdfPCell(new Phrase(item.getProductName() + (item.getVariantName() != null && !item.getVariantName().isBlank() ? " (" + item.getVariantName() + ")" : ""), tableCellFont));
                     c2.setPadding(4);
                     itemTable.addCell(c2);
 
-                    PdfPCell c3 = new PdfPCell(new Phrase(hsnCode, fontRegular));
+                    PdfPCell c3 = new PdfPCell(new Phrase(hsnCode, tableCellFont));
                     c3.setPadding(4);
                     c3.setHorizontalAlignment(Element.ALIGN_CENTER);
                     itemTable.addCell(c3);
 
-                    PdfPCell c4 = new PdfPCell(new Phrase(String.valueOf(qty), fontRegular));
+                    PdfPCell c4 = new PdfPCell(new Phrase(String.valueOf(qty), tableCellFont));
                     c4.setPadding(4);
                     c4.setHorizontalAlignment(Element.ALIGN_CENTER);
                     itemTable.addCell(c4);
 
-                    PdfPCell c5 = new PdfPCell(new Phrase("Rs." + String.format("%.2f", mrp), fontRegular));
+                    PdfPCell c5 = new PdfPCell(new Phrase("Rs." + String.format("%.2f", mrp), tableCellFont));
                     c5.setPadding(4);
                     c5.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     itemTable.addCell(c5);
 
-                    PdfPCell c6 = new PdfPCell(new Phrase(String.format("%.0f%%", discountPercent), fontRegular));
+                    PdfPCell c6 = new PdfPCell(new Phrase("Rs." + String.format("%.2f", unitPrice), tableCellFont));
                     c6.setPadding(4);
                     c6.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     itemTable.addCell(c6);
 
-                    PdfPCell c7 = new PdfPCell(new Phrase("Rs." + String.format("%.2f", unitPrice), fontRegular));
+                    PdfPCell c7 = new PdfPCell(new Phrase(discountStr, discountStr.contains("%") ? tableSavingsFont : tableCellFont));
                     c7.setPadding(4);
-                    c7.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    c7.setHorizontalAlignment(Element.ALIGN_CENTER);
                     itemTable.addCell(c7);
 
-                    PdfPCell c8 = new PdfPCell(new Phrase("Rs." + String.format("%.2f", lineTotal), fontBold));
+                    PdfPCell c8 = new PdfPCell(new Phrase(savingsStr, lineSavings.compareTo(BigDecimal.ZERO) > 0 ? tableSavingsFont : tableCellFont));
                     c8.setPadding(4);
                     c8.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     itemTable.addCell(c8);
+
+                    PdfPCell c9 = new PdfPCell(new Phrase("Rs." + String.format("%.2f", lineTotal), tableCellBold));
+                    c9.setPadding(4);
+                    c9.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    itemTable.addCell(c9);
                 }
             }
 
             document.add(itemTable);
             document.add(new Paragraph(" "));
 
-            // 4. Savings Banner & Breakdown Table Side-by-Side
+            // 4. Order Confirmation Summary (All-Inclusive, Zero Breakup, Zero Separate Shipping/Tax/Roundoff)
             PdfPTable middleSection = new PdfPTable(2);
             middleSection.setWidthPercentage(100);
             middleSection.setWidths(new float[]{1.1f, 1f});
 
-            BigDecimal subtotal = order.getSubtotal() != null ? order.getSubtotal() : BigDecimal.ZERO;
-            double weight = order.getTotalWeightKg() != null ? order.getTotalWeightKg() : 0.5;
-            String destState = order.getShippingAddress() != null ? order.getShippingAddress().getState() : "Tamil Nadu";
-            String payMethod = order.getPaymentMethod() != null ? order.getPaymentMethod().name() : "ONLINE";
+            BigDecimal finalTotal = order.getTotalAmount() != null ? order.getTotalAmount() : (order.getSubtotal() != null ? order.getSubtotal() : BigDecimal.ZERO);
 
-            com.vinnavar.backend.modules.shipping.service.ShippingService.ShippingCalculationResult calc =
-                    shippingService.calculateShippingFee(weight, destState, payMethod, subtotal);
-            BigDecimal shippingFee = order.getShippingFee() != null ? order.getShippingFee() : calc.getTotalShippingFee();
-
-            BigDecimal productGst = subtotal.multiply(new BigDecimal("0.05")).setScale(2, RoundingMode.HALF_UP);
-            BigDecimal shippingGst = shippingFee.multiply(new BigDecimal("0.18")).setScale(2, RoundingMode.HALF_UP);
-            BigDecimal totalGst = productGst.add(shippingGst);
-            BigDecimal unroundedTotal = subtotal.add(shippingFee).add(totalGst).setScale(2, RoundingMode.HALF_UP);
-            BigDecimal grandTotal = unroundedTotal.setScale(0, RoundingMode.FLOOR).setScale(2, RoundingMode.HALF_UP);
-            BigDecimal roundOff = grandTotal.subtract(unroundedTotal).setScale(2, RoundingMode.HALF_UP);
-
-            // Left Cell: You Have Saved Banner Box (No background color fill for full watermark visibility)
-            PdfPCell savingsBoxCell = new PdfPCell();
-            savingsBoxCell.setPadding(10);
-            savingsBoxCell.setBorderColor(emeraldDark);
-            savingsBoxCell.setBorderWidth(1.2f);
+            // Left Cell: Delivery Confirmation Box
+            PdfPCell deliveryBoxCell = new PdfPCell();
+            deliveryBoxCell.setPadding(10);
+            deliveryBoxCell.setBorderColor(emeraldDark);
+            deliveryBoxCell.setBorderWidth(1.2f);
             
-            Paragraph pSavedTitle = new Paragraph("You have saved:", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, emeraldDark));
-            Paragraph pSavedText = new Paragraph("Discount Applied in Rs. " + String.format("%.2f", calculatedTotalSavings) + " from this Order.", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, Color.BLACK));
-            pSavedText.setSpacingBefore(4f);
+            Paragraph pConfirmTitle = new Paragraph("Delivery Confirmation Note:", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, emeraldDark));
+            Paragraph pConfirmText = new Paragraph("All prices listed are all-inclusive of product, doorstep delivery, and applicable taxes across India.\nNo additional charges payable upon delivery.", fontRegular);
+            pConfirmText.setSpacingBefore(4f);
 
-            savingsBoxCell.addElement(pSavedTitle);
-            savingsBoxCell.addElement(pSavedText);
-            middleSection.addCell(savingsBoxCell);
+            deliveryBoxCell.addElement(pConfirmTitle);
+            deliveryBoxCell.addElement(pConfirmText);
+            middleSection.addCell(deliveryBoxCell);
 
-            // Right Cell: Totals Summary Table
+            // Right Cell: Clean Totals Summary Table
             PdfPCell summaryCellWrapper = new PdfPCell();
             summaryCellWrapper.setBorder(Rectangle.NO_BORDER);
 
             PdfPTable summaryTable = new PdfPTable(2);
             summaryTable.setWidthPercentage(100);
-            summaryTable.setWidths(new float[]{1.7f, 1.3f});
+            summaryTable.setWidths(new float[]{1.4f, 1.6f});
 
-            summaryTable.addCell(createSummaryLabelCell("MRP Total:", fontRegular));
-            summaryTable.addCell(createSummaryValueCell("Rs." + String.format("%.2f", calculatedTotalMrp), fontRegular));
+            summaryTable.addCell(createSummaryLabelCell("Total Quantity:", fontRegular));
+            summaryTable.addCell(createSummaryValueCell(totalQty + " Units", fontRegular));
 
-            summaryTable.addCell(createSummaryLabelCell("Discount Amount Total:", fontRegular));
-            summaryTable.addCell(createSummaryValueCell("- Rs." + String.format("%.2f", calculatedTotalSavings), fontRegular));
+            summaryTable.addCell(createSummaryLabelCell("Pricing Model:", fontRegular));
+            summaryTable.addCell(createSummaryValueCell("All-Inclusive", fontRegular));
 
-            summaryTable.addCell(createSummaryLabelCell("Base Price / Subtotal:", fontRegular));
-            summaryTable.addCell(createSummaryValueCell("Rs." + String.format("%.2f", subtotal), fontRegular));
-
-            String shippingLabel = "Weight Based Shipping (" + String.format("%.1f", weight) + " kg, " + totalQty + " Qty):";
-            summaryTable.addCell(createSummaryLabelCell(shippingLabel, fontRegular));
-            summaryTable.addCell(createSummaryValueCell("Rs." + String.format("%.2f", shippingFee), fontRegular));
-
-            summaryTable.addCell(createSummaryLabelCell("Product GST Tax (5%):", fontRegular));
-            summaryTable.addCell(createSummaryValueCell("Rs." + String.format("%.2f", productGst), fontRegular));
-
-            summaryTable.addCell(createSummaryLabelCell("Shipping GST Tax (18%):", fontRegular));
-            summaryTable.addCell(createSummaryValueCell("Rs." + String.format("%.2f", shippingGst), fontRegular));
-
-            summaryTable.addCell(createSummaryLabelCell("Total GST Tax:", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, emeraldDark)));
-            summaryTable.addCell(createSummaryValueCell("Rs." + String.format("%.2f", totalGst), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, emeraldDark)));
-
-            if (roundOff.compareTo(BigDecimal.ZERO) != 0) {
-                summaryTable.addCell(createSummaryLabelCell("Round Off:", fontRegular));
-                summaryTable.addCell(createSummaryValueCell(String.format("%.2f", roundOff), fontRegular));
+            if (totalOrderSavings.compareTo(BigDecimal.ZERO) > 0) {
+                summaryTable.addCell(createSummaryLabelCell("Your Total Savings:", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, new Color(4, 120, 87))));
+                summaryTable.addCell(createSummaryValueCell("Rs." + String.format("%.2f", totalOrderSavings), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9, new Color(4, 120, 87))));
             }
 
-            PdfPCell totalLblCell = createSummaryLabelCell("Grand Total:", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, emeraldDark));
+            if (order.getShippingFee() != null && order.getShippingFee().compareTo(BigDecimal.ZERO) > 0) {
+                summaryTable.addCell(createSummaryLabelCell("Shipping Fee:", fontRegular));
+                summaryTable.addCell(createSummaryValueCell("Rs." + String.format("%.2f", order.getShippingFee()), fontRegular));
+            }
+
+            PdfPCell totalLblCell = createSummaryLabelCell("Total Amount:", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, emeraldDark));
             totalLblCell.setBackgroundColor(emeraldBg);
             summaryTable.addCell(totalLblCell);
 
-            PdfPCell totalValCell = createSummaryValueCell("Rs." + String.format("%.2f", grandTotal), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11, emeraldDark));
+            PdfPCell totalValCell = createSummaryValueCell("Rs." + String.format("%.2f", finalTotal), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, emeraldDark));
             totalValCell.setBackgroundColor(emeraldBg);
             summaryTable.addCell(totalValCell);
 

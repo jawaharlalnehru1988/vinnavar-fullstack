@@ -59,6 +59,22 @@ public class Product {
     @Builder.Default
     private java.util.Map<String, String> descriptionTranslations = new java.util.HashMap<>();
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "product_full_desc_translations", joinColumns = @JoinColumn(name = "product_id"))
+    @MapKeyColumn(name = "lang_code")
+    @Column(name = "translated_full_desc", columnDefinition = "TEXT")
+    @org.hibernate.annotations.BatchSize(size = 50)
+    @Builder.Default
+    private java.util.Map<String, String> fullDescriptionTranslations = new java.util.HashMap<>();
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "product_benefits_translations", joinColumns = @JoinColumn(name = "product_id"))
+    @MapKeyColumn(name = "lang_code")
+    @Column(name = "translated_benefits", columnDefinition = "TEXT")
+    @org.hibernate.annotations.BatchSize(size = 50)
+    @Builder.Default
+    private java.util.Map<String, String> benefitsTranslations = new java.util.HashMap<>();
+
     @Builder.Default
     private String hsnCode = "1006";
 

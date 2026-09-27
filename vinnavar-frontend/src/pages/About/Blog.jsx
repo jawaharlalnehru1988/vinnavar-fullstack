@@ -6,7 +6,9 @@ import { BlogSkeleton } from "../../Component/Skeleton";
 import { useTranslation } from "react-i18next";
 
 const Blog = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || "en";
+
   const [loaderStatus, setLoaderStatus] = useState(true);
   const [blogs, setBlogs] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -33,9 +35,24 @@ const Blog = () => {
     loadBlogData();
   }, []);
 
+  const getBlogTitle = (b) => {
+    if (!b) return "";
+    return b.titleTranslations?.[currentLang] || b.titleTranslations?.en || b.titleTranslations?.ta || b.title || "";
+  };
+
+  const getBlogDesc = (b) => {
+    if (!b) return "";
+    return b.shortDescriptionTranslations?.[currentLang] || b.shortDescriptionTranslations?.en || b.shortDescriptionTranslations?.ta || b.shortDescription || b.content || "";
+  };
+
+  const getBlogSlugOrId = (b) => {
+    if (!b) return "";
+    return b.slug && b.slug.trim() !== "" ? b.slug : b.id;
+  };
+
   const filteredBlogs = selectedCategory === "All"
     ? blogs
-    : blogs.filter(b => b.category?.toLowerCase() === selectedCategory.toLowerCase());
+    : blogs.filter((b) => b.category?.toLowerCase() === selectedCategory.toLowerCase());
 
   const heroBlog = filteredBlogs[0];
   const gridBlogs = filteredBlogs.slice(1);
@@ -97,10 +114,10 @@ const Blog = () => {
           {heroBlog && (
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0 group">
               <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto overflow-hidden">
-                <Link to={`/blog/${heroBlog.slug}`} className="block w-full h-full">
+                <Link to={`/blog/${getBlogSlugOrId(heroBlog)}`} className="block w-full h-full">
                   <img
                     src={getImageUrl(heroBlog.imageUrl)}
-                    alt={heroBlog.title}
+                    alt={getBlogTitle(heroBlog)}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 </Link>
@@ -116,16 +133,16 @@ const Blog = () => {
                   </Link>
                 </div>
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug group-hover:text-emerald-700 transition-colors">
-                  <Link to={`/blog/${heroBlog.slug}`}>
-                    {heroBlog.title}
+                  <Link to={`/blog/${getBlogSlugOrId(heroBlog)}`}>
+                    {getBlogTitle(heroBlog)}
                   </Link>
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-500 leading-relaxed line-clamp-3">
-                  {heroBlog.shortDescription || heroBlog.content}
+                  {getBlogDesc(heroBlog)}
                 </p>
                 <div className="pt-2">
                   <Link
-                    to={`/blog/${heroBlog.slug}`}
+                    to={`/blog/${getBlogSlugOrId(heroBlog)}`}
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-full shadow-md shadow-emerald-700/20 transition-all active:scale-95"
                   >
                     <span>{t("read_full_article")}</span>
@@ -152,10 +169,10 @@ const Blog = () => {
                 >
                   <div className="space-y-4 p-5">
                     <div className="relative h-48 rounded-2xl overflow-hidden bg-slate-100">
-                      <Link to={`/blog/${blog.slug}`}>
+                      <Link to={`/blog/${getBlogSlugOrId(blog)}`}>
                         <img
                           src={getImageUrl(blog.imageUrl)}
-                          alt={blog.title}
+                          alt={getBlogTitle(blog)}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </Link>
@@ -169,17 +186,17 @@ const Blog = () => {
                         {blog.category}
                       </Link>
                       <h3 className="font-bold text-slate-900 text-base mt-1 line-clamp-2 leading-snug group-hover:text-emerald-700 transition-colors">
-                        <Link to={`/blog/${blog.slug}`}>{blog.title}</Link>
+                        <Link to={`/blog/${getBlogSlugOrId(blog)}`}>{getBlogTitle(blog)}</Link>
                       </h3>
                       <p className="text-xs text-slate-500 mt-2 line-clamp-2 leading-relaxed">
-                        {blog.shortDescription || (blog.content?.substring(0, 90) + "...")}
+                        {getBlogDesc(blog)}
                       </p>
                     </div>
                   </div>
 
                   <div className="p-5 pt-0 border-t border-slate-100/60 mt-4 flex items-center justify-between">
                     <Link
-                      to={`/blog/${blog.slug}`}
+                      to={`/blog/${getBlogSlugOrId(blog)}`}
                       className="text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors inline-flex items-center gap-1"
                     >
                       <span>{t("read_article")}</span>
