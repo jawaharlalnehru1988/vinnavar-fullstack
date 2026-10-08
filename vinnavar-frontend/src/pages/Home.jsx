@@ -381,7 +381,7 @@ const Home = () => {
               {/* section */}
             </>
             <>
-              <OrganicProductList categoryId={selectedCategoryId} limit={8} />
+              <OrganicProductList categoryId={selectedCategoryId} limit={10} />
             </>
 
             <>

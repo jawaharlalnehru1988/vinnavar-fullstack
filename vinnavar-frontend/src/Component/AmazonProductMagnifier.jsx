@@ -22,7 +22,7 @@ const AmazonProductMagnifier = ({
 
     const fullImageUrl = getImageUrl(imageUrl);
 
-    const LENS_SIZE = 140; // width and height of the magnifying lens in px
+    const LENS_SIZE = 120; // width and height of the magnifying lens in px
 
     const handleMouseMove = (e) => {
         if (!containerRef.current) return;
@@ -57,17 +57,17 @@ const AmazonProductMagnifier = ({
     };
 
     return (
-        <div className="relative flex-1 bg-white rounded-3xl p-4 sm:p-6 h-[380px] sm:h-[460px] flex items-center justify-center border border-slate-200/80 shadow-sm group">
+        <div className="relative flex-1 bg-white rounded-2xl p-4 sm:p-6 h-[340px] sm:h-[450px] lg:h-[520px] flex items-center justify-center border border-slate-200/80 shadow-2xs group">
             
             {/* BADGES */}
             {featured && (
-                <span className="z-10 absolute top-4 left-4 bg-emerald-600 text-white font-extrabold text-[11px] px-3 py-1.5 rounded-full uppercase tracking-wider shadow-md">
+                <span className="z-10 absolute top-3 left-3 bg-emerald-600 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
                     🌱 Organic Best Seller
                 </span>
             )}
 
             {galleryImages.length > 0 && (
-                <span className="z-10 absolute top-4 right-4 bg-slate-900/70 backdrop-blur-md text-white font-bold text-xs px-2.5 py-1 rounded-full shadow-sm">
+                <span className="z-10 absolute top-3 right-3 bg-slate-900/70 backdrop-blur-md text-white font-bold text-[11px] px-2 py-0.5 rounded-full shadow-sm">
                     {activeImageIndex + 1} / {galleryImages.length}
                 </span>
             )}
@@ -106,7 +106,7 @@ const AmazonProductMagnifier = ({
             {/* AMAZON FLOATING MAGNIFIED ZOOM PANE (Appears on Hover) */}
             {isHovered && (
                 <div
-                    className="hidden lg:block fixed top-24 left-[54%] z-50 w-[520px] h-[520px] bg-white rounded-3xl shadow-2xl border-2 border-emerald-500/30 overflow-hidden pointer-events-none transition-opacity duration-200 ease-in-out"
+                    className="hidden lg:block fixed top-24 left-[52%] z-50 w-[420px] h-[420px] bg-white rounded-2xl shadow-2xl border-2 border-emerald-500/30 overflow-hidden pointer-events-none transition-opacity duration-200 ease-in-out"
                     style={{
                         backgroundImage: `url(${fullImageUrl})`,
                         backgroundRepeat: "no-repeat",

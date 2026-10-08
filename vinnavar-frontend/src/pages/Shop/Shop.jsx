@@ -6,6 +6,7 @@ import ScrollToTop from "../ScrollToTop";
 import { API_BASE_URL, fetchCategories, fetchProducts, getImageUrl, toggleWishlist } from "../../services/api";
 import { ProductSkeleton } from "../../Component/Skeleton";
 import { useTranslation } from "react-i18next";
+import { calculateUSP } from "../../utils/usp";
 
 const assortment = getImageUrl("/media/site/assortment-citrus-fruits.png");
 
@@ -441,11 +442,14 @@ const Product = () => {
                               <div className="flex flex-wrap gap-1.5 pt-0.5">
                                 {product.variants.map((v) => {
                                   const isSelected = currentVariant?.id === v.id;
+                                  const vPrice = v.discountPrice || v.price || 0;
+                                  const vUsp = calculateUSP(vPrice, v.variantName);
                                   return (
                                     <button
                                       key={v.id}
                                       type="button"
                                       onClick={() => handleVariantChange(product.id, v.id)}
+                                      title={vUsp ? `${v.variantName} ${vUsp}` : v.variantName}
                                       className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all border d-inline-flex align-items-center gap-1 cursor-pointer ${
                                         isSelected
                                           ? "bg-emerald-700 text-white border-emerald-700 shadow-sm scale-105"
@@ -461,36 +465,50 @@ const Product = () => {
                           )}
                         </div>
 
-                        {/* Price & Add Button */}
-                        <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-base font-black text-slate-900">
-                                ₹{currentVariant?.discountPrice || currentVariant?.price || 0}
-                              </span>
-                              {currentVariant?.discountPrice && (
-                                <span className="text-xs text-slate-400 line-through font-medium">
-                                  ₹{currentVariant?.price}
-                                </span>
-                              )}
-                            </div>
-                            {currentVariant?.discountPrice && currentVariant.price > currentVariant.discountPrice && (
-                              <div className="mt-0.5">
-                                <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-1.5 py-0.5 rounded inline-flex items-center">
-                                  <i className="fa fa-arrow-down mr-1 text-[8px]"></i>
-                                  {Math.round(((currentVariant.price - currentVariant.discountPrice) / currentVariant.price) * 100)}% OFF
-                                </span>
+                        {/* Price & Add Button with Dynamic Unit Selling Price (USP) */}
+                        {(() => {
+                          const activePrice = currentVariant?.discountPrice || currentVariant?.price || 0;
+                          const activeUsp = calculateUSP(activePrice, currentVariant?.variantName);
+                          const hasDiscount = currentVariant?.discountPrice && currentVariant.price > currentVariant.discountPrice;
+
+                          return (
+                            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
+                              <div className="flex flex-col">
+                                <div className="flex items-baseline flex-wrap gap-1.5">
+                                  <span className="text-base font-black text-slate-900">
+                                    ₹{activePrice.toLocaleString('en-IN')}
+                                  </span>
+                                  {hasDiscount && (
+                                    <span className="text-xs text-slate-400 line-through font-medium">
+                                      ₹{currentVariant.price.toLocaleString('en-IN')}
+                                    </span>
+                                  )}
+                                </div>
+                                {/* Unit Selling Price */}
+                                {activeUsp && (
+                                  <div className="text-[11px] sm:text-xs text-slate-600 font-semibold leading-tight mt-0.5">
+                                    {activeUsp}
+                                  </div>
+                                )}
+                                {hasDiscount && (
+                                  <div className="mt-1">
+                                    <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-1.5 py-0.5 rounded inline-flex items-center">
+                                      <i className="fa fa-arrow-down mr-1 text-[8px]"></i>
+                                      {Math.round(((currentVariant.price - currentVariant.discountPrice) / currentVariant.price) * 100)}% OFF
+                                    </span>
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
-                          <button
-                            type="button"
-                            className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-full shadow-md shadow-emerald-700/20 transition-all active:scale-95"
-                            onClick={() => handleAddToCart(product)}
-                          >
-                            + Add
-                          </button>
-                        </div>
+                              <button
+                                type="button"
+                                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-full shadow-md shadow-emerald-700/20 transition-all active:scale-95"
+                                onClick={() => handleAddToCart(product)}
+                              >
+                                + Add
+                              </button>
+                            </div>
+                          );
+                        })()}
                       </div>
                     );
                   })}

@@ -12,10 +12,99 @@ import {
     LinkedinShareButton, LinkedinIcon,
     EmailShareButton, EmailIcon
 } from "react-share";
+import { calculateUSP } from "../../utils/usp";
+export { calculateUSP };
 
 const amazonpay = getImageUrl("/media/site/amazonpay.svg");
 const gpay = getImageUrl("/media/site/gpay.svg");
 const paytm = getImageUrl("/media/site/paytm.svg");
+
+const renderBenefitsContent = (rawBenefits) => {
+    if (!rawBenefits) return null;
+
+    // Split by 4 or more underscores or dashes, which serve as section dividers
+    const rawSections = rawBenefits
+        .split(/(?:_{4,}|\-{4,})/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+    if (rawSections.length === 0) return null;
+
+    return (
+        <div className="space-y-6">
+            {rawSections.map((sec, sIdx) => {
+                const lines = sec
+                    .split("\n")
+                    .map((l) => l.trim())
+                    .filter(Boolean);
+
+                if (lines.length === 0) return null;
+
+                const firstLine = lines[0];
+                // Check if first line is a title (short, does not start with bullet characters, and does not have colon)
+                const isHeading =
+                    !/^[\uFFFD\u00A0\t•\-\*]/.test(firstLine) &&
+                    firstLine.length < 60 &&
+                    !firstLine.includes(":");
+                const heading = isHeading ? firstLine : null;
+                const bodyLines = isHeading ? lines.slice(1) : lines;
+
+                return (
+                    <div key={sIdx} className="space-y-3">
+                        {/* Clear visual divider between sections on its own line */}
+                        {sIdx > 0 && (
+                            <div className="py-2">
+                                <hr className="border-t border-emerald-200/90" />
+                            </div>
+                        )}
+
+                        {heading && (
+                            <h4 className="text-sm sm:text-base font-extrabold text-emerald-900 tracking-wide uppercase flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block"></span>
+                                <span>{heading}</span>
+                            </h4>
+                        )}
+
+                        <div className="space-y-2 text-slate-700 text-sm sm:text-base leading-relaxed">
+                            {bodyLines.map((line, lIdx) => {
+                                const cleanLine = line
+                                    .replace(/^[\uFFFD\u00A0\t•\-\*]+\s*/, "")
+                                    .replace(/[\uFFFD\u00A0]/g, "–")
+                                    .replace(/(?:_{3,}|\-{3,})/g, "")
+                                    .trim();
+
+                                if (!cleanLine) return null;
+
+                                const colonIndex = cleanLine.indexOf(":");
+                                if (colonIndex > 0 && colonIndex < 40) {
+                                    const keyPart = cleanLine.slice(0, colonIndex).trim();
+                                    const valPart = cleanLine.slice(colonIndex + 1).trim();
+
+                                    return (
+                                        <div key={lIdx} className="flex items-start gap-2.5">
+                                            <span className="text-emerald-600 font-bold mt-1 text-xs shrink-0">●</span>
+                                            <p className="flex-1">
+                                                <span className="font-bold text-slate-900">{keyPart}:</span>{" "}
+                                                <span className="text-slate-700">{valPart}</span>
+                                            </p>
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                    <div key={lIdx} className="flex items-start gap-2.5">
+                                        <span className="text-emerald-600 font-bold mt-1 text-xs shrink-0">●</span>
+                                        <p className="flex-1 text-slate-700">{cleanLine}</p>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
 
 const ProductDetails = () => {
     const { t, i18n } = useTranslation();
@@ -431,11 +520,11 @@ const ProductDetails = () => {
         : 0;
 
     return (
-        <div className="min-h-screen bg-slate-50/70 py-6 sm:py-10">
+        <div className="min-h-screen bg-slate-50/70 py-4 sm:py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 
-                {/* BREADCRUMB - Tailwind CSS Clean Separators */}
-                <nav className="flex items-center space-x-2 text-xs sm:text-sm text-slate-500 mb-6 overflow-x-auto pb-1 scrollbar-none">
+                {/* BREADCRUMB */}
+                <nav className="flex items-center space-x-2 text-xs text-slate-500 mb-4 overflow-x-auto pb-1 scrollbar-none">
                     <Link to="/" className="hover:text-emerald-600 transition-colors">Home</Link>
                     <span className="text-slate-300">/</span>
                     <Link to="/Product" className="hover:text-emerald-600 transition-colors">{t("nav_shop_catalog") || "Shop"}</Link>
@@ -449,23 +538,23 @@ const ProductDetails = () => {
                     <span className="text-emerald-700 font-bold truncate max-w-[200px] sm:max-w-xs">{product.nameTranslations?.[currentLang] || product.name}</span>
                 </nav>
 
-                {/* MAIN PRODUCT CARD */}
-                <div className="bg-white rounded-3xl p-5 sm:p-8 border border-slate-200/80 shadow-sm">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+                {/* MAIN PRODUCT CARD (50-50 SPLIT FOR IMAGE AND DETAILS) */}
+                <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 border border-slate-200/80 shadow-xs">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
                         
-                        {/* LEFT COLUMN: FLIPKART STYLE IMAGE GALLERY */}
-                        <div className="lg:col-span-5 space-y-4">
-                            <div className="flex flex-col-reverse sm:flex-row gap-4">
+                        {/* LEFT COLUMN: 50% SCREEN IMAGE GALLERY */}
+                        <div className="space-y-4">
+                            <div className="flex flex-col-reverse sm:flex-row gap-3">
                                 
                                 {/* THUMBNAILS LIST */}
                                 {galleryImages.length > 1 && (
-                                    <div className="flex sm:flex-col gap-2.5 overflow-x-auto sm:overflow-y-auto max-h-[460px] pb-2 sm:pb-0 scrollbar-thin">
+                                    <div className="flex sm:flex-col gap-2 overflow-x-auto sm:overflow-y-auto max-h-[500px] pb-1 sm:pb-0 scrollbar-thin">
                                         {galleryImages.map((img, idx) => (
                                             <button
                                                 key={idx}
                                                 type="button"
-                                                className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 p-1 bg-white transition-all shrink-0 overflow-hidden ${
-                                                    activeImageIndex === idx ? "border-emerald-600 shadow-md ring-2 ring-emerald-600/20" : "border-slate-200 hover:border-slate-300 opacity-70 hover:opacity-100"
+                                                className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl border-2 p-1 bg-white transition-all shrink-0 overflow-hidden ${
+                                                    activeImageIndex === idx ? "border-emerald-600 shadow-sm ring-1 ring-emerald-600/30" : "border-slate-200 hover:border-slate-300 opacity-70 hover:opacity-100"
                                                 }`}
                                                 onClick={() => setActiveImageIndex(idx)}
                                                 onMouseEnter={() => setActiveImageIndex(idx)}
@@ -497,49 +586,27 @@ const ProductDetails = () => {
                                 />
                             </div>
 
-                            {/* FLIPKART STYLE ACTION BUTTONS */}
-                            <div className="grid grid-cols-2 gap-3 pt-2">
-                                <button
-                                    type="button"
-                                    className="w-full py-3.5 px-4 bg-amber-400 hover:bg-amber-500 active:bg-amber-600 text-slate-900 font-extrabold text-sm sm:text-base rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
-                                    onClick={() => handleAddToCart(false)}
-                                    disabled={addingToCart}
-                                >
-                                    <span>🛒</span>
-                                    <span>{addingToCart ? "Adding..." : "ADD TO CART"}</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-extrabold text-sm sm:text-base rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
-                                    onClick={() => handleAddToCart(true)}
-                                    disabled={addingToCart}
-                                >
-                                    <span>⚡</span>
-                                    <span>BUY NOW</span>
-                                </button>
-                            </div>
-
                             {/* Payment Partners */}
-                            <div className="p-4 bg-slate-50 rounded-2xl text-center border border-slate-200/80 mt-4">
-                                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">
+                            <div className="p-3 bg-slate-50/80 rounded-xl text-center border border-slate-200/80">
+                                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
                                     {t("safe_secure_payments", "100% Safe & Secure Payments")}
                                 </div>
-                                <div className="flex items-center justify-center gap-4">
-                                    <img src={amazonpay} alt="Amazon Pay" className="h-6 object-contain" />
-                                    <img src={gpay} alt="Google Pay" className="h-6 object-contain" />
-                                    <img src={paytm} alt="Paytm" className="h-6 object-contain" />
+                                <div className="flex items-center justify-center gap-3">
+                                    <img src={amazonpay} alt="Amazon Pay" className="h-5 object-contain" />
+                                    <img src={gpay} alt="Google Pay" className="h-5 object-contain" />
+                                    <img src={paytm} alt="Paytm" className="h-5 object-contain" />
                                 </div>
                             </div>
                         </div>
 
-                        {/* RIGHT COLUMN: PRODUCT INFO & VARIANT SELECTOR */}
-                        <div className="lg:col-span-7 space-y-6">
+                        {/* RIGHT COLUMN: 50% SCREEN PRODUCT INFO & VARIANT SELECTOR */}
+                        <div className="space-y-4 sm:space-y-5">
                             <div>
-                                <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">
+                                <div className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-1">
                                     {product.category?.nameTranslations?.[currentLang] || product.category?.name || "Pure Organic Product"}
                                 </div>
-                                <div className="flex items-start gap-2">
-                                    <h1 className="flex-1 text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
+                                <div className="flex items-start justify-between gap-3">
+                                    <h1 className="flex-1 text-xl sm:text-2xl font-bold text-slate-900 leading-snug">
                                         {product.nameTranslations?.[currentLang] || product.name}
                                     </h1>
                                     <button
@@ -551,14 +618,14 @@ const ProductDetails = () => {
                                             alignItems: "center",
                                             justifyContent: "center",
                                             flexShrink: 0,
-                                            marginTop: "4px",
-                                            padding: "8px",
-                                            borderRadius: "12px",
+                                            marginTop: "2px",
+                                            padding: "6px",
+                                            borderRadius: "10px",
                                             border: "1.5px solid #e2e8f0",
                                             background: "#ffffff",
                                             color: "#64748b",
                                             cursor: "pointer",
-                                            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                                            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
                                             transition: "all 0.2s"
                                         }}
                                         onMouseEnter={e => { e.currentTarget.style.background="#f0fdf4"; e.currentTarget.style.borderColor="#34d399"; e.currentTarget.style.color="#059669"; }}
@@ -572,7 +639,7 @@ const ProductDetails = () => {
                                             strokeWidth="2"
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
-                                            style={{ width: "20px", height: "20px", display: "block" }}
+                                            style={{ width: "18px", height: "18px", display: "block" }}
                                         >
                                             <circle cx="18" cy="5" r="3"/>
                                             <circle cx="6" cy="12" r="3"/>
@@ -585,82 +652,128 @@ const ProductDetails = () => {
                             </div>
 
                             {/* RATING & REVIEWS */}
-                            <div className="flex flex-wrap items-center gap-3">
-                                <div className="bg-emerald-600 text-white font-bold text-sm px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-sm">
+                            <div className="flex flex-wrap items-center gap-2.5 text-xs sm:text-sm">
+                                <div className="bg-emerald-600 text-white font-bold text-xs px-2 py-0.5 rounded flex items-center gap-1 shadow-2xs">
                                     <span>{reviewData.averageRating ? reviewData.averageRating.toFixed(1) : "5.0"}</span>
                                     <span>★</span>
                                 </div>
-                                <a href="#ratings-and-reviews" className="text-slate-600 text-sm font-semibold hover:text-emerald-700 transition-colors">
+                                <a href="#ratings-and-reviews" className="text-slate-600 text-xs sm:text-sm font-semibold hover:text-emerald-700 transition-colors">
                                     {reviewData.totalReviews > 0 ? `${reviewData.totalReviews} Customer Review${reviewData.totalReviews > 1 ? 's' : ''}` : "Be the first to review"}
                                 </a>
-                                <span className="h-4 w-px bg-slate-300"></span>
-                                <span className="text-emerald-600 text-xs font-bold flex items-center gap-1">
+                                <span className="h-3 w-px bg-slate-300"></span>
+                                <span className="text-emerald-700 text-xs font-bold flex items-center gap-1">
                                     <span>✓</span> {t("authentic_organic", "100% Authentic Organic")}
                                 </span>
                             </div>
 
-                            {/* PRICE DISPLAY CARD */}
-                            <div className="p-4 sm:p-5 bg-slate-50 rounded-2xl border border-slate-200/80">
-                                <div className="flex items-baseline gap-3">
-                                    <span className="text-3xl sm:text-4xl font-black text-slate-900">
-                                        ₹{currentPrice.toLocaleString('en-IN')}
-                                    </span>
+                            {/* PRICE DISPLAY CARD (AMAZON STYLE WITH USP) */}
+                            <div className="p-3.5 sm:p-4 bg-slate-50/90 rounded-xl border border-slate-200/80">
+                                <div className="flex flex-wrap items-baseline gap-2 sm:gap-2.5">
                                     {hasDiscount && (
-                                        <>
-                                            <span className="line-through text-slate-400 text-lg sm:text-xl font-medium">
-                                                ₹{mrpPrice.toLocaleString('en-IN')}
-                                            </span>
-                                            <span className="bg-red-500 text-white font-extrabold text-xs px-2.5 py-1 rounded-full uppercase tracking-wide shadow-sm">
-                                                {discountPercent}% OFF
-                                            </span>
-                                        </>
+                                        <span className="text-red-600 font-extrabold text-lg sm:text-xl">
+                                            -{discountPercent}%
+                                        </span>
+                                    )}
+                                    <div className="flex items-baseline">
+                                        <span className="text-sm font-semibold text-slate-700 mr-0.5">₹</span>
+                                        <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                                            {currentPrice.toLocaleString('en-IN')}
+                                        </span>
+                                    </div>
+                                    {/* Main Price USP */}
+                                    {calculateUSP(currentPrice, selectedVariant?.variantName) && (
+                                        <span className="text-xs sm:text-sm font-semibold text-slate-600">
+                                            {calculateUSP(currentPrice, selectedVariant?.variantName)}
+                                        </span>
                                     )}
                                 </div>
-                                <div className="mt-3 flex flex-col gap-2">
-                                    <div className="flex items-center gap-2 text-xs font-semibold text-emerald-900 bg-emerald-50/90 border border-emerald-300/80 rounded-xl px-3 py-2 shadow-xs">
-                                        <span className="text-base leading-none">🛡️</span>
-                                        <span>
-                                            <strong className="font-extrabold text-color-blink mr-1">{t("all_inclusive_price_title", "All-Inclusive Price:")}</strong>
-                                            <span className="text-platform-color-blink font-semibold">
-                                                {t("all_inclusive_price_desc", "Covers Base Price + Doorstep Delivery + All Taxes across India.")}
-                                            </span>
-                                        </span>
+
+                                {hasDiscount && (
+                                    <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+                                        <span>{t("mrp_label", "M.R.P.:")}</span>
+                                        <span className="line-through font-medium">₹{mrpPrice.toLocaleString('en-IN')}</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-[11px] font-bold text-slate-600 px-1 flex-wrap">
-                                        <span className="inline-flex items-center gap-1 text-emerald-800 bg-emerald-100/90 px-2.5 py-0.5 rounded-full border border-emerald-300 shadow-2xs">
-                                            <span>🚚</span> <span className="text-color-blink font-extrabold">{t("free_delivery_included", "FREE Doorstep Delivery Included")}</span>
-                                        </span>
-                                        <span className="text-slate-400">•</span>
-                                        <span className="text-slate-500 font-medium">{t("no_hidden_charges", "No extra shipping charges added at checkout")}</span>
-                                    </div>
+                                )}
+
+                                {/* All-Inclusive Delivery Note */}
+                                <div className="mt-2.5 pt-2 border-t border-slate-200/70 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
+                                    <span className="inline-flex items-center gap-1 text-emerald-800 font-bold bg-emerald-100/90 px-2.5 py-0.5 rounded-full border border-emerald-300 shadow-2xs">
+                                        <span>🚚</span> <span className="text-color-blink font-extrabold">{t("free_delivery_included", "FREE Doorstep Delivery Included")}</span>
+                                    </span>
+                                    <span className="text-slate-400 hidden sm:inline">•</span>
+                                    <span className="text-slate-500 font-medium">
+                                        {t("all_inclusive_price_desc", "Covers Base Price + Doorstep Delivery + All Taxes across India.")}
+                                    </span>
                                 </div>
                             </div>
 
-                            {/* VARIANT SELECTOR */}
+                            {/* VARIANT SELECTOR - AMAZON STYLE TILES WITH USP (IMAGE 2 & 3) */}
                             {product.variants && product.variants.length > 0 && (
-                                <div>
-                                    <label className="block text-sm font-bold text-slate-900 mb-2.5">
-                                        {t("select_variation", "Select Weight / Size Variation:")}
-                                    </label>
-                                    <div className="flex flex-wrap gap-2.5">
+                                <div className="space-y-2">
+                                    <div className="text-xs sm:text-sm font-medium text-slate-700">
+                                        {t("select_variation", "Select Weight / Size Variation:")}{" "}
+                                        <span className="font-extrabold text-slate-900">
+                                            {selectedVariant?.variantName}
+                                        </span>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                                         {product.variants.map((variant) => {
                                             const isSelected = selectedVariant?.id === variant.id;
-                                            const priceVal = variant.discountPrice || variant.price;
+                                            const priceVal = variant.discountPrice || variant.price || 0;
+                                            const mrpVal = variant.price || 0;
+                                            const hasVarDiscount = variant.discountPrice && variant.discountPrice < variant.price;
+                                            const uspText = calculateUSP(priceVal, variant.variantName);
+                                            const isAvailable = variant.stockQuantity === undefined || variant.stockQuantity > 0;
+
                                             return (
                                                 <button
                                                     key={variant.id}
                                                     type="button"
-                                                    className={`py-2 px-4 font-bold rounded-2xl text-sm transition-all flex items-center gap-2 border ${
-                                                        isSelected
-                                                            ? "bg-emerald-600 text-white border-emerald-600 shadow-md ring-2 ring-emerald-600/20"
-                                                            : "bg-white text-slate-700 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50"
-                                                    }`}
                                                     onClick={() => setSelectedVariant(variant)}
+                                                    className={`text-left p-2.5 sm:p-3 rounded-xl transition-all relative flex flex-col justify-between border cursor-pointer ${
+                                                        isSelected
+                                                            ? "border-2 border-emerald-700 bg-emerald-50/30 shadow-xs ring-1 ring-emerald-600/30"
+                                                            : "border-slate-300 bg-white hover:border-slate-500 hover:bg-slate-50/50 shadow-2xs"
+                                                    }`}
                                                 >
-                                                    <span>{variant.variantName}</span>
-                                                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${isSelected ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"}`}>
-                                                        ₹{priceVal}
-                                                    </span>
+                                                    {/* TOP: Variant Name / Size (Amazon Style Header) */}
+                                                    <div className="font-bold text-xs sm:text-sm text-slate-900 leading-tight uppercase line-clamp-2 min-h-[28px] sm:min-h-[32px] flex items-center">
+                                                        {variant.variantName}
+                                                    </div>
+
+                                                    {/* Horizontal Line Divider (Like Amazon Image 3) */}
+                                                    <div className="border-t border-slate-200/90 my-1.5 sm:my-2 w-full"></div>
+
+                                                    {/* BOTTOM: Price + USP + MRP */}
+                                                    <div className="space-y-0.5">
+                                                        {isAvailable ? (
+                                                            <>
+                                                                <div className="font-bold text-sm sm:text-base text-slate-900 leading-tight">
+                                                                    ₹{priceVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                </div>
+                                                                {uspText && (
+                                                                    <div className="text-[11px] sm:text-xs text-slate-600 font-normal leading-tight">
+                                                                        {uspText}
+                                                                    </div>
+                                                                )}
+                                                                {hasVarDiscount && (
+                                                                    <div className="text-[11px] text-slate-400 line-through leading-tight">
+                                                                        ₹{mrpVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                    </div>
+                                                                )}
+                                                            </>
+                                                        ) : (
+                                                            <div className="text-xs text-rose-600 font-medium leading-tight">
+                                                                {t("currently_unavailable", "Currently unavailable.")}
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Subtle Active Indicator Dot */}
+                                                    {isSelected && (
+                                                        <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-600"></div>
+                                                    )}
                                                 </button>
                                             );
                                         })}
@@ -668,97 +781,151 @@ const ProductDetails = () => {
                                 </div>
                             )}
 
-                            {/* QUANTITY SELECTOR */}
-                            <div className="flex items-center gap-4">
-                                <label className="text-sm font-bold text-slate-900">{t("quantity_label", "Quantity:")}</label>
-                                <div className="flex items-center border border-slate-300 rounded-xl bg-white shadow-sm overflow-hidden">
+                            {/* QUANTITY & ACTIONS */}
+                            <div className="space-y-3 pt-1">
+                                <div className="flex items-center gap-3">
+                                    <label className="text-xs sm:text-sm font-bold text-slate-800">
+                                        {t("quantity_label", "Quantity:")}
+                                    </label>
+                                    <div className="flex items-center border border-slate-300 rounded-lg bg-white shadow-2xs overflow-hidden">
+                                        <button
+                                            type="button"
+                                            className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-base transition-colors"
+                                            onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                                        >
+                                            -
+                                        </button>
+                                        <span className="w-10 text-center font-bold text-slate-900 text-xs sm:text-sm">
+                                            {quantity}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-base transition-colors"
+                                            onClick={() => setQuantity((prev) => prev + 1)}
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* ACTION BUTTONS (AMAZON STYLE BELOW VARIATION / QUANTITY) */}
+                                <div className="grid grid-cols-2 gap-2.5 pt-1">
                                     <button
                                         type="button"
-                                        className="w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-lg transition-colors"
-                                        onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                                        className="w-full py-2.5 sm:py-3 px-4 bg-amber-400 hover:bg-amber-500 active:bg-amber-600 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl shadow-xs hover:shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                                        onClick={() => handleAddToCart(false)}
+                                        disabled={addingToCart}
                                     >
-                                        -
+                                        <span>🛒</span>
+                                        <span>{addingToCart ? t("adding", "Adding...") : t("add_to_cart", "ADD TO CART")}</span>
                                     </button>
-                                    <span className="w-12 text-center font-bold text-slate-900 text-sm">
-                                        {quantity}
+                                    <button
+                                        type="button"
+                                        className="w-full py-2.5 sm:py-3 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-xs hover:shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                                        onClick={() => handleAddToCart(true)}
+                                        disabled={addingToCart}
+                                    >
+                                        <span>⚡</span>
+                                        <span>{t("buy_now", "BUY NOW")}</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                                {/* TRUST HIGHLIGHTS */}
+                                <div className="pt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold text-slate-500 border-t border-slate-100">
+                                    <span className="flex items-center gap-1 text-emerald-700">
+                                        <span>🌿</span> 100% Pure & Unpolished
                                     </span>
-                                    <button
-                                        type="button"
-                                        className="w-10 h-10 flex items-center justify-center text-slate-600 hover:bg-slate-100 font-bold text-lg transition-colors"
-                                        onClick={() => setQuantity((prev) => prev + 1)}
-                                    >
-                                        +
-                                    </button>
+                                    <span className="flex items-center gap-1 text-slate-600">
+                                        <span>🚚</span> Pan-India Free Delivery
+                                    </span>
+                                    <span className="flex items-center gap-1 text-amber-700">
+                                        <span>🛡️</span> Directly Sourced
+                                    </span>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* SHORT DESCRIPTION / HIGHLIGHTS */}
-                            {(product.descriptionTranslations?.[currentLang] || product.shortDescription) && (
-                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
-                                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1.5">
-                                        <span>✨</span> {t("highlights_key_details", "Highlights & Key Details")}
-                                    </h3>
-                                    <p className="text-slate-800 text-sm leading-relaxed font-medium">
-                                        {product.descriptionTranslations?.[currentLang] || product.shortDescription}
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* FULL DETAILED DESCRIPTION */}
-                            {(product.fullDescriptionTranslations?.[currentLang] || product.fullDescription) && (
-                                <div className="p-4 bg-emerald-50/40 rounded-2xl border border-emerald-100/90">
-                                    <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-900 mb-2 flex items-center gap-1.5">
-                                        <span>📖</span> {t("product_overview_desc", "Product Overview & Description")}
-                                    </h3>
-                                    <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-line">
-                                        {product.fullDescriptionTranslations?.[currentLang] || product.fullDescription}
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* HEALTH BENEFITS */}
-                            {(product.benefitsTranslations?.[currentLang] || product.benefits) && (
-                                <div className="p-4 bg-emerald-50/70 rounded-2xl border-l-4 border-emerald-600">
-                                    <h3 className="text-sm font-bold text-emerald-800 mb-1.5 flex items-center gap-1.5">
-                                        <span>🌿</span> {t("health_benefits_culinary_uses", "Health Benefits & Culinary Uses:")}
-                                    </h3>
-                                    <p className="text-slate-700 text-sm whitespace-pre-line leading-relaxed">
-                                        {product.benefitsTranslations?.[currentLang] || product.benefits}
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* SPECIFICATIONS TABLE */}
+                    {/* FULL-WIDTH DETAILED DESCRIPTION, HEALTH BENEFITS & SPECIFICATIONS (OCCUPIES BOTH LEFT & RIGHT) */}
+                    <div className="mt-10 pt-8 border-t border-slate-200">
+                        {/* Section Header */}
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-800 text-xl font-bold shadow-2xs">
+                                🌾
+                            </div>
                             <div>
-                                <h3 className="text-sm font-bold text-slate-900 mb-3">{t("product_specifications", "Product Specifications:")}</h3>
-                                <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-200 text-xs sm:text-sm">
-                                    <div className="flex bg-slate-50">
-                                        <span className="w-1/3 p-3 font-semibold text-slate-600">{t("spec_brand", "Brand")}</span>
-                                        <span className="w-2/3 p-3 font-medium text-slate-800">Vinnavar Organic</span>
-                                    </div>
-                                    <div className="flex bg-white">
-                                        <span className="w-1/3 p-3 font-semibold text-slate-600">{t("spec_category", "Category")}</span>
-                                        <span className="w-2/3 p-3 font-medium text-slate-800">{product.category?.nameTranslations?.[currentLang] || product.category?.name || "Organic Staples"}</span>
-                                    </div>
-                                    <div className="flex bg-slate-50">
-                                        <span className="w-1/3 p-3 font-semibold text-slate-600">{t("spec_pack_size", "Selected Pack Size")}</span>
-                                        <span className="w-2/3 p-3 font-medium text-slate-800">{selectedVariant?.variantName || "Standard"}</span>
-                                    </div>
-                                    <div className="flex bg-white">
-                                        <span className="w-1/3 p-3 font-semibold text-slate-600">{t("spec_origin", "Country of Origin")}</span>
-                                        <span className="w-2/3 p-3 font-medium text-slate-800">{t("spec_origin_val", "India (Tamil Nadu)")}</span>
-                                    </div>
-                                    <div className="flex bg-slate-50">
-                                        <span className="w-1/3 p-3 font-semibold text-slate-600">{t("spec_quality", "Form & Quality")}</span>
-                                        <span className="w-2/3 p-3 font-medium text-slate-800">{t("spec_quality_val", "100% Unpolished & Pure Natural")}</span>
-                                    </div>
-                                    <div className="flex bg-white">
-                                        <span className="w-1/3 p-3 font-semibold text-slate-600">{t("spec_storage", "Storage Instructions")}</span>
-                                        <span className="w-2/3 p-3 font-medium text-slate-800">{t("spec_storage_val", "Store in a cool and dry place. Keep container tightly closed.")}</span>
-                                    </div>
+                                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
+                                    {t("product_overview_story", "Product Description & Health Guide")}
+                                </h2>
+                                <p className="text-xs sm:text-sm text-slate-500 font-medium">
+                                    {t("product_overview_sub", "Authentic details, traditional significance, nutrition, and culinary uses.")}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Combined Essay / Overview (Occupies full width without splitting) */}
+                        {((product.descriptionTranslations?.[currentLang] || product.shortDescription) || 
+                          (product.fullDescriptionTranslations?.[currentLang] || product.fullDescription)) && (
+                            <div className="p-5 sm:p-7 bg-emerald-50/40 rounded-2xl border border-emerald-100/90 mb-6">
+                                <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-900 mb-3 flex items-center gap-1.5">
+                                    <span>📖</span> {t("product_overview_desc", "Product Overview & Description")}
+                                </h3>
+                                <div className="text-slate-800 text-sm sm:text-base leading-relaxed space-y-3 font-normal">
+                                    {(product.descriptionTranslations?.[currentLang] || product.shortDescription) && (
+                                        <p className="font-medium text-slate-900">
+                                            {product.descriptionTranslations?.[currentLang] || product.shortDescription}
+                                        </p>
+                                    )}
+                                    {(product.fullDescriptionTranslations?.[currentLang] || product.fullDescription) && (
+                                        <p className="whitespace-pre-line text-slate-700">
+                                            {product.fullDescriptionTranslations?.[currentLang] || product.fullDescription}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
+                        )}
 
+                        {/* Health Benefits, Culinary Uses & Detailed Guide (Full Width) */}
+                        {(product.benefitsTranslations?.[currentLang] || product.benefits) && (
+                            <div className="p-5 sm:p-7 bg-emerald-50/70 rounded-2xl border-l-4 border-emerald-600 mb-6 shadow-2xs">
+                                <h3 className="text-base sm:text-lg font-bold text-emerald-800 mb-4 flex items-center gap-2">
+                                    <span>🌿</span> {t("health_benefits_culinary_uses", "Health Benefits & Culinary Uses:")}
+                                </h3>
+                                {renderBenefitsContent(product.benefitsTranslations?.[currentLang] || product.benefits)}
+                            </div>
+                        )}
+
+                        {/* Product Specifications (Full-width responsive grid) */}
+                        <div className="p-5 sm:p-7 bg-slate-50/80 rounded-2xl border border-slate-200/80">
+                            <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                <span>📋</span> {t("product_specifications", "Product Specifications:")}
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-xs sm:text-sm">
+                                <div className="flex justify-between p-3.5 bg-white rounded-xl border border-slate-200/80">
+                                    <span className="font-semibold text-slate-500">{t("spec_brand", "Brand")}</span>
+                                    <span className="font-bold text-slate-800">Vinnavar Organic</span>
+                                </div>
+                                <div className="flex justify-between p-3.5 bg-white rounded-xl border border-slate-200/80">
+                                    <span className="font-semibold text-slate-500">{t("spec_category", "Category")}</span>
+                                    <span className="font-bold text-slate-800">{product.category?.nameTranslations?.[currentLang] || product.category?.name || "Organic Staples"}</span>
+                                </div>
+                                <div className="flex justify-between p-3.5 bg-white rounded-xl border border-slate-200/80">
+                                    <span className="font-semibold text-slate-500">{t("spec_pack_size", "Selected Pack Size")}</span>
+                                    <span className="font-bold text-slate-800">{selectedVariant?.variantName || "Standard"}</span>
+                                </div>
+                                <div className="flex justify-between p-3.5 bg-white rounded-xl border border-slate-200/80">
+                                    <span className="font-semibold text-slate-500">{t("spec_origin", "Country of Origin")}</span>
+                                    <span className="font-bold text-slate-800">{t("spec_origin_val", "India (Tamil Nadu)")}</span>
+                                </div>
+                                <div className="flex justify-between p-3.5 bg-white rounded-xl border border-slate-200/80">
+                                    <span className="font-semibold text-slate-500">{t("spec_quality", "Form & Quality")}</span>
+                                    <span className="font-bold text-slate-800">{t("spec_quality_val", "100% Unpolished & Pure Natural")}</span>
+                                </div>
+                                <div className="flex justify-between p-3.5 bg-white rounded-xl border border-slate-200/80">
+                                    <span className="font-semibold text-slate-500">{t("spec_storage", "Storage Instructions")}</span>
+                                    <span className="font-bold text-slate-800">{t("spec_storage_val", "Store in a cool and dry place. Keep container tightly closed.")}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
