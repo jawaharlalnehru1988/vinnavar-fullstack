@@ -72,14 +72,14 @@ const BlogSingle = () => {
 
       if (listType === "bullet") {
         elements.push(
-          <div key={`list-${keyPrefix}`} className="bg-emerald-50/50 border border-emerald-100 p-6 rounded-3xl my-6 space-y-3 shadow-xs">
-            <h4 className="font-extrabold text-emerald-800 text-sm flex items-center gap-2 uppercase tracking-wide">
+          <div key={`list-${keyPrefix}`} className="bg-emerald-50/50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/40 p-6 rounded-3xl my-6 space-y-3 shadow-xs">
+            <h4 className="font-extrabold text-emerald-800 dark:text-emerald-300 text-sm flex items-center gap-2 uppercase tracking-wide">
               <span>🥗</span> Key Details &amp; Highlights
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               {currentList.map((item, iIdx) => (
-                <div key={iIdx} className="flex items-start gap-2 text-slate-800 font-medium">
-                  <span className="text-emerald-600 text-sm mt-0.5">✅</span>
+                <div key={iIdx} className="flex items-start gap-2 text-slate-800 dark:text-amber-100 font-medium">
+                  <span className="text-emerald-600 dark:text-emerald-400 text-sm mt-0.5">✅</span>
                   <span className="leading-relaxed">{renderInlineStyles(item)}</span>
                 </div>
               ))}
@@ -90,11 +90,11 @@ const BlogSingle = () => {
         elements.push(
           <div key={`list-${keyPrefix}`} className="my-6 space-y-3">
             {currentList.map((item, iIdx) => (
-              <div key={iIdx} className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-slate-100 shadow-xs">
+              <div key={iIdx} className="flex items-start gap-3 p-4 bg-white dark:bg-stone-900/90 rounded-2xl border border-slate-100 dark:border-amber-400/20 shadow-xs">
                 <span className="w-7 h-7 rounded-full bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
                   {iIdx + 1}
                 </span>
-                <div className="text-slate-800 text-sm leading-relaxed pt-0.5">
+                <div className="text-slate-800 dark:text-amber-100 text-sm leading-relaxed pt-0.5">
                   {renderInlineStyles(item)}
                 </div>
               </div>
@@ -133,25 +133,25 @@ const BlogSingle = () => {
 
       if (trimmed.startsWith("### ")) {
         elements.push(
-          <h3 key={idx} className="font-extrabold text-slate-900 text-lg mt-6 mb-3">
+          <h3 key={idx} className="font-extrabold text-slate-900 dark:text-amber-100 text-lg mt-6 mb-3">
             {trimmed.replace(/^###\s+/, "")}
           </h3>
         );
       } else if (trimmed.startsWith("## ")) {
         elements.push(
-          <h2 key={idx} className="font-black text-slate-900 text-xl mt-8 mb-4">
+          <h2 key={idx} className="font-black text-slate-900 dark:text-amber-100 text-xl mt-8 mb-4">
             {trimmed.replace(/^##\s+/, "")}
           </h2>
         );
       } else if (trimmed.startsWith("# ")) {
         elements.push(
-          <h1 key={idx} className="font-black text-slate-900 text-2xl mt-8 mb-4">
+          <h1 key={idx} className="font-black text-slate-900 dark:text-amber-100 text-2xl mt-8 mb-4">
             {trimmed.replace(/^#\s+/, "")}
           </h1>
         );
       } else {
         elements.push(
-          <p key={idx} className="text-slate-700 text-sm leading-relaxed mb-4 font-normal">
+          <p key={idx} className="text-slate-700 dark:text-amber-200/90 text-sm leading-relaxed mb-4 font-normal">
             {renderInlineStyles(trimmed)}
           </p>
         );
@@ -167,7 +167,7 @@ const BlogSingle = () => {
     return parts.map((part, index) => {
       if (part.startsWith("**") && part.endsWith("**")) {
         return (
-          <strong key={index} className="font-extrabold text-slate-900">
+          <strong key={index} className="font-extrabold text-slate-900 dark:text-amber-300">
             {part.slice(2, -2)}
           </strong>
         );
@@ -182,17 +182,17 @@ const BlogSingle = () => {
   const currentContent = blog?.contentTranslations?.[currentLang] || blog?.contentTranslations?.en || blog?.contentTranslations?.ta || blog?.content || "";
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-transparent py-8 px-4 sm:px-6 lg:px-8">
       {loading ? (
         <div className="max-w-4xl mx-auto space-y-6 animate-pulse">
-          <div className="w-1/3 h-4 bg-slate-200/80 rounded-full"></div>
-          <div className="w-3/4 h-10 bg-slate-200/80 rounded-full"></div>
-          <div className="w-full h-80 bg-slate-200/80 rounded-3xl"></div>
+          <div className="w-1/3 h-4 bg-slate-200/80 dark:bg-stone-800/80 rounded-full"></div>
+          <div className="w-3/4 h-10 bg-slate-200/80 dark:bg-stone-800/80 rounded-full"></div>
+          <div className="w-full h-80 bg-slate-200/80 dark:bg-stone-800/80 rounded-3xl"></div>
         </div>
       ) : !blog ? (
-        <div className="max-w-md mx-auto text-center py-16 space-y-4 bg-white rounded-3xl border border-slate-100 p-8 shadow-sm">
-          <h3 className="font-black text-slate-900 text-lg">Article Not Found</h3>
-          <p className="text-xs text-slate-500">The requested article could not be loaded.</p>
+        <div className="max-w-md mx-auto text-center py-16 space-y-4 bg-white dark:bg-stone-900/85 rounded-3xl border border-slate-100 dark:border-amber-400/20 p-8 shadow-sm">
+          <h3 className="font-black text-slate-900 dark:text-amber-100 text-lg">Article Not Found</h3>
+          <p className="text-xs text-slate-500 dark:text-amber-200/70">The requested article could not be loaded.</p>
           <Link to="/Blog" className="inline-block px-5 py-2.5 bg-emerald-700 text-white font-bold text-xs rounded-full">
             Back to All Articles
           </Link>
@@ -203,44 +203,44 @@ const BlogSingle = () => {
           <div className="max-w-4xl mx-auto space-y-8">
             
             {/* Breadcrumbs */}
-            <nav aria-label="Breadcrumb" className="flex items-center text-xs font-medium text-slate-500 space-x-2">
-              <Link to="/" className="text-emerald-600 hover:text-emerald-700 font-bold">Home</Link>
+            <nav aria-label="Breadcrumb" className="flex items-center text-xs font-medium text-slate-500 dark:text-amber-200/70 space-x-2">
+              <Link to="/" className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 font-bold">Home</Link>
               <span>/</span>
-              <Link to="/Blog" className="text-emerald-600 hover:text-emerald-700 font-bold">Blog</Link>
+              <Link to="/Blog" className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 font-bold">Blog</Link>
               <span>/</span>
-              <Link to={`/BlogCategory?category=${encodeURIComponent(blog.category)}`} className="text-slate-700 font-semibold">
+              <Link to={`/BlogCategory?category=${encodeURIComponent(blog.category)}`} className="text-slate-700 dark:text-amber-200 font-semibold">
                 {blog.category}
               </Link>
             </nav>
 
             {/* Main Article Container */}
-            <article className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 sm:p-10 space-y-6">
+            <article className="bg-white dark:bg-stone-900/85 rounded-3xl border border-slate-100 dark:border-amber-400/20 shadow-sm p-6 sm:p-10 space-y-6 backdrop-blur-xs">
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-3">
                   <Link
                     to={`/BlogCategory?category=${encodeURIComponent(blog.category)}`}
-                    className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-extrabold uppercase tracking-widest rounded-full border border-emerald-200/60"
+                    className="inline-block px-3 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold uppercase tracking-widest rounded-full border border-emerald-200/60 dark:border-emerald-700/50"
                   >
                     {blog.category}
                   </Link>
-                  <span className="text-[11px] font-mono text-slate-400">
+                  <span className="text-[11px] font-mono text-slate-400 dark:text-stone-400">
                     Article #{blog.id}
                   </span>
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 leading-tight">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-amber-100 leading-tight">
                   {currentTitle}
                 </h1>
 
                 {currentShortDesc && (
-                  <p className="text-sm sm:text-base text-slate-600 mt-3 leading-relaxed font-normal bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <p className="text-sm sm:text-base text-slate-600 dark:text-amber-200/90 mt-3 leading-relaxed font-normal bg-slate-50 dark:bg-stone-800/90 p-4 rounded-2xl border border-slate-100 dark:border-amber-400/20">
                     {currentShortDesc}
                   </p>
                 )}
               </div>
 
               {/* Featured Image */}
-              <div className="rounded-3xl overflow-hidden max-h-[480px] bg-slate-100 border border-slate-100">
+              <div className="rounded-3xl overflow-hidden max-h-[480px] bg-slate-100 dark:bg-stone-800 border border-slate-100 dark:border-amber-400/20">
                 <img
                   src={getImageUrl(blog.imageUrl)}
                   alt={currentTitle}
@@ -249,15 +249,15 @@ const BlogSingle = () => {
               </div>
 
               {/* Formatted Content in active language */}
-              <div className="pt-4 border-t border-slate-100">
+              <div className="pt-4 border-t border-slate-100 dark:border-amber-400/20">
                 {renderFormattedContent(currentContent)}
               </div>
 
               {/* Article Actions Bar */}
-              <div className="pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
+              <div className="pt-6 border-t border-slate-100 dark:border-amber-400/20 flex flex-wrap items-center justify-between gap-4">
                 <Link
                   to="/Blog"
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-full transition-all"
+                  className="px-5 py-2.5 bg-slate-100 dark:bg-stone-800 hover:bg-slate-200 dark:hover:bg-stone-700 text-slate-700 dark:text-amber-100 font-bold text-xs rounded-full transition-all border border-transparent dark:border-amber-400/20"
                 >
                   ← {t("all_articles") || "Back to All Articles"}
                 </Link>
@@ -273,7 +273,7 @@ const BlogSingle = () => {
             {/* Related Articles Section */}
             {relatedBlogs.length > 0 && (
               <div className="space-y-6 pt-6">
-                <h3 className="text-xl font-black text-slate-900 text-center">
+                <h3 className="text-xl font-black text-slate-900 dark:text-amber-100 text-center">
                   Related Articles You Might Enjoy
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -283,10 +283,10 @@ const BlogSingle = () => {
                     return (
                       <div
                         key={rel.id}
-                        className="group bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all p-4 flex flex-col justify-between"
+                        className="group bg-white dark:bg-stone-900/85 rounded-3xl border border-slate-100 dark:border-amber-400/20 shadow-sm hover:shadow-xl transition-all p-4 flex flex-col justify-between backdrop-blur-xs"
                       >
                         <div className="space-y-3">
-                          <div className="h-36 rounded-2xl overflow-hidden bg-slate-100">
+                          <div className="h-36 rounded-2xl overflow-hidden bg-slate-100 dark:bg-stone-800">
                             <Link to={relLink}>
                               <img
                                 src={getImageUrl(rel.imageUrl)}
@@ -295,17 +295,17 @@ const BlogSingle = () => {
                               />
                             </Link>
                           </div>
-                          <span className="text-[10px] font-extrabold text-emerald-700 uppercase tracking-widest">
+                          <span className="text-[10px] font-extrabold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">
                             {rel.category}
                           </span>
-                          <h4 className="font-bold text-slate-900 text-sm line-clamp-2 group-hover:text-emerald-700 transition-colors">
+                          <h4 className="font-bold text-slate-900 dark:text-amber-100 text-sm line-clamp-2 group-hover:text-emerald-700 dark:group-hover:text-amber-300 transition-colors">
                             <Link to={relLink}>{relTitle}</Link>
                           </h4>
                         </div>
-                        <div className="pt-3 mt-3 border-t border-slate-100">
+                        <div className="pt-3 mt-3 border-t border-slate-100 dark:border-amber-400/20">
                           <Link
                             to={relLink}
-                            className="text-xs font-bold text-emerald-700 hover:text-emerald-800"
+                            className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300"
                           >
                             Read Article ➔
                           </Link>

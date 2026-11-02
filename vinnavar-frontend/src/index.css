@@ -1249,6 +1249,51 @@ html.dark .group.relative.bg-white:hover {
   box-shadow: 0 14px 34px -10px rgba(251, 191, 36, 0.15), 0 20px 40px -15px rgba(0, 0, 0, 0.8) !important;
 }
 
+/* =========================================================
+   DARK MODE BLOG & RECIPE CONTENT READABILITY
+   ========================================================= */
+
+/* Main Article Cards in Dark Mode */
+html.dark article {
+  background-color: rgba(36, 26, 20, 0.92) !important;
+  border-color: rgba(251, 191, 36, 0.22) !important;
+  color: #fef3c7 !important;
+}
+
+/* Numbered Recipe / Method of Preparation Step Cards */
+html.dark article .bg-white,
+html.dark .blog-content .bg-white {
+  background-color: rgba(28, 20, 15, 0.95) !important;
+  border-color: rgba(251, 191, 36, 0.25) !important;
+  color: #fef3c7 !important;
+}
+
+/* High-Contrast Text for all Article Steps and Paragraphs */
+html.dark article .text-slate-800,
+html.dark article .text-slate-700,
+html.dark article .text-slate-900,
+html.dark .blog-content .text-slate-800,
+html.dark .blog-content .text-slate-700,
+html.dark .blog-content .text-slate-900 {
+  color: #fef3c7 !important;
+}
+
+html.dark article strong,
+html.dark article h1,
+html.dark article h2,
+html.dark article h3,
+html.dark article h4 {
+  color: #fde68a !important;
+}
+
+/* Step Badges (1, 2, 3...) */
+html.dark article .w-7.h-7.rounded-full.bg-emerald-700 {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4) !important;
+}
+
+
 
 
 
