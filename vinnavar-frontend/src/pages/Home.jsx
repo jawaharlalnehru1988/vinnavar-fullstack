@@ -244,35 +244,44 @@ const Home = () => {
         clearTimeout(slideTimerRef.current);
         slideTimerRef.current = null;
       }
-      // Immediately stop all video audio & playback
+      // Immediately stop and mute all video playback
       const videos = el.querySelectorAll("video");
       videos.forEach((vid) => {
         try {
           vid.pause();
+          vid.muted = true;
         } catch (e) {}
       });
     };
 
     // When slide transition completes (slide becomes visible):
     const handleSlid = () => {
+      // Ensure all videos in the carousel are paused and muted first
+      const allVideos = el.querySelectorAll("video");
+      allVideos.forEach((v) => {
+        try {
+          v.pause();
+          v.muted = true;
+        } catch (e) {}
+      });
+
       const activeItem = el.querySelector(".carousel-item.active");
       if (!activeItem) return;
 
       const vid = activeItem.querySelector("video");
       if (vid) {
-        // VIDEO SLIDE IS VISIBLE: Audio and video start playing only now!
+        // ONLY the active slide video is unmuted and played
         vid.currentTime = 0;
         vid.muted = isHeroMuted;
         vid.volume = 1.0;
         if (isHeroPlaying) {
           vid.play().catch(() => {
-            // If browser blocks unmuted autoplay before interaction, start muted and allow one-click unmute
+            // If browser blocks unmuted autoplay before interaction, start muted
             vid.muted = true;
             setIsHeroMuted(true);
             vid.play().catch(() => {});
           });
         }
-        // Special: Do NOT set any 10-second timer! It stays for the full 3.57 minutes!
       } else {
         // IMAGE SLIDE IS VISIBLE: Start 10-second timer
         scheduleNextImageSlide();
@@ -283,6 +292,14 @@ const Home = () => {
     el.addEventListener("slid.bs.carousel", handleSlid);
 
     // Initial check on mount:
+    const allVideos = el.querySelectorAll("video");
+    allVideos.forEach((v) => {
+      try {
+        v.pause();
+        v.muted = true;
+      } catch (e) {}
+    });
+
     const activeItem = el.querySelector(".carousel-item.active");
     const vid = activeItem?.querySelector("video");
     if (vid) {
@@ -290,7 +307,11 @@ const Home = () => {
       vid.muted = isHeroMuted;
       vid.volume = 1.0;
       if (isHeroPlaying) {
-        vid.play().catch(() => {});
+        vid.play().catch(() => {
+          vid.muted = true;
+          setIsHeroMuted(true);
+          vid.play().catch(() => {});
+        });
       }
     } else {
       scheduleNextImageSlide();
@@ -316,6 +337,14 @@ const Home = () => {
     setIsHeroMuted(nextMuted);
 
     if (el) {
+      // Strictly mute and pause any non-active videos
+      el.querySelectorAll(".carousel-item:not(.active) video").forEach((v) => {
+        try {
+          v.pause();
+          v.muted = true;
+        } catch (err) {}
+      });
+
       const activeItem = el.querySelector(".carousel-item.active");
       const vid = activeItem?.querySelector("video");
       if (vid) {
@@ -338,12 +367,21 @@ const Home = () => {
     setIsHeroPlaying(nextPlaying);
 
     if (el) {
+      // Ensure all inactive videos are stopped and muted
+      el.querySelectorAll(".carousel-item:not(.active) video").forEach((v) => {
+        try {
+          v.pause();
+          v.muted = true;
+        } catch (err) {}
+      });
+
       const activeItem = el.querySelector(".carousel-item.active");
       const vid = activeItem?.querySelector("video");
 
       if (vid) {
-        // On video slide: stop or play both video and audio together!
+        // On video slide: stop or play only the active video
         if (nextPlaying) {
+          vid.muted = isHeroMuted;
           vid.play().catch(() => {});
         } else {
           vid.pause();
@@ -487,13 +525,13 @@ const Home = () => {
                             className={`carousel-item ${idx === 0 ? "active" : ""}`}
                             data-bs-interval="false"
                           >
-                            <Link to="/Product" className="d-block w-100 h-100 position-relative">
+                            <div className="d-block w-100 h-100 position-relative">
                               {isVideoUrl(slideUrl) ? (
                                 <video
                                   src={getImageUrl(slideUrl)}
-                                  autoPlay
+                                  preload="metadata"
                                   loop={heroSlides.length <= 1}
-                                  muted={isHeroMuted}
+                                  muted={true}
                                   playsInline
                                   className="hero-background-video"
                                   onEnded={handleVideoEnded}
@@ -505,7 +543,7 @@ const Home = () => {
                                   className="img-fluid w-100"
                                 />
                               )}
-                            </Link>
+                            </div>
                           </div>
                         ))
                       ) : (
@@ -513,61 +551,61 @@ const Home = () => {
                           {/* Slide 1 */}
                           <div className="carousel-item active" data-bs-interval="10000">
                             {/* Desktop Image */}
-                            <Link to="/Product" className="d-none d-md-block">
+                            <div className="d-none d-md-block">
                               <img
                                 src={`${process.env.PUBLIC_URL}/HERO_01_DESKTOP.webp`}
                                 alt="Vinnavar Organic Grains"
                                 className="img-fluid w-100"
                               />
-                            </Link>
+                            </div>
                             {/* Mobile Image */}
-                            <Link to="/Product" className="d-block d-md-none">
+                            <div className="d-block d-md-none">
                               <img
                                 src={`${process.env.PUBLIC_URL}/HERO_01_MOBILE.webp`}
                                 alt="Vinnavar Organic Grains"
                                 className="img-fluid w-100"
                               />
-                            </Link>
+                            </div>
                           </div>
 
                           {/* Slide 2 */}
                           <div className="carousel-item" data-bs-interval="10000">
                             {/* Desktop Image */}
-                            <Link to="/Product" className="d-none d-md-block">
+                            <div className="d-none d-md-block">
                               <img
                                 src={`${process.env.PUBLIC_URL}/hero_02_desktop.webp`}
                                 alt="Vinnavar Cold Pressed Oils"
                                 className="img-fluid w-100"
                               />
-                            </Link>
+                            </div>
                             {/* Mobile Image */}
-                            <Link to="/Product" className="d-block d-md-none">
+                            <div className="d-block d-md-none">
                               <img
                                 src={`${process.env.PUBLIC_URL}/hero_02_mobile.webp`}
                                 alt="Vinnavar Cold Pressed Oils"
                                 className="img-fluid w-100"
                               />
-                            </Link>
+                            </div>
                           </div>
 
                           {/* Slide 3 */}
                           <div className="carousel-item" data-bs-interval="10000">
                             {/* Desktop Image */}
-                            <Link to="/Product" className="d-none d-md-block">
+                            <div className="d-none d-md-block">
                               <img
                                 src={`${process.env.PUBLIC_URL}/HERO_03_DESKTOP.webp`}
                                 alt="Vinnavar Natural Sweeteners"
                                 className="img-fluid w-100"
                               />
-                            </Link>
+                            </div>
                             {/* Mobile Image */}
-                            <Link to="/Product" className="d-block d-md-none">
+                            <div className="d-block d-md-none">
                               <img
                                 src={`${process.env.PUBLIC_URL}/HERO_03_MOBILE.webp`}
                                 alt="Vinnavar Natural Sweeteners"
                                 className="img-fluid w-100"
                               />
-                            </Link>
+                            </div>
                           </div>
                         </>
                       )}

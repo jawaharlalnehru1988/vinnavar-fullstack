@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 const ThemeContext = createContext({
-  theme: "light",
-  isDark: false,
+  theme: "dark",
+  isDark: true,
   toggleTheme: () => {},
   setTheme: () => {},
 });
@@ -14,13 +14,10 @@ export const ThemeProvider = ({ children }) => {
       if (stored === "dark" || stored === "light") {
         return stored;
       }
-      if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        return "dark";
-      }
     } catch (e) {
       console.warn("Could not read theme preference from localStorage", e);
     }
-    return "light";
+    return "dark"; // Dark mode is default
   });
 
   const isDark = theme === "dark";

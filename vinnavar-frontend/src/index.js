@@ -5,6 +5,28 @@ import App from './App';
 import './i18n';
 import reportWebVitals from './reportWebVitals';
 
+// Global Audio/Video Single-Playback Coordinator: prevents two audios/videos playing simultaneously
+if (typeof document !== 'undefined') {
+  document.addEventListener(
+    'play',
+    function (e) {
+      const playingEl = e.target;
+      if (playingEl && (playingEl.tagName === 'VIDEO' || playingEl.tagName === 'AUDIO')) {
+        const allMedia = document.querySelectorAll('video, audio');
+        allMedia.forEach((el) => {
+          if (el !== playingEl && !el.paused) {
+            try {
+              el.pause();
+              el.muted = true;
+            } catch (err) {}
+          }
+        });
+      }
+    },
+    true
+  );
+}
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
