@@ -1024,19 +1024,46 @@ html.dark .bg-primarys {
   box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
 }
 
-/* Translucent Section Backgrounds to Reveal Running Line Art */
-html.dark .home-category-section {
-  background: rgba(28, 20, 16, 0.55) !important;
-  backdrop-filter: blur(12px) !important;
-  border-top: 1px solid rgba(251, 191, 36, 0.1);
-  border-bottom: 1px solid rgba(251, 191, 36, 0.1);
+/* =========================================================
+   TRANSPARENT SECTION BACKGROUNDS
+   Sections are made 100% transparent with backdrop-filter disabled
+   so that the running animated line art flows seamlessly and
+   continuously across the entire page canvas.
+   ========================================================= */
+html.dark section,
+html.dark .home-organic-products-section,
+html.dark .home-category-section,
+html.dark .home-testimonials-section,
+html.dark .hero-section,
+html.dark .home-features-bar,
+html.dark footer,
+html.dark main {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 html.dark .home-organic-products-section {
-  background: rgba(24, 17, 13, 0.55) !important;
-  backdrop-filter: blur(12px) !important;
-  border-top: 1px solid rgba(251, 191, 36, 0.1) !important;
-  border-bottom: 1px solid rgba(251, 191, 36, 0.1) !important;
+  border-top: 1px solid rgba(251, 191, 36, 0.12) !important;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.12) !important;
+}
+
+html.dark .home-category-section {
+  border-top: 1px solid rgba(251, 191, 36, 0.12) !important;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.12) !important;
+}
+
+html.dark .home-testimonials-section {
+  border-top: 1px solid rgba(251, 191, 36, 0.12) !important;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.12) !important;
+}
+
+/* Hide floating radial gradient blobs that could block line art */
+html.dark .home-ambient-glow-1,
+html.dark .home-ambient-glow-2 {
+  display: none !important;
 }
 
 html.dark .aesthetic-image-stage {
@@ -1044,10 +1071,20 @@ html.dark .aesthetic-image-stage {
   border: 1px solid rgba(251, 191, 36, 0.15) !important;
 }
 
-html.dark .home-testimonials-section {
-  background: rgba(28, 20, 16, 0.55) !important;
-  backdrop-filter: blur(12px) !important;
-  border-color: rgba(251, 191, 36, 0.1) !important;
+html.dark .category-img-container {
+  background: rgba(55, 40, 32, 0.4) !important;
+}
+
+html.dark .home-organic-products-section button.bg-white\/95 {
+  background: rgba(45, 33, 26, 0.85) !important;
+  border-color: rgba(251, 191, 36, 0.25) !important;
+  color: #fde68a !important;
+}
+
+html.dark .home-organic-products-section .bg-slate-50 {
+  background: rgba(55, 40, 32, 0.6) !important;
+  color: #fef3c7 !important;
+  border-color: rgba(251, 191, 36, 0.2) !important;
 }
 
 html.dark .home-testimonials-section .card {
