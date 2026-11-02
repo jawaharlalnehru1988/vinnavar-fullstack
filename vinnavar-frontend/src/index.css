@@ -34,11 +34,18 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Ambient Nocturnal Glow Mesh on dark mode body */
+/* =========================================================
+   DARK MODE AMBIENT BACKGROUND & RUNNING LINE ART
+   Layer 1 (::before): Wandering ethereal color auras
+   Layer 2 (::after): Running animated line art wave & geometric grid
+   ========================================================= */
 html.dark body {
+  background-color: #070b13 !important;
   position: relative;
+  overflow-x: hidden;
 }
 
+/* Layer 1: Ambient Nocturnal Glow Mesh */
 html.dark body::before {
   content: "";
   position: fixed;
@@ -47,16 +54,68 @@ html.dark body::before {
   right: 0;
   bottom: 0;
   background:
-    radial-gradient(ellipse 65% 50% at 12% -8%, rgba(16, 185, 129, 0.12), transparent 70%),
-    radial-gradient(ellipse 55% 45% at 88% 18%, rgba(59, 130, 246, 0.08), transparent 65%),
-    radial-gradient(ellipse 70% 55% at 50% 100%, rgba(16, 185, 129, 0.07), transparent 70%);
+    radial-gradient(ellipse 80% 55% at 15% 10%, rgba(16, 185, 129, 0.18), transparent 70%),
+    radial-gradient(ellipse 70% 50% at 85% 30%, rgba(59, 130, 246, 0.16), transparent 65%),
+    radial-gradient(ellipse 75% 60% at 50% 85%, rgba(245, 158, 11, 0.12), transparent 70%),
+    radial-gradient(ellipse 60% 45% at 20% 90%, rgba(168, 85, 247, 0.12), transparent 65%);
   pointer-events: none;
   z-index: 0;
+  animation: ambientMeshDrift 20s ease-in-out infinite alternate;
+}
+
+@keyframes ambientMeshDrift {
+  0% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.04) translateY(-18px); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+/* Layer 2: Running Animated Line Art Grid & Wave Vectors */
+html.dark body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    /* Flowing animated wave vector line art */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cpath d='M0 80 Q 40 30 80 80 T 160 80' fill='none' stroke='rgba(16,185,129,0.22)' stroke-width='1.5' stroke-dasharray='8,6'/%3E%3Cpath d='M0 40 Q 40 90 80 40 T 160 40' fill='none' stroke='rgba(59,130,246,0.18)' stroke-width='1.2' stroke-dasharray='12,8'/%3E%3Cpath d='M0 120 Q 40 70 80 120 T 160 120' fill='none' stroke='rgba(245,158,11,0.15)' stroke-width='1.2' stroke-dasharray='6,10'/%3E%3Ccircle cx='80' cy='80' r='2' fill='rgba(16,185,129,0.35)'/%3E%3Ccircle cx='40' cy='30' r='1.5' fill='rgba(59,130,246,0.35)'/%3E%3Ccircle cx='120' cy='120' r='1.5' fill='rgba(245,158,11,0.35)'/%3E%3C/svg%3E"),
+    /* Running isometric / diagonal grid line art */
+    linear-gradient(135deg, rgba(16, 185, 129, 0.10) 1px, transparent 1px),
+    linear-gradient(45deg, rgba(59, 130, 246, 0.08) 1px, transparent 1px);
+  background-size: 160px 160px, 48px 48px, 48px 48px;
+  animation: runningLineArtFlow 24s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.95;
+  mask-image: radial-gradient(ellipse 92% 88% at center, black 50%, rgba(0, 0, 0, 0.6) 85%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 92% 88% at center, black 50%, rgba(0, 0, 0, 0.6) 85%, transparent 100%);
+}
+
+@keyframes runningLineArtFlow {
+  0% {
+    background-position: 0 0, 0 0, 0 0;
+  }
+  100% {
+    background-position: 320px 160px, 96px 96px, -96px 96px;
+  }
 }
 
 #root {
   position: relative;
   z-index: 1;
+}
+
+/* Ensure page-level wrappers allow the animated background to shine through in dark mode */
+#root,
+.app-wrapper {
+  background-color: var(--site-bg);
+  min-height: 100vh;
+}
+
+html.dark #root,
+html.dark .app-wrapper {
+  background-color: transparent !important;
 }
 
 /* Propagate text colour to every common content element */
@@ -66,13 +125,6 @@ td, th, caption,
 blockquote, figcaption,
 div, section, article, aside, main {
   color: inherit;
-}
-
-/* Ensure page-level wrappers pick up the ivory background */
-#root,
-.app-wrapper {
-  background-color: var(--site-bg);
-  min-height: 100vh;
 }
 
 code {
@@ -805,68 +857,196 @@ html.dark .feature-highlight-card .feature-desc {
   color: #94a3b8 !important;
 }
 
-/* Category Section & Cards in Dark Mode */
+/* =========================================================
+   ROAMING BLURRY COLORS INSIDE CARDS (DARK MODE)
+   Atmospheric roaming aurora gradients floating continuously beneath
+   the text and content without hindering readability.
+   ========================================================= */
+
+/* Translucent Glassmorphic Foundation on Cards */
+html.dark .home-organic-products-section .group,
+html.dark .category-card,
+html.dark .card,
+html.dark .card-product,
+html.dark .feature-highlight-card,
+html.dark .company-details-card,
+html.dark .store-location-card,
+html.dark .bg-white.p-3.p-md-4.rounded-4.border.shadow-sm,
+html.dark .bg-white.p-4.p-md-5.rounded-4.border.shadow-sm {
+  position: relative !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  background: rgba(13, 20, 36, 0.82) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Ensure all text, images, buttons, and badges inside cards sit securely above the roaming colors */
+html.dark .home-organic-products-section .group > *,
+html.dark .category-card > *,
+html.dark .card > *,
+html.dark .card-product > *,
+html.dark .feature-highlight-card > *,
+html.dark .company-details-card > *,
+html.dark .store-location-card > *,
+html.dark .bg-white.p-3.p-md-4.rounded-4.border.shadow-sm > *,
+html.dark .bg-white.p-4.p-md-5.rounded-4.border.shadow-sm > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Roaming Blurry Color Orbs inside Cards */
+html.dark .home-organic-products-section .group::after,
+html.dark .category-card::after,
+html.dark .card::after,
+html.dark .card-product::after,
+html.dark .feature-highlight-card::after,
+html.dark .company-details-card::after {
+  content: "";
+  position: absolute;
+  inset: -60%;
+  width: 220%;
+  height: 220%;
+  background:
+    radial-gradient(circle at 25% 25%, rgba(16, 185, 129, 0.35) 0%, transparent 40%),
+    radial-gradient(circle at 75% 28%, rgba(59, 130, 246, 0.30) 0%, transparent 42%),
+    radial-gradient(circle at 70% 75%, rgba(245, 158, 11, 0.25) 0%, transparent 38%),
+    radial-gradient(circle at 22% 78%, rgba(168, 85, 247, 0.28) 0%, transparent 42%);
+  filter: blur(42px);
+  -webkit-filter: blur(42px);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.8;
+  animation: cardAmbientRoam 18s ease-in-out infinite alternate;
+}
+
+/* Alternating roam pattern on even-indexed cards for fluid natural motion */
+html.dark .home-organic-products-section .group:nth-child(even)::after,
+html.dark .category-card:nth-child(even)::after,
+html.dark .card:nth-child(even)::after,
+html.dark .feature-highlight-card:nth-child(even)::after {
+  animation: cardAmbientRoamAlt 22s ease-in-out infinite alternate-reverse;
+  animation-delay: -6s;
+}
+
+@keyframes cardAmbientRoam {
+  0% {
+    transform: translate(0%, 0%) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translate(14%, -12%) rotate(90deg) scale(1.15);
+  }
+  50% {
+    transform: translate(10%, 16%) rotate(180deg) scale(0.92);
+  }
+  75% {
+    transform: translate(-14%, 10%) rotate(270deg) scale(1.1);
+  }
+  100% {
+    transform: translate(0%, 0%) rotate(360deg) scale(1);
+  }
+}
+
+@keyframes cardAmbientRoamAlt {
+  0% {
+    transform: translate(0%, 0%) rotate(0deg) scale(1.05);
+  }
+  30% {
+    transform: translate(-15%, 12%) rotate(-100deg) scale(0.95);
+  }
+  60% {
+    transform: translate(12%, 18%) rotate(-200deg) scale(1.18);
+  }
+  85% {
+    transform: translate(15%, -12%) rotate(-290deg) scale(1.02);
+  }
+  100% {
+    transform: translate(0%, 0%) rotate(-360deg) scale(1.05);
+  }
+}
+
+/* Hover glow enhancements */
+html.dark .home-organic-products-section .group:hover,
+html.dark .category-card:hover,
+html.dark .card:hover,
+html.dark .feature-highlight-card:hover {
+  border-color: rgba(16, 185, 129, 0.45) !important;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.8), 0 0 30px rgba(16, 185, 129, 0.28) !important;
+  transform: translateY(-6px) scale(1.01) !important;
+}
+
+html.dark .home-organic-products-section .group:hover::after,
+html.dark .category-card:hover::after,
+html.dark .card:hover::after,
+html.dark .feature-highlight-card:hover::after {
+  opacity: 1;
+  filter: blur(34px);
+  -webkit-filter: blur(34px);
+}
+
+/* Preserving Text Readability on Dark Backgrounds */
+html.dark .home-organic-products-section .group h2,
+html.dark .home-organic-products-section .group h3,
+html.dark .home-organic-products-section .group h4,
+html.dark .category-card h3,
+html.dark .category-card h4,
+html.dark .category-card h5,
+html.dark .card h3,
+html.dark .card h4,
+html.dark .card h5,
+html.dark .feature-title,
+html.dark .text-dark {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.dark .home-organic-products-section .group p,
+html.dark .category-card p,
+html.dark .card p,
+html.dark .feature-desc,
+html.dark .text-muted,
+html.dark .text-secondary {
+  color: #cbd5e1 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Translucent Section Backgrounds to Reveal Running Line Art */
 html.dark .home-category-section {
-  background: linear-gradient(180deg, rgba(9, 14, 23, 0.6) 0%, rgba(15, 23, 42, 0.85) 50%, rgba(9, 14, 23, 0.6) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(9, 14, 23, 0.55) !important;
+  backdrop-filter: blur(12px) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-html.dark .home-category-section .category-card,
-html.dark .category-card {
-  background: #0f172a !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  color: #f1f5f9 !important;
-}
-
-html.dark .home-category-section .category-card:hover,
-html.dark .category-card:hover {
-  border-color: rgba(16, 185, 129, 0.45) !important;
-  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.8), 0 0 25px rgba(16, 185, 129, 0.25) !important;
-}
-
-/* Ambient Organic Products Section & Cards in Dark Mode */
 html.dark .home-organic-products-section {
-  background: #090e17 !important;
-  background-image: radial-gradient(rgba(16, 185, 129, 0.10) 1.2px, transparent 1.2px) !important;
-  border-color: rgba(255, 255, 255, 0.07) !important;
-}
-
-html.dark .home-organic-products-section .group {
-  background: #0f172a !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.6) !important;
-}
-
-html.dark .home-organic-products-section .group:hover {
-  transform: translateY(-8px) scale(1.008) !important;
-  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.75), 0 0 28px rgba(16, 185, 129, 0.3) !important;
-  border-color: rgba(16, 185, 129, 0.45) !important;
+  background: rgba(7, 11, 19, 0.60) !important;
+  backdrop-filter: blur(12px) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 html.dark .aesthetic-image-stage {
-  background: radial-gradient(circle at center, #1e293b 30%, #0f172a 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.6) 30%, rgba(15, 23, 42, 0.8) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Ambient Testimonials Section */
 html.dark .home-testimonials-section {
-  background: #0a0f1d !important;
-  border-color: rgba(255, 255, 255, 0.07) !important;
+  background: rgba(10, 15, 29, 0.55) !important;
+  backdrop-filter: blur(12px) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
 }
 
 html.dark .home-testimonials-section .card {
-  background: #0f172a !important;
   border-left: 6px solid #10b981 !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  color: #f1f5f9 !important;
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55) !important;
 }
 
 /* Footer & Company Details Card in Dark Mode */
 html.dark .company-details-card,
 html.dark .card,
 html.dark .bg-white {
-  background-color: #0f172a !important;
+  background-color: rgba(15, 23, 42, 0.82) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   color: #e2e8f0 !important;
 }
