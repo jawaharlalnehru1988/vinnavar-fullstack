@@ -160,24 +160,24 @@ const ProductCart = () => {
   const totalPayable = cart ? (cart.totalAmount ?? subtotal) : 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-transparent py-8 px-4 sm:px-6 lg:px-8">
       <ScrollToTop />
       {loaderStatus ? (
         <div className="max-w-7xl mx-auto space-y-6">
-          <div className="w-48 h-8 bg-slate-200/80 rounded-full animate-pulse"></div>
+          <div className="w-48 h-8 bg-slate-200/80 dark:bg-stone-800 rounded-full animate-pulse"></div>
           <CartSkeleton count={3} />
         </div>
       ) : (
         <div className="max-w-7xl mx-auto space-y-8">
           
           {/* Page Header */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="bg-white dark:bg-stone-900/85 rounded-3xl p-6 sm:p-8 border border-slate-100 dark:border-amber-400/20 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-xs">
             <div>
-              <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200/60 mb-2">
+              <span className="inline-block px-3 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-full border border-emerald-200/60 dark:border-emerald-700/50 mb-2">
                 {t("shopping_bag")}
               </span>
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900">{t("my_cart")}</h1>
-              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-amber-100">{t("my_cart")}</h1>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-amber-200/70 mt-1">
                 {items.length > 0
                   ? (cart?.totalItemCount || items.length) === 1 ? t("cart_one_item") : t("cart_multi_items", { count: cart?.totalItemCount || items.length })
                   : t("cart_empty_msg")}
@@ -186,7 +186,7 @@ const ProductCart = () => {
             {items.length > 0 && (
               <button
                 type="button"
-                className="px-4 py-2 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 font-bold text-xs rounded-full border border-slate-200/80 transition-all self-start sm:self-auto"
+                className="px-4 py-2 bg-slate-100 dark:bg-stone-800 hover:bg-red-50 dark:hover:bg-red-950/60 text-slate-600 dark:text-amber-100 hover:text-red-600 dark:hover:text-red-300 font-bold text-xs rounded-full border border-slate-200/80 dark:border-amber-400/20 transition-all self-start sm:self-auto"
                 onClick={handleClearCart}
               >
                 🗑️ {t("clear_cart_btn")}
@@ -233,7 +233,7 @@ const ProductCart = () => {
                 </div>
 
                 {/* Items List Card */}
-                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-100">
+                <div className="bg-white dark:bg-stone-900/85 rounded-3xl border border-slate-100 dark:border-amber-400/20 shadow-sm overflow-hidden divide-y divide-slate-100 dark:divide-amber-400/15 backdrop-blur-xs">
                   {items.map((item) => {
                     const product = item.product || {};
                     const variant = item.variant || {};
@@ -248,18 +248,18 @@ const ProductCart = () => {
                             <img
                               src={imgUrl}
                               alt={product.name}
-                              className="w-20 h-20 sm:w-24 sm:h-24 object-contain rounded-2xl bg-slate-50 border border-slate-100 p-2"
+                              className="w-20 h-20 sm:w-24 sm:h-24 object-contain rounded-2xl bg-slate-50 dark:bg-stone-800/90 border border-slate-100 dark:border-amber-400/20 p-2"
                             />
                           </Link>
                           <div className="space-y-1">
-                            <h3 className="font-bold text-slate-900 text-sm hover:text-emerald-700 transition-colors">
+                            <h3 className="font-bold text-slate-900 dark:text-amber-100 text-sm hover:text-emerald-700 dark:hover:text-amber-300 transition-colors">
                               <Link to={`/product/${product.slug}`}>{product.nameTranslations?.[currentLang] || product.name}</Link>
                             </h3>
                             <div className="flex items-center gap-2">
-                              <span className="inline-block px-2.5 py-0.5 bg-slate-100 text-emerald-800 text-[10px] font-extrabold rounded-full border border-slate-200/60">
+                              <span className="inline-block px-2.5 py-0.5 bg-slate-100 dark:bg-stone-800 text-emerald-800 dark:text-emerald-300 text-[10px] font-extrabold rounded-full border border-slate-200/60 dark:border-amber-400/25">
                                 {variant.variantName || t("standard_pack")}
                               </span>
-                              <span className="text-xs font-bold text-slate-700">₹{item.unitPrice.toFixed(2)} / {t("unit")}</span>
+                              <span className="text-xs font-bold text-slate-700 dark:text-amber-300">₹{item.unitPrice.toFixed(2)} / {t("unit")}</span>
                             </div>
                             <button
                               type="button"
@@ -323,14 +323,14 @@ const ProductCart = () => {
 
               {/* Right Column: Order Summary Card */}
               <div className="lg:col-span-1">
-                <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-6 sticky top-24">
-                  <h2 className="font-black text-slate-900 text-center text-lg border-b border-slate-100 pb-3 uppercase tracking-wider">
+                <div className="bg-white dark:bg-stone-900/85 rounded-3xl p-6 border border-slate-100 dark:border-amber-400/20 shadow-sm space-y-6 sticky top-24 backdrop-blur-xs">
+                  <h2 className="font-black text-slate-900 dark:text-amber-100 text-center text-lg border-b border-slate-100 dark:border-amber-400/20 pb-3 uppercase tracking-wider">
                     {t("your_order")}
                   </h2>
 
                   {/* Itemized List in Summary */}
-                  <div className="space-y-3 pb-3 border-b border-slate-100">
-                    <div className="flex justify-between text-xs font-bold text-slate-900 uppercase pb-1 border-b border-slate-100">
+                  <div className="space-y-3 pb-3 border-b border-slate-100 dark:border-amber-400/20">
+                    <div className="flex justify-between text-xs font-bold text-slate-900 dark:text-amber-100 uppercase pb-1 border-b border-slate-100 dark:border-amber-400/20">
                       <span>{t("product_col")}</span>
                       <span>{t("subtotal_col")}</span>
                     </div>
@@ -340,11 +340,11 @@ const ProductCart = () => {
                       const itemRawTotal = item.unitPrice ? item.unitPrice * item.quantity : 0;
                       return (
                         <div key={idx} className="flex justify-between items-start text-xs gap-3">
-                          <span className="text-slate-600 font-medium leading-tight">
+                          <span className="text-slate-600 dark:text-amber-200/80 font-medium leading-tight">
                             {p.nameTranslations?.[currentLang] || p.name} {v.variantName ? `- ${v.variantName}` : ''}<br />
-                            <strong className="text-slate-900">× {item.quantity}</strong>
+                            <strong className="text-slate-900 dark:text-amber-100">× {item.quantity}</strong>
                           </span>
-                          <span className="font-semibold text-slate-800 whitespace-nowrap">
+                          <span className="font-semibold text-slate-800 dark:text-amber-400 whitespace-nowrap">
                             ₹{itemRawTotal.toFixed(2)}
                           </span>
                         </div>
@@ -353,24 +353,24 @@ const ProductCart = () => {
                   </div>
 
                   <div className="space-y-3 text-xs font-medium">
-                    <div className="flex justify-between text-slate-700">
-                      <span className="font-bold text-slate-900">{t("subtotal_col", "Subtotal")}</span>
-                      <span className="font-black text-slate-800">₹{totalPayable.toFixed(2)}</span>
+                    <div className="flex justify-between text-slate-700 dark:text-amber-200/80">
+                      <span className="font-bold text-slate-900 dark:text-amber-100">{t("subtotal_col", "Subtotal")}</span>
+                      <span className="font-black text-slate-800 dark:text-amber-400">₹{totalPayable.toFixed(2)}</span>
                     </div>
 
-                    <div className="flex justify-between items-center text-slate-700">
-                      <span className="font-bold text-slate-900">{t("delivery_charges", "Doorstep Delivery")}</span>
-                      <span className="font-black text-emerald-700">
+                    <div className="flex justify-between items-center text-slate-700 dark:text-amber-200/80">
+                      <span className="font-bold text-slate-900 dark:text-amber-100">{t("delivery_charges", "Doorstep Delivery")}</span>
+                      <span className="font-black text-emerald-700 dark:text-emerald-400">
                         {t("free_delivery_val", "FREE (Included)")}
                       </span>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-sm font-black text-slate-900">
+                    <div className="pt-3 border-t border-slate-200 dark:border-amber-400/20 flex justify-between items-center text-sm font-black text-slate-900 dark:text-amber-100">
                       <div>
                         <span>{t("total_payable", "Total Payable")}</span><br/>
-                        <span className="text-[10px] font-medium text-slate-500">({t("inclusive_all", "All-Inclusive Price")})</span>
+                        <span className="text-[10px] font-medium text-slate-500 dark:text-amber-200/60">({t("inclusive_all", "All-Inclusive Price")})</span>
                       </div>
-                      <span className="text-2xl text-emerald-700">
+                      <span className="text-2xl text-emerald-700 dark:text-amber-400 font-black">
                         ₹{totalPayable.toFixed(2)}
                       </span>
                     </div>
@@ -385,18 +385,18 @@ const ProductCart = () => {
                     <span>₹{totalPayable.toFixed(2)} ➔</span>
                   </button>
 
-                  <div className="text-center pt-3 border-t border-slate-100 space-y-2">
-                    <p className="text-[11px] text-slate-400 font-semibold">
+                  <div className="text-center pt-3 border-t border-slate-100 dark:border-amber-400/20 space-y-2">
+                    <p className="text-[11px] text-slate-400 dark:text-amber-200/60 font-semibold">
                       🔒 {t("safe_checkout")}
                     </p>
-                    <div className="flex flex-wrap justify-center gap-2 text-[11px] font-bold text-emerald-700">
-                      <Link to="/refund-policy" className="hover:underline text-emerald-700 font-bold">{t("refund_policy")}</Link>
+                    <div className="flex flex-wrap justify-center gap-2 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                      <Link to="/refund-policy" className="hover:underline text-emerald-700 dark:text-emerald-400 font-bold">{t("refund_policy")}</Link>
                       <span>•</span>
-                      <Link to="/return-policy" className="hover:underline text-emerald-700 font-bold">{t("return_policy")}</Link>
+                      <Link to="/return-policy" className="hover:underline text-emerald-700 dark:text-emerald-400 font-bold">{t("return_policy")}</Link>
                       <span>•</span>
-                      <Link to="/privacy-policy" className="hover:underline text-emerald-700 font-bold">{t("privacy_policy")}</Link>
+                      <Link to="/privacy-policy" className="hover:underline text-emerald-700 dark:text-emerald-400 font-bold">{t("privacy_policy")}</Link>
                       <span>•</span>
-                      <Link to="/terms-conditions" className="hover:underline text-emerald-700 font-bold">{t("terms_conditions")}</Link>
+                      <Link to="/terms-conditions" className="hover:underline text-emerald-700 dark:text-emerald-400 font-bold">{t("terms_conditions")}</Link>
                     </div>
                   </div>
                 </div>

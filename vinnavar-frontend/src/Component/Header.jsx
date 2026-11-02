@@ -1497,7 +1497,7 @@ const Header = () => {
                     const itemTotal = item.unitPrice ? (item.unitPrice * item.quantity) : 0;
 
                     return (
-                      <li key={item.id} className="list-group-item py-3 px-0 border-top">
+                      <li key={item.id} className="list-group-item py-3 px-3 rounded-2xl mb-2.5 border border-slate-100 dark:border-amber-400/20 bg-slate-50/80 dark:bg-stone-900/90 text-slate-800 dark:text-amber-100 transition-all">
                         <div 
                           className="row align-items-center g-2" 
                           style={{ cursor: "pointer" }}
@@ -1507,28 +1507,28 @@ const Header = () => {
                             <img
                               src={imgUrl}
                               alt={product.name}
-                              className="img-fluid rounded border p-1"
+                              className="img-fluid rounded-xl border border-slate-200 dark:border-amber-400/25 p-1 bg-white dark:bg-stone-800"
                               style={{ maxHeight: "60px", objectFit: "contain" }}
                             />
                           </div>
                           <div className="col-5">
-                            <h6 className="mb-0 text-truncate" style={{ fontSize: "14px" }}>
+                            <h6 className="mb-0 text-truncate font-bold text-slate-900 dark:text-amber-100" style={{ fontSize: "14px" }}>
                               {product.nameTranslations?.[currentLang] || product.name}
                             </h6>
-                            <span className="badge bg-light text-success border">
+                            <span className="badge bg-slate-100 dark:bg-stone-800 text-emerald-700 dark:text-emerald-300 border border-slate-200 dark:border-amber-400/25 mt-1">
                               {variant.variantName}
                             </span>
-                            <div className="text-muted small mt-1">
+                            <div className="text-slate-500 dark:text-stone-300 small mt-1 font-medium">
                               ₹{item.unitPrice} x {item.quantity}
                             </div>
                           </div>
                           <div className="col-4 text-end">
-                            <div className="fw-bold text-dark fs-6">
+                            <div className="fw-bold text-slate-900 dark:text-amber-400 fs-6">
                               ₹{itemTotal.toLocaleString('en-IN')}
                             </div>
                             <button
                               type="button"
-                              className="btn btn-link text-danger p-0 mt-1 border-0 small text-decoration-none"
+                              className="btn btn-link text-danger dark:text-rose-400 p-0 mt-1 border-0 small text-decoration-none"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleRemoveCartItem(item.id);
@@ -1550,10 +1550,10 @@ const Header = () => {
                 const totalPayable = cart.totalAmount ?? (cart.subtotal || 0);
 
                 return (
-                  <div className="border-top pt-3 mt-2">
+                  <div className="border-top pt-3 mt-2 dark:border-amber-400/20">
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                      <span className="fw-bold fs-6">{t("total_payable", "Total Payable")} <br/><span className="text-muted" style={{fontSize: "12px"}}>({t("inclusive_all", "All-Inclusive Price")})</span></span>
-                      <span className="fw-bold fs-5 text-success">
+                      <span className="fw-bold fs-6 text-slate-900 dark:text-amber-100">{t("total_payable", "Total Payable")} <br/><span className="text-muted dark:text-stone-400" style={{fontSize: "12px"}}>({t("inclusive_all", "All-Inclusive Price")})</span></span>
+                      <span className="fw-bold fs-5 text-success dark:text-amber-400">
                         ₹{totalPayable.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>

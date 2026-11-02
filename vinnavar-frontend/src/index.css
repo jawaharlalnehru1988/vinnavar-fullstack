@@ -1169,16 +1169,48 @@ html.dark textarea:focus {
 /* Modals & Offcanvas in Dark Mode */
 html.dark .modal-content,
 html.dark .offcanvas {
-  background-color: #0f172a !important;
-  color: #f1f5f9 !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: #1a120e !important;
+  color: #fef3c7 !important;
+  border: 1px solid rgba(251, 191, 36, 0.22) !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
 }
 
 html.dark .modal-header,
 html.dark .modal-footer,
 html.dark .offcanvas-header {
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: #241a14 !important;
+  border-color: rgba(251, 191, 36, 0.2) !important;
+  color: #fef3c7 !important;
+}
+
+html.dark .offcanvas-body {
+  background-color: #1a120e !important;
+  color: #fef3c7 !important;
+}
+
+/* Bootstrap List Groups in Dark Mode (Cart Drawer Items) */
+html.dark .list-group-item {
+  background-color: rgba(36, 26, 20, 0.95) !important;
+  border-color: rgba(251, 191, 36, 0.2) !important;
+  color: #fef3c7 !important;
+}
+
+html.dark .offcanvas .list-group-item h6 {
+  color: #fef3c7 !important;
+}
+
+html.dark .offcanvas .list-group-item .fw-bold.text-dark {
+  color: #fbbf24 !important;
+}
+
+html.dark .offcanvas .list-group-item .text-muted {
+  color: #d6d3d1 !important;
+}
+
+html.dark .offcanvas .alert-success {
+  background-color: rgba(6, 78, 59, 0.45) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  color: #6ee7b7 !important;
 }
 
 html.dark .btn-close {
