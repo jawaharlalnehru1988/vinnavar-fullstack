@@ -350,7 +350,7 @@ const ProductCheckOut = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-50 dark:bg-transparent py-8 px-4 sm:px-6 lg:px-8">
             <ScrollToTop />
             {loaderStatus ? (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500 font-medium">
@@ -388,22 +388,22 @@ const ProductCheckOut = () => {
                             <div className="lg:col-span-2 space-y-6">
                                 
                                 {/* 1. Shipping Address Card */}
-                                <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
-                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-                                        <span className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-sm">
+                                <div className="bg-white dark:bg-stone-900/85 rounded-3xl p-6 sm:p-8 border border-slate-100 dark:border-amber-400/20 shadow-sm space-y-6 backdrop-blur-xs">
+                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-amber-400/20">
+                                        <span className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-black text-sm border border-emerald-200/50 dark:border-emerald-700/50">
                                             1
                                         </span>
-                                        <h2 className="font-extrabold text-slate-900 text-base">
+                                        <h2 className="font-extrabold text-slate-900 dark:text-amber-100 text-base">
                                             {t("shipping_delivery_addr")}
                                         </h2>
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">{t("full_name")}</label>
+                                            <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">{t("full_name")}</label>
                                             <input
                                                 type="text"
-                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-stone-800/90 border border-slate-200 dark:border-amber-400/25 rounded-xl text-slate-900 dark:text-amber-100 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-stone-400"
                                                 name="name"
                                                 placeholder={t("name_placeholder")}
                                                 value={shippingForm.name}
@@ -413,10 +413,10 @@ const ProductCheckOut = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">{t("mobile_phone")}</label>
+                                            <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">{t("mobile_phone")}</label>
                                             <input
                                                 type="tel"
-                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-stone-800/90 border border-slate-200 dark:border-amber-400/25 rounded-xl text-slate-900 dark:text-amber-100 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-stone-400"
                                                 name="phone"
                                                 placeholder={t("phone_placeholder")}
                                                 value={shippingForm.phone}
@@ -426,10 +426,10 @@ const ProductCheckOut = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">{t("email_optional")}</label>
+                                            <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">{t("email_optional")}</label>
                                             <input
                                                 type="email"
-                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-stone-800/90 border border-slate-200 dark:border-amber-400/25 rounded-xl text-slate-900 dark:text-amber-100 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-stone-400"
                                                 name="email"
                                                 placeholder={t("email_placeholder")}
                                                 value={shippingForm.email}
@@ -438,10 +438,10 @@ const ProductCheckOut = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">{t("gstin_optional")}</label>
+                                            <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">{t("gstin_optional")}</label>
                                             <input
                                                 type="text"
-                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 uppercase font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-stone-800/90 border border-slate-200 dark:border-amber-400/25 rounded-xl text-slate-900 dark:text-amber-100 uppercase font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-stone-400"
                                                 name="gstin"
                                                 placeholder="33AAAAA0000A1Z5"
                                                 value={shippingForm.gstin}
@@ -450,9 +450,9 @@ const ProductCheckOut = () => {
                                         </div>
 
                                         <div className="sm:col-span-2">
-                                            <label className="block font-bold text-slate-700 mb-1">{t("street_addr")}</label>
+                                            <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">{t("street_addr")}</label>
                                             <textarea
-                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-stone-800/90 border border-slate-200 dark:border-amber-400/25 rounded-xl text-slate-900 dark:text-amber-100 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-stone-400"
                                                 name="street"
                                                 rows="2"
                                                 placeholder="#16, MS Nagar Phase 2, Kurumanthangal Road"
@@ -464,10 +464,10 @@ const ProductCheckOut = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">{t("city_town")}</label>
+                                            <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">{t("city_town")}</label>
                                             <input
                                                 type="text"
-                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-stone-800/90 border border-slate-200 dark:border-amber-400/25 rounded-xl text-slate-900 dark:text-amber-100 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-stone-400"
                                                 name="city"
                                                 placeholder="Arani"
                                                 value={shippingForm.city}
@@ -476,10 +476,10 @@ const ProductCheckOut = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">{t("pincode")}</label>
+                                            <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">{t("pincode")}</label>
                                             <input
                                                 type="text"
-                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-stone-800/90 border border-slate-200 dark:border-amber-400/25 rounded-xl text-slate-900 dark:text-amber-100 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-stone-400"
                                                 name="pincode"
                                                 placeholder="632314"
                                                 value={shippingForm.pincode}
@@ -489,7 +489,7 @@ const ProductCheckOut = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">
+                                            <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">
                                                 {t("state_label", "State")} <span className="text-red-500">*</span>
                                             </label>
                                             <IndianStateSelect
@@ -502,7 +502,7 @@ const ProductCheckOut = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">
+                                            <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">
                                                 {t("country_label", "Country")}
                                             </label>
                                             <div className="relative">
@@ -511,7 +511,7 @@ const ProductCheckOut = () => {
                                                     readOnly
                                                     disabled
                                                     value="India"
-                                                    className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-700 font-bold cursor-not-allowed select-none pr-10 text-xs sm:text-sm"
+                                                    className="w-full px-4 py-2.5 bg-slate-100 dark:bg-stone-800 border border-slate-200 dark:border-amber-400/25 rounded-xl text-slate-700 dark:text-amber-200 font-bold cursor-not-allowed select-none pr-10 text-xs sm:text-sm"
                                                 />
                                                 <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-base select-none pointer-events-none">
                                                     🇮🇳
@@ -522,17 +522,17 @@ const ProductCheckOut = () => {
                                 </div>
 
                                 {/* 2. Billing Address Card */}
-                                <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
-                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-                                        <span className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-sm">
+                                <div className="bg-white dark:bg-stone-900/85 rounded-3xl p-6 sm:p-8 border border-slate-100 dark:border-amber-400/20 shadow-sm space-y-6 backdrop-blur-xs">
+                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-amber-400/20">
+                                        <span className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-black text-sm border border-emerald-200/50 dark:border-emerald-700/50">
                                             2
                                         </span>
-                                        <h2 className="font-extrabold text-slate-900 text-base">
+                                        <h2 className="font-extrabold text-slate-900 dark:text-amber-100 text-base">
                                             {t("billing_addr")}
                                         </h2>
                                     </div>
 
-                                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80">
+                                    <div className="bg-slate-50 dark:bg-stone-800/80 rounded-2xl p-4 border border-slate-200/80 dark:border-amber-400/20">
                                         <label className="flex items-center gap-3 cursor-pointer select-none">
                                             <input
                                                 type="checkbox"
@@ -540,7 +540,7 @@ const ProductCheckOut = () => {
                                                 onChange={handleSameAsShippingToggle}
                                                 className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                                             />
-                                            <span className="text-xs font-bold text-slate-900">
+                                            <span className="text-xs font-bold text-slate-900 dark:text-amber-100">
                                                 {t("billing_same_as_shipping")}
                                             </span>
                                         </label>
@@ -549,10 +549,10 @@ const ProductCheckOut = () => {
                                     {!sameAsShipping && (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                                             <div>
-                                                <label className="block font-bold text-slate-700 mb-1">{t("billing_full_name")}</label>
+                                                <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">{t("billing_full_name")}</label>
                                                 <input
                                                     type="text"
-                                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-stone-800/90 border border-slate-200 dark:border-amber-400/25 rounded-xl text-slate-900 dark:text-amber-100 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-stone-400"
                                                     name="name"
                                                     value={billingForm.name}
                                                     onChange={handleBillingChange}
@@ -561,10 +561,10 @@ const ProductCheckOut = () => {
                                             </div>
 
                                             <div>
-                                                <label className="block font-bold text-slate-700 mb-1">{t("billing_phone")}</label>
+                                                <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">{t("billing_phone")}</label>
                                                 <input
                                                     type="tel"
-                                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-stone-800/90 border border-slate-200 dark:border-amber-400/25 rounded-xl text-slate-900 dark:text-amber-100 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-stone-400"
                                                     name="phone"
                                                     value={billingForm.phone}
                                                     onChange={handleBillingChange}
@@ -573,9 +573,9 @@ const ProductCheckOut = () => {
                                             </div>
 
                                             <div className="sm:col-span-2">
-                                                <label className="block font-bold text-slate-700 mb-1">{t("billing_street")}</label>
+                                                <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">{t("billing_street")}</label>
                                                 <textarea
-                                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-stone-800/90 border border-slate-200 dark:border-amber-400/25 rounded-xl text-slate-900 dark:text-amber-100 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-stone-400"
                                                     name="street"
                                                     rows="2"
                                                     value={billingForm.street}
@@ -586,10 +586,10 @@ const ProductCheckOut = () => {
                                             </div>
 
                                             <div>
-                                                <label className="block font-bold text-slate-700 mb-1">{t("city_town")}</label>
+                                                <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">{t("city_town")}</label>
                                                 <input
                                                     type="text"
-                                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-stone-800/90 border border-slate-200 dark:border-amber-400/25 rounded-xl text-slate-900 dark:text-amber-100 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-stone-400"
                                                     name="city"
                                                     value={billingForm.city}
                                                     onChange={handleBillingChange}
@@ -597,10 +597,10 @@ const ProductCheckOut = () => {
                                             </div>
 
                                             <div>
-                                                <label className="block font-bold text-slate-700 mb-1">{t("pincode")}</label>
+                                                <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">{t("pincode")}</label>
                                                 <input
                                                     type="text"
-                                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-stone-800/90 border border-slate-200 dark:border-amber-400/25 rounded-xl text-slate-900 dark:text-amber-100 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-stone-400"
                                                     name="pincode"
                                                     value={billingForm.pincode}
                                                     onChange={handleBillingChange}
@@ -609,7 +609,7 @@ const ProductCheckOut = () => {
                                             </div>
 
                                             <div>
-                                                <label className="block font-bold text-slate-700 mb-1">
+                                                <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">
                                                     {t("billing_state", "Billing State")} <span className="text-red-500">*</span>
                                                 </label>
                                                 <IndianStateSelect
@@ -622,7 +622,7 @@ const ProductCheckOut = () => {
                                             </div>
 
                                             <div>
-                                                <label className="block font-bold text-slate-700 mb-1">
+                                                <label className="block font-bold text-slate-700 dark:text-amber-200 mb-1">
                                                     {t("country_label", "Country")}
                                                 </label>
                                                 <div className="relative">
@@ -631,7 +631,7 @@ const ProductCheckOut = () => {
                                                         readOnly
                                                         disabled
                                                         value="India"
-                                                        className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-700 font-bold cursor-not-allowed select-none pr-10 text-xs sm:text-sm"
+                                                        className="w-full px-4 py-2.5 bg-slate-100 dark:bg-stone-800 border border-slate-200 dark:border-amber-400/25 rounded-xl text-slate-700 dark:text-amber-200 font-bold cursor-not-allowed select-none pr-10 text-xs sm:text-sm"
                                                     />
                                                     <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-base select-none pointer-events-none">
                                                         🇮🇳
@@ -643,18 +643,18 @@ const ProductCheckOut = () => {
                                 </div>
 
                                 {/* 3. Payment Method Card */}
-                                <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-4">
-                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-                                        <span className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-sm">
+                                <div className="bg-white dark:bg-stone-900/85 rounded-3xl p-6 sm:p-8 border border-slate-100 dark:border-amber-400/20 shadow-sm space-y-4 backdrop-blur-xs">
+                                    <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-amber-400/20">
+                                        <span className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-black text-sm border border-emerald-200/50 dark:border-emerald-700/50">
                                             3
                                         </span>
-                                        <h2 className="font-extrabold text-slate-900 text-base">
+                                        <h2 className="font-extrabold text-slate-900 dark:text-amber-100 text-base">
                                             {t("payment_method")}
                                         </h2>
                                     </div>
 
                                     <div 
-                                        className={`p-4 rounded-2xl border flex items-center justify-between gap-4 cursor-pointer transition-all ${paymentMethod === 'RAZORPAY' ? 'bg-emerald-50/60 border-emerald-200/80' : 'bg-slate-50 border-slate-200/80'}`}
+                                        className={`p-4 rounded-2xl border flex items-center justify-between gap-4 cursor-pointer transition-all ${paymentMethod === 'RAZORPAY' ? 'bg-emerald-50/60 dark:bg-emerald-950/40 border-emerald-200/80 dark:border-emerald-600/60' : 'bg-slate-50 dark:bg-stone-800/80 border-slate-200/80 dark:border-amber-400/20'}`}
                                         onClick={() => setPaymentMethod('RAZORPAY')}
                                     >
                                         <div className="flex items-center gap-3">
@@ -662,10 +662,10 @@ const ProductCheckOut = () => {
                                                 {paymentMethod === 'RAZORPAY' && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
                                             </div>
                                             <div>
-                                                <div className="font-bold text-slate-900 text-xs sm:text-sm">
+                                                <div className="font-bold text-slate-900 dark:text-amber-100 text-xs sm:text-sm">
                                                     {t("razorpay_title", "Razorpay Payment Gateway (UPI, Cards, NetBanking)")}
                                                 </div>
-                                                <div className="text-slate-500 text-[11px] mt-0.5">
+                                                <div className="text-slate-500 dark:text-stone-300 text-[11px] mt-0.5">
                                                     {t("razorpay_desc", "Pay securely via GPay, PhonePe, Paytm, Credit/Debit Cards, & NetBanking.")}
                                                 </div>
                                             </div>
@@ -676,7 +676,7 @@ const ProductCheckOut = () => {
                                     </div>
                                     
                                     <div 
-                                        className={`p-4 rounded-2xl border flex items-center justify-between gap-4 cursor-pointer transition-all ${paymentMethod === 'COD' ? 'bg-emerald-50/60 border-emerald-200/80' : 'bg-slate-50 border-slate-200/80'}`}
+                                        className={`p-4 rounded-2xl border flex items-center justify-between gap-4 cursor-pointer transition-all ${paymentMethod === 'COD' ? 'bg-emerald-50/60 dark:bg-emerald-950/40 border-emerald-200/80 dark:border-emerald-600/60' : 'bg-slate-50 dark:bg-stone-800/80 border-slate-200/80 dark:border-amber-400/20'}`}
                                         onClick={() => setPaymentMethod('COD')}
                                     >
                                         <div className="flex items-center gap-3">
@@ -684,10 +684,10 @@ const ProductCheckOut = () => {
                                                 {paymentMethod === 'COD' && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
                                             </div>
                                             <div>
-                                                <div className="font-bold text-slate-900 text-xs sm:text-sm">
+                                                <div className="font-bold text-slate-900 dark:text-amber-100 text-xs sm:text-sm">
                                                     {t("cod_title", "Cash on Delivery (COD)")}
                                                 </div>
-                                                <div className="text-slate-500 text-[11px] mt-0.5">
+                                                <div className="text-slate-500 dark:text-stone-300 text-[11px] mt-0.5">
                                                     {t("cod_desc", "Pay with cash upon delivery.")}
                                                 </div>
                                             </div>
@@ -699,8 +699,8 @@ const ProductCheckOut = () => {
 
                             {/* Right Column: Order Summary (1 col) */}
                             <div className="lg:col-span-1">
-                                <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-6 sticky top-24">
-                                    <h2 className="font-black text-slate-900 text-lg border-b border-slate-100 pb-3">
+                                <div className="bg-white dark:bg-stone-900/85 rounded-3xl p-6 border border-slate-100 dark:border-amber-400/20 shadow-sm space-y-6 sticky top-24 backdrop-blur-xs">
+                                    <h2 className="font-black text-slate-900 dark:text-amber-100 text-lg border-b border-slate-100 dark:border-amber-400/20 pb-3">
                                         {t("order_summary")}
                                     </h2>
 
@@ -718,7 +718,7 @@ const ProductCheckOut = () => {
 
                                                 return (
                                                     <>
-                                                        <div className="max-h-64 overflow-y-auto space-y-3 pr-1 divide-y divide-slate-100">
+                                                        <div className="max-h-64 overflow-y-auto space-y-3 pr-1 divide-y divide-slate-100 dark:divide-amber-400/15">
                                                             {cart.items.map((item) => {
                                                                 const product = item.product || {};
                                                                 const variant = item.variant || {};
@@ -731,18 +731,18 @@ const ProductCheckOut = () => {
                                                                             <img
                                                                                 src={imgUrl}
                                                                                 alt={product.name}
-                                                                                className="w-10 h-10 object-contain rounded-xl bg-slate-50 border border-slate-100 p-1"
+                                                                                className="w-10 h-10 object-contain rounded-xl bg-slate-50 dark:bg-stone-800 border border-slate-100 dark:border-amber-400/20 p-1"
                                                                             />
                                                                             <div>
-                                                                                <h4 className="font-bold text-slate-900 text-xs truncate max-w-[150px]">
+                                                                                <h4 className="font-bold text-slate-900 dark:text-amber-100 text-xs truncate max-w-[150px]">
                                                                                     {product.nameTranslations?.[currentLang] || product.name}
                                                                                 </h4>
-                                                                                <span className="text-[10px] text-emerald-700 font-semibold block">
+                                                                                <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold block">
                                                                                     {variant.variantName} x {item.quantity}
                                                                                 </span>
                                                                             </div>
                                                                         </div>
-                                                                        <span className="font-extrabold text-slate-900 text-sm">
+                                                                        <span className="font-extrabold text-slate-900 dark:text-amber-400 text-sm">
                                                                             ₹{itemTotal.toFixed(2)}
                                                                         </span>
                                                                     </div>
@@ -750,17 +750,17 @@ const ProductCheckOut = () => {
                                                             })}
                                                         </div>
                                                         <div className="space-y-2 text-xs font-medium pt-2">
-                                                            <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-sm font-black text-slate-900">
+                                                            <div className="pt-3 border-t border-slate-200 dark:border-amber-400/20 flex justify-between items-center text-sm font-black text-slate-900">
                                                                 <div>
-                                                                    <span className="text-slate-800 text-base">{t("total_payable", "Total Amount")}</span><br/>
-                                                                    <span className="text-[11px] font-semibold text-emerald-700">({t("inclusive_all", "All-Inclusive Price")})</span>
+                                                                    <span className="text-slate-800 dark:text-amber-100 text-base">{t("total_payable", "Total Amount")}</span><br/>
+                                                                    <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">({t("inclusive_all", "All-Inclusive Price")})</span>
                                                                 </div>
-                                                                <span className="text-2xl text-emerald-700 font-black">
+                                                                <span className="text-2xl text-emerald-700 dark:text-amber-400 font-black">
                                                                     ₹{totalPayable.toFixed(2)}
                                                                 </span>
                                                             </div>
                                                             {paymentMethod === 'COD' && (
-                                                                <p className="text-[11px] font-semibold text-amber-700 pt-1 leading-snug">
+                                                                <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 pt-1 leading-snug">
                                                                     {t("cod_charges_notice", "*COD Charges Payable to Delivery Partner- If Order is placed on COD Mode.")}
                                                                 </p>
                                                             )}
@@ -769,8 +769,8 @@ const ProductCheckOut = () => {
                                                 );
                                             })()}
 
-                                            <div className="mb-4 p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-center">
-                                                <p className="text-[12px] font-bold text-emerald-800">
+                                            <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-800/50 rounded-xl text-center">
+                                                <p className="text-[12px] font-bold text-emerald-800 dark:text-emerald-300">
                                                     Except Tamilnadu, Expected Delivery Days :  5-8 Days
                                                 </p>
                                             </div>
@@ -787,7 +787,7 @@ const ProductCheckOut = () => {
                                             </button>
 
                                             <div className="text-center">
-                                                <p className="text-[11px] text-slate-400 font-semibold">
+                                                <p className="text-[11px] text-slate-400 dark:text-stone-400 font-semibold">
                                                     {t("encrypted_verified")}
                                                 </p>
                                             </div>

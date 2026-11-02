@@ -1410,6 +1410,22 @@ html.dark .contact-support {
   color: #fef3c7 !important;
 }
 
+/* Form Labels & Controls in Dark Mode */
+html.dark label,
+html.dark label.text-slate-700,
+html.dark label.text-slate-800,
+html.dark label.text-slate-600,
+html.dark label.text-gray-700,
+html.dark label.text-gray-800 {
+  color: #fde68a !important;
+}
+
+html.dark form input::placeholder,
+html.dark form textarea::placeholder {
+  color: #a8a29e !important;
+}
+
+
 
 
 

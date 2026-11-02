@@ -184,10 +184,10 @@ const IndianStateSelect = ({
   }, [highlightedIndex, isOpen]);
 
   const defaultTailwindInputClass =
-    "w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all pr-10 text-xs sm:text-sm";
+    "w-full px-4 py-2.5 bg-slate-50 dark:bg-stone-800/90 border border-slate-200 dark:border-amber-400/25 rounded-xl text-slate-900 dark:text-amber-100 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all pr-10 text-xs sm:text-sm";
 
   const defaultBootstrapInputClass =
-    "form-control form-control-sm pe-4";
+    "form-control form-control-sm pe-4 dark:bg-stone-800 dark:border-amber-400/25 dark:text-amber-100";
 
   const appliedInputClass = className
     ? className
@@ -265,11 +265,11 @@ const IndianStateSelect = ({
       {isOpen && !disabled && (
         <div
           ref={listRef}
-          className="absolute left-0 right-0 top-full mt-1.5 max-h-56 overflow-y-auto bg-white rounded-xl shadow-2xl border border-slate-200 z-50 py-1.5 text-xs sm:text-sm divide-y divide-slate-50"
+          className="absolute left-0 right-0 top-full mt-1.5 max-h-56 overflow-y-auto bg-white dark:bg-stone-900 rounded-xl shadow-2xl border border-slate-200 dark:border-amber-400/25 z-50 py-1.5 text-xs sm:text-sm divide-y divide-slate-50 dark:divide-amber-400/10"
           style={{ boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)" }}
         >
           {filteredStates.length === 0 ? (
-            <div className="px-4 py-3 text-center text-slate-400 font-medium italic">
+            <div className="px-4 py-3 text-center text-slate-400 dark:text-stone-400 font-medium italic">
               No matching Indian state found
             </div>
           ) : (
@@ -288,15 +288,15 @@ const IndianStateSelect = ({
                   onMouseEnter={() => setHighlightedIndex(idx)}
                   className={`px-3.5 py-2 cursor-pointer flex items-center justify-between transition-colors ${
                     isHighlighted
-                      ? "bg-emerald-50 text-emerald-900 font-semibold"
+                      ? "bg-emerald-50 dark:bg-stone-800 text-emerald-900 dark:text-amber-200 font-semibold"
                       : isSelected
-                      ? "bg-slate-50 text-emerald-700 font-semibold"
-                      : "text-slate-700 hover:bg-slate-50"
+                      ? "bg-slate-50 dark:bg-stone-800 text-emerald-700 dark:text-emerald-400 font-semibold"
+                      : "text-slate-700 dark:text-amber-100 hover:bg-slate-50 dark:hover:bg-stone-800"
                   }`}
                 >
                   <span className="truncate">{state}</span>
                   {isSelected && (
-                    <span className="text-emerald-600 font-black text-xs ml-2">✓</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-black text-xs ml-2">✓</span>
                   )}
                 </div>
               );
