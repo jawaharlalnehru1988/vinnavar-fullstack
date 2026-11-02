@@ -48,11 +48,11 @@ const HelpCenter = () => {
       <div className="row">
         <div className="col-md-12 mb-6">
           <div className="section-head text-center mt-8">
-            <h1 className="h3style" style={{ color: "green" }}>
+            <h1 className="h3style text-emerald-700 dark:text-amber-300 font-black">
               Help Center
             </h1>
-            <div className="wt-separator bg-primarys"></div>
-            <div className="wt-separator2 bg-primarys"></div>
+            <div className="wt-separator bg-primarys dark:bg-amber-400"></div>
+            <div className="wt-separator2 bg-primarys dark:bg-amber-400"></div>
             {/* <p>Connecting with entrepreneurs online, is just a few clicks away.</p> */}
           </div>
         </div>

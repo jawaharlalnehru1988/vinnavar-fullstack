@@ -1325,6 +1325,92 @@ html.dark article .w-7.h-7.rounded-full.bg-emerald-700 {
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.4) !important;
 }
 
+/* =========================================================
+   FAQ (FREQUENTLY ASKED QUESTIONS) ACCORDION IN DARK MODE
+   ========================================================= */
+html.dark .faq-container,
+html.dark .help-container {
+  background-color: transparent !important;
+}
+
+html.dark .faq-item {
+  background-color: rgba(36, 26, 20, 0.92) !important;
+  border: 1px solid rgba(251, 191, 36, 0.22) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5) !important;
+  transition: all 0.3s ease !important;
+}
+
+html.dark .faq-item:hover {
+  border-color: rgba(251, 191, 36, 0.45) !important;
+  box-shadow: 0 8px 25px -4px rgba(251, 191, 36, 0.12), 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.dark .faq-question {
+  background: transparent !important;
+  color: #fef3c7 !important;
+  font-weight: 700 !important;
+  font-size: 1.05rem !important;
+  padding: 18px 24px !important;
+  transition: background-color 0.2s ease, color 0.2s ease !important;
+}
+
+html.dark .faq-question:hover {
+  background-color: rgba(55, 40, 32, 0.5) !important;
+  color: #fbbf24 !important;
+}
+
+html.dark .faq-icon {
+  color: #fbbf24 !important;
+  font-weight: 700 !important;
+}
+
+html.dark .faq-icon.open {
+  color: #34d399 !important;
+}
+
+html.dark .faq-answer {
+  background-color: rgba(28, 20, 15, 0.85) !important;
+  color: #fef3c7 !important;
+  border-top: 1px solid rgba(251, 191, 36, 0.15) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.7 !important;
+}
+
+html.dark .faq-answer.show {
+  padding: 16px 24px 22px !important;
+  opacity: 1 !important;
+}
+
+html.dark .faq-answer p {
+  color: #fde68a !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+  margin: 0 !important;
+}
+
+/* Help Center Cards in Dark Mode */
+html.dark .help-card {
+  background-color: rgba(36, 26, 20, 0.9) !important;
+  border: 1px solid rgba(251, 191, 36, 0.22) !important;
+  border-radius: 16px !important;
+  color: #fef3c7 !important;
+}
+
+html.dark .help-topic {
+  color: #fbbf24 !important;
+}
+
+html.dark .help-faq-item p {
+  color: #fde68a !important;
+}
+
+html.dark .contact-support {
+  background: rgba(36, 26, 20, 0.9) !important;
+  border: 1px solid rgba(251, 191, 36, 0.22) !important;
+  color: #fef3c7 !important;
+}
+
+
 
 
 
