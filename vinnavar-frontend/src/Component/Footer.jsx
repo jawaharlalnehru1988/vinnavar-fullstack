@@ -128,14 +128,14 @@ const Footer = () => {
                     </h6>
                     <div className="d-flex flex-column gap-3 text-secondary small">
                       <div>
-                        <span className="fw-bold text-dark d-block mb-1">GSTIN ID</span>
-                        <span className="font-monospace text-dark bg-light border rounded px-2.5 py-1.5 d-inline-block">
+                        <span className="fw-bold text-dark dark:text-amber-100 d-block mb-1">GSTIN ID</span>
+                        <span className="font-monospace text-slate-800 dark:text-amber-300 bg-white dark:bg-stone-900/90 border border-slate-200 dark:border-amber-400/40 rounded px-2.5 py-1.5 d-inline-block shadow-xs">
                           33AFOPL7097M1ZN
                         </span>
                       </div>
                       <div>
-                        <span className="fw-bold text-dark d-block mb-1">FSSAI ID</span>
-                        <span className="font-monospace text-dark bg-light border rounded px-2.5 py-1.5 d-inline-block">
+                        <span className="fw-bold text-dark dark:text-amber-100 d-block mb-1">FSSAI ID</span>
+                        <span className="font-monospace text-slate-800 dark:text-amber-300 bg-white dark:bg-stone-900/90 border border-slate-200 dark:border-amber-400/40 rounded px-2.5 py-1.5 d-inline-block shadow-xs">
                           22425479000675
                         </span>
                       </div>
@@ -208,8 +208,8 @@ const Footer = () => {
                       <div className="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-end gap-3">
                         
                         {/* UPI & Wallets */}
-                        <div className="bg-light border rounded-3 p-2.5 px-3 d-flex align-items-center gap-2.5">
-                          <span className="small fw-bold text-secondary text-uppercase me-1" style={{ fontSize: "0.7rem", letterSpacing: "0.5px" }}>UPI & Apps:</span>
+                        <div className="bg-light dark:bg-stone-900/90 border border-slate-200 dark:border-amber-400/30 rounded-3 p-2.5 px-3 d-flex align-items-center gap-2.5">
+                          <span className="small fw-bold text-secondary dark:text-amber-200/90 text-uppercase me-1" style={{ fontSize: "0.7rem", letterSpacing: "0.5px" }}>UPI & Apps:</span>
                           <div className="d-flex align-items-center gap-2.5 flex-wrap justify-content-center">
                             <img src={getImageUrl("/media/site/paytm.svg")} alt="Paytm" title="Paytm" style={{ height: "20px", width: "auto", objectFit: "contain" }} />
                             <img src={getImageUrl("/media/site/phonepe.svg")} alt="PhonePe" title="PhonePe" style={{ height: "20px", width: "auto", objectFit: "contain" }} />
@@ -219,8 +219,8 @@ const Footer = () => {
                         </div>
 
                         {/* Debit / Credit Cards */}
-                        <div className="bg-light border rounded-3 p-2.5 px-3 d-flex align-items-center gap-2.5">
-                          <span className="small fw-bold text-secondary text-uppercase me-1" style={{ fontSize: "0.7rem", letterSpacing: "0.5px" }}>Cards:</span>
+                        <div className="bg-light dark:bg-stone-900/90 border border-slate-200 dark:border-amber-400/30 rounded-3 p-2.5 px-3 d-flex align-items-center gap-2.5">
+                          <span className="small fw-bold text-secondary dark:text-amber-200/90 text-uppercase me-1" style={{ fontSize: "0.7rem", letterSpacing: "0.5px" }}>Cards:</span>
                           <div className="d-flex align-items-center gap-2.5 flex-wrap justify-content-center">
                             <img src={getImageUrl("/media/site/visa.svg")} alt="Visa" title="Visa Card" style={{ height: "20px", width: "auto", objectFit: "contain" }} />
                             <img src={getImageUrl("/media/site/mastercard.svg")} alt="Mastercard" title="Mastercard" style={{ height: "20px", width: "auto", objectFit: "contain" }} />
