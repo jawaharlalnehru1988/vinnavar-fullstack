@@ -15,10 +15,10 @@
 }
 
 html.dark {
-  --site-bg:   #090e17;   /* deep obsidian night canvas */
-  --site-text: #e2e8f0;   /* crisp luminous soft slate */
-  --card-bg:   #0f172a;   /* sleek nocturnal card surface */
-  --card-border: rgba(255, 255, 255, 0.08);
+  --site-bg:   #1c140f;   /* warm roasted hazelnut espresso brown */
+  --site-text: #fef3c7;   /* warm creamy sand text */
+  --card-bg:   #271d17;   /* deep rich mocha card surface */
+  --card-border: rgba(251, 191, 36, 0.22);
 }
 
 html,
@@ -36,16 +36,15 @@ body {
 
 /* =========================================================
    DARK MODE AMBIENT BACKGROUND & RUNNING LINE ART
-   Layer 1 (::before): Wandering ethereal color auras
-   Layer 2 (::after): Running animated line art wave & geometric grid
+   Warm brownish ambient base + Running golden/emerald vector lines
    ========================================================= */
 html.dark body {
-  background-color: #070b13 !important;
+  background-color: #18110d !important;
   position: relative;
   overflow-x: hidden;
 }
 
-/* Layer 1: Ambient Nocturnal Glow Mesh */
+/* Layer 1: Ambient Warm Earth & Bronze Glow Mesh */
 html.dark body::before {
   content: "";
   position: fixed;
@@ -54,10 +53,10 @@ html.dark body::before {
   right: 0;
   bottom: 0;
   background:
-    radial-gradient(ellipse 80% 55% at 15% 10%, rgba(16, 185, 129, 0.18), transparent 70%),
-    radial-gradient(ellipse 70% 50% at 85% 30%, rgba(59, 130, 246, 0.16), transparent 65%),
-    radial-gradient(ellipse 75% 60% at 50% 85%, rgba(245, 158, 11, 0.12), transparent 70%),
-    radial-gradient(ellipse 60% 45% at 20% 90%, rgba(168, 85, 247, 0.12), transparent 65%);
+    radial-gradient(ellipse 85% 60% at 15% 15%, rgba(217, 119, 6, 0.26), transparent 70%),
+    radial-gradient(ellipse 75% 55% at 85% 25%, rgba(180, 83, 9, 0.28), transparent 65%),
+    radial-gradient(ellipse 80% 65% at 50% 85%, rgba(245, 158, 11, 0.22), transparent 70%),
+    radial-gradient(ellipse 65% 50% at 20% 90%, rgba(16, 185, 129, 0.18), transparent 65%);
   pointer-events: none;
   z-index: 0;
   animation: ambientMeshDrift 20s ease-in-out infinite alternate;
@@ -69,7 +68,7 @@ html.dark body::before {
   100% { transform: scale(1) translateY(0); }
 }
 
-/* Layer 2: Running Animated Line Art Grid & Wave Vectors */
+/* Layer 2: Running Animated Line Art Grid & Wave Vectors (High Visibility) */
 html.dark body::after {
   content: "";
   position: fixed;
@@ -78,18 +77,16 @@ html.dark body::after {
   right: 0;
   bottom: 0;
   background-image:
-    /* Flowing animated wave vector line art */
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cpath d='M0 80 Q 40 30 80 80 T 160 80' fill='none' stroke='rgba(16,185,129,0.22)' stroke-width='1.5' stroke-dasharray='8,6'/%3E%3Cpath d='M0 40 Q 40 90 80 40 T 160 40' fill='none' stroke='rgba(59,130,246,0.18)' stroke-width='1.2' stroke-dasharray='12,8'/%3E%3Cpath d='M0 120 Q 40 70 80 120 T 160 120' fill='none' stroke='rgba(245,158,11,0.15)' stroke-width='1.2' stroke-dasharray='6,10'/%3E%3Ccircle cx='80' cy='80' r='2' fill='rgba(16,185,129,0.35)'/%3E%3Ccircle cx='40' cy='30' r='1.5' fill='rgba(59,130,246,0.35)'/%3E%3Ccircle cx='120' cy='120' r='1.5' fill='rgba(245,158,11,0.35)'/%3E%3C/svg%3E"),
+    /* Flowing animated wave vector line art with high-contrast golden & emerald paths and bright star nodes */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cpath d='M0 80 Q 40 25 80 80 T 160 80' fill='none' stroke='rgba(251,191,36,0.60)' stroke-width='2' stroke-dasharray='10,6'/%3E%3Cpath d='M0 40 Q 40 95 80 40 T 160 40' fill='none' stroke='rgba(52,211,153,0.52)' stroke-width='1.8' stroke-dasharray='12,8'/%3E%3Cpath d='M0 120 Q 40 65 80 120 T 160 120' fill='none' stroke='rgba(245,158,11,0.55)' stroke-width='1.8' stroke-dasharray='8,8'/%3E%3Ccircle cx='80' cy='80' r='3.5' fill='rgba(251,191,36,0.92)'/%3E%3Ccircle cx='40' cy='25' r='3' fill='rgba(52,211,153,0.88)'/%3E%3Ccircle cx='120' cy='120' r='3' fill='rgba(245,158,11,0.88)'/%3E%3C/svg%3E"),
     /* Running isometric / diagonal grid line art */
-    linear-gradient(135deg, rgba(16, 185, 129, 0.10) 1px, transparent 1px),
-    linear-gradient(45deg, rgba(59, 130, 246, 0.08) 1px, transparent 1px);
+    linear-gradient(135deg, rgba(251, 191, 36, 0.16) 1.2px, transparent 1.2px),
+    linear-gradient(45deg, rgba(52, 211, 153, 0.14) 1.2px, transparent 1.2px);
   background-size: 160px 160px, 48px 48px, 48px 48px;
-  animation: runningLineArtFlow 24s linear infinite;
+  animation: runningLineArtFlow 22s linear infinite;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.95;
-  mask-image: radial-gradient(ellipse 92% 88% at center, black 50%, rgba(0, 0, 0, 0.6) 85%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 92% 88% at center, black 50%, rgba(0, 0, 0, 0.6) 85%, transparent 100%);
+  opacity: 1;
 }
 
 @keyframes runningLineArtFlow {
@@ -701,84 +698,84 @@ html.dark .theme-toggle-btn:hover {
   box-shadow: 0 0 22px rgba(251, 191, 36, 0.5) !important;
 }
 
-/* Header & Navigation in Dark Mode */
+/* Header & Navigation in Dark Mode (Warm Earth Espresso) */
 html.dark header {
-  background-color: rgba(9, 14, 23, 0.92) !important;
+  background-color: rgba(26, 18, 14, 0.94) !important;
   backdrop-filter: blur(16px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.18) !important;
 }
 
 html.dark header .bg-white\/95,
 html.dark .lg\:hidden.bg-white\/95 {
-  background-color: rgba(9, 14, 23, 0.95) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: rgba(26, 18, 14, 0.96) !important;
+  border-color: rgba(251, 191, 36, 0.15) !important;
 }
 
 html.dark header nav a {
-  color: #cbd5e1 !important;
+  color: #e2d9cf !important;
 }
 
 html.dark header nav a:hover {
-  color: #34d399 !important;
+  color: #fbbf24 !important;
 }
 
 html.dark header .text-slate-700,
 html.dark header .text-slate-800,
 html.dark header .text-slate-900 {
-  color: #f1f5f9 !important;
+  color: #fffbeb !important;
 }
 
 html.dark header .text-slate-400,
 html.dark header .text-slate-500 {
-  color: #94a3b8 !important;
+  color: #d1c4b7 !important;
 }
 
 html.dark header .bg-slate-50,
 html.dark header .bg-slate-100,
 html.dark header .bg-slate-100\/90,
 html.dark header .bg-slate-100\/80 {
-  background-color: rgba(255, 255, 255, 0.06) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  color: #f1f5f9 !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(251, 191, 36, 0.18) !important;
+  color: #fffbeb !important;
 }
 
 html.dark header .border-slate-200,
 html.dark header .border-slate-100,
 html.dark header .border-slate-200\/80 {
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(251, 191, 36, 0.15) !important;
 }
 
 html.dark header .bg-amber-50 {
-  background-color: rgba(245, 158, 11, 0.12) !important;
-  border-color: rgba(245, 158, 11, 0.25) !important;
+  background-color: rgba(245, 158, 11, 0.18) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
   color: #fde68a !important;
 }
 
 html.dark header .bg-emerald-50 {
-  background-color: rgba(16, 185, 129, 0.12) !important;
-  border-color: rgba(16, 185, 129, 0.25) !important;
+  background-color: rgba(16, 185, 129, 0.18) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
   color: #a7f3d0 !important;
 }
 
 /* Dropdown Menus in Dark Mode */
 html.dark .dropdown-menu {
-  background-color: #0f172a !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #e2e8f0 !important;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7) !important;
+  background-color: #271d17 !important;
+  border: 1px solid rgba(251, 191, 36, 0.22) !important;
+  color: #fffbeb !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6) !important;
 }
 
 html.dark .dropdown-item {
-  color: #cbd5e1 !important;
+  color: #e2d9cf !important;
 }
 
 html.dark .dropdown-item:hover {
-  background-color: rgba(16, 185, 129, 0.16) !important;
-  color: #34d399 !important;
+  background-color: rgba(245, 158, 11, 0.18) !important;
+  color: #fde68a !important;
 }
 
 html.dark .dropdown-divider {
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(251, 191, 36, 0.15) !important;
 }
 
 /* Ambient Hero Adjustments */
@@ -863,7 +860,7 @@ html.dark .feature-highlight-card .feature-desc {
    the text and content without hindering readability.
    ========================================================= */
 
-/* Translucent Glassmorphic Foundation on Cards */
+/* Translucent Glassmorphic Foundation on Cards (Warm Earth Mocha) */
 html.dark .home-organic-products-section .group,
 html.dark .category-card,
 html.dark .card,
@@ -876,10 +873,11 @@ html.dark .bg-white.p-4.p-md-5.rounded-4.border.shadow-sm {
   position: relative !important;
   overflow: hidden !important;
   isolation: isolate !important;
-  background: rgba(13, 20, 36, 0.82) !important;
+  background: rgba(36, 26, 20, 0.88) !important;
   backdrop-filter: blur(18px) !important;
   -webkit-backdrop-filter: blur(18px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(251, 191, 36, 0.25) !important;
+  box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(217, 119, 6, 0.15) !important;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
@@ -910,15 +908,15 @@ html.dark .company-details-card::after {
   width: 220%;
   height: 220%;
   background:
-    radial-gradient(circle at 25% 25%, rgba(16, 185, 129, 0.35) 0%, transparent 40%),
-    radial-gradient(circle at 75% 28%, rgba(59, 130, 246, 0.30) 0%, transparent 42%),
-    radial-gradient(circle at 70% 75%, rgba(245, 158, 11, 0.25) 0%, transparent 38%),
+    radial-gradient(circle at 25% 25%, rgba(251, 191, 36, 0.42) 0%, transparent 40%),
+    radial-gradient(circle at 75% 28%, rgba(16, 185, 129, 0.36) 0%, transparent 42%),
+    radial-gradient(circle at 70% 75%, rgba(234, 88, 12, 0.34) 0%, transparent 38%),
     radial-gradient(circle at 22% 78%, rgba(168, 85, 247, 0.28) 0%, transparent 42%);
   filter: blur(42px);
   -webkit-filter: blur(42px);
   pointer-events: none;
   z-index: 1;
-  opacity: 0.8;
+  opacity: 0.88;
   animation: cardAmbientRoam 18s ease-in-out infinite alternate;
 }
 
@@ -972,8 +970,8 @@ html.dark .home-organic-products-section .group:hover,
 html.dark .category-card:hover,
 html.dark .card:hover,
 html.dark .feature-highlight-card:hover {
-  border-color: rgba(16, 185, 129, 0.45) !important;
-  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.8), 0 0 30px rgba(16, 185, 129, 0.28) !important;
+  border-color: rgba(251, 191, 36, 0.55) !important;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.7), 0 0 32px rgba(245, 158, 11, 0.35) !important;
   transform: translateY(-6px) scale(1.01) !important;
 }
 
@@ -986,7 +984,15 @@ html.dark .feature-highlight-card:hover::after {
   -webkit-filter: blur(34px);
 }
 
-/* Preserving Text Readability on Dark Backgrounds */
+/* Preserving Crisp Text Readability on Warm Earth Brownish Backgrounds */
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6,
+html.dark .h3style,
+html.dark .section-head h3,
 html.dark .home-organic-products-section .group h2,
 html.dark .home-organic-products-section .group h3,
 html.dark .home-organic-products-section .group h4,
@@ -998,57 +1004,63 @@ html.dark .card h4,
 html.dark .card h5,
 html.dark .feature-title,
 html.dark .text-dark {
-  color: #ffffff !important;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6) !important;
+  color: #fffbeb !important; /* bright warm cream white */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
 }
 
+html.dark p,
 html.dark .home-organic-products-section .group p,
 html.dark .category-card p,
 html.dark .card p,
 html.dark .feature-desc,
 html.dark .text-muted,
 html.dark .text-secondary {
-  color: #cbd5e1 !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+  color: #e2d9cf !important; /* warm soft sand */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.dark .bg-primarys {
+  background-color: #f59e0b !important;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
 }
 
 /* Translucent Section Backgrounds to Reveal Running Line Art */
 html.dark .home-category-section {
-  background: rgba(9, 14, 23, 0.55) !important;
+  background: rgba(28, 20, 16, 0.55) !important;
   backdrop-filter: blur(12px) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(251, 191, 36, 0.1);
+  border-bottom: 1px solid rgba(251, 191, 36, 0.1);
 }
 
 html.dark .home-organic-products-section {
-  background: rgba(7, 11, 19, 0.60) !important;
+  background: rgba(24, 17, 13, 0.55) !important;
   backdrop-filter: blur(12px) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-top: 1px solid rgba(251, 191, 36, 0.1) !important;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.1) !important;
 }
 
 html.dark .aesthetic-image-stage {
-  background: radial-gradient(circle at center, rgba(30, 41, 59, 0.6) 30%, rgba(15, 23, 42, 0.8) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: radial-gradient(circle at center, rgba(55, 40, 32, 0.6) 30%, rgba(28, 20, 16, 0.8) 100%) !important;
+  border: 1px solid rgba(251, 191, 36, 0.15) !important;
 }
 
 html.dark .home-testimonials-section {
-  background: rgba(10, 15, 29, 0.55) !important;
+  background: rgba(28, 20, 16, 0.55) !important;
   backdrop-filter: blur(12px) !important;
-  border-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(251, 191, 36, 0.1) !important;
 }
 
 html.dark .home-testimonials-section .card {
-  border-left: 6px solid #10b981 !important;
+  border-left: 6px solid #f59e0b !important;
 }
 
 /* Footer & Company Details Card in Dark Mode */
 html.dark .company-details-card,
 html.dark .card,
 html.dark .bg-white {
-  background-color: rgba(15, 23, 42, 0.82) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-  color: #e2e8f0 !important;
+  background-color: rgba(36, 26, 20, 0.88) !important;
+  border-color: rgba(251, 191, 36, 0.18) !important;
+  color: #fef3c7 !important;
 }
 
 html.dark .text-dark {
