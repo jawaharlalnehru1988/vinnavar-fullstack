@@ -221,7 +221,7 @@ const OrganicProductList = ({ categoryId, limit = 10 }) => {
                                     {/* Variant selector (Weight Badges) */}
                                     {product.variants && product.variants.length > 0 && (
                                         <div className="space-y-1.5 mt-2">
-                                            <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                            <label className="block text-[11px] font-bold text-slate-400 dark:text-amber-200/90 uppercase tracking-wider">
                                                 WEIGHT / VARIANT:
                                             </label>
                                             <div className="flex flex-wrap gap-2 pt-0.5">
@@ -238,7 +238,7 @@ const OrganicProductList = ({ categoryId, limit = 10 }) => {
                                                             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border d-inline-flex align-items-center gap-1 cursor-pointer ${
                                                                 isSelected
                                                                     ? "bg-gradient-to-r from-emerald-800 to-emerald-700 text-white border-emerald-800 shadow-sm scale-105"
-                                                                    : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-emerald-50 hover:border-emerald-300"
+                                                                    : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 dark:bg-stone-800/90 dark:text-amber-100 dark:border-amber-400/25 dark:hover:bg-stone-700"
                                                             }`}
                                                         >
                                                             <span>{v.variantName}</span>
@@ -257,27 +257,27 @@ const OrganicProductList = ({ categoryId, limit = 10 }) => {
                                     const hasDiscount = currentVariant?.discountPrice && currentVariant.price > currentVariant.discountPrice;
 
                                     return (
-                                        <div className="flex items-center justify-between mt-6 pt-5 border-t border-slate-100">
+                                        <div className="flex items-center justify-between mt-6 pt-5 border-t border-slate-100 dark:border-amber-400/20">
                                             <div className="flex flex-col">
                                                 <div className="flex items-baseline flex-wrap gap-2">
-                                                    <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                                                    <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-amber-400 tracking-tight">
                                                         ₹{activePrice.toLocaleString('en-IN')}
                                                     </span>
                                                     {hasDiscount && (
-                                                        <span className="text-xs sm:text-sm text-slate-400 line-through font-medium">
+                                                        <span className="text-xs sm:text-sm text-slate-400 dark:text-stone-400 line-through font-medium">
                                                             ₹{currentVariant.price.toLocaleString('en-IN')}
                                                         </span>
                                                     )}
                                                 </div>
                                                 {/* Unit Selling Price */}
                                                 {activeUsp && (
-                                                    <div className="text-xs sm:text-sm text-slate-600 font-semibold leading-tight mt-0.5">
+                                                    <div className="text-xs sm:text-sm text-slate-600 dark:text-emerald-300 font-semibold leading-tight mt-0.5">
                                                         {activeUsp}
                                                     </div>
                                                 )}
                                                 {hasDiscount && (
                                                     <div className="mt-1">
-                                                        <span className="text-[10px] sm:text-xs font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-md inline-flex items-center">
+                                                        <span className="text-[10px] sm:text-xs font-bold text-red-600 bg-red-50 border border-red-100 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800/60 px-2 py-0.5 rounded-md inline-flex items-center">
                                                             <i className="fa fa-arrow-down mr-1 text-[8px]"></i>
                                                             {Math.round(((currentVariant.price - currentVariant.discountPrice) / currentVariant.price) * 100)}% OFF
                                                         </span>

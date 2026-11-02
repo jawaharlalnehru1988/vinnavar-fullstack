@@ -675,23 +675,23 @@ const ProductDetails = () => {
                                         </span>
                                     )}
                                     <div className="flex items-baseline">
-                                        <span className="text-sm font-semibold text-slate-700 mr-0.5">₹</span>
-                                        <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                                        <span className="text-sm font-semibold text-slate-700 dark:text-amber-400 mr-0.5">₹</span>
+                                        <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-amber-400 tracking-tight">
                                             {currentPrice.toLocaleString('en-IN')}
                                         </span>
                                     </div>
                                     {/* Main Price USP */}
                                     {calculateUSP(currentPrice, selectedVariant?.variantName) && (
-                                        <span className="text-xs sm:text-sm font-semibold text-slate-600">
+                                        <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-emerald-300">
                                             {calculateUSP(currentPrice, selectedVariant?.variantName)}
                                         </span>
                                     )}
                                 </div>
 
                                 {hasDiscount && (
-                                    <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+                                    <div className="text-xs text-slate-500 dark:text-stone-300 mt-1 flex items-center gap-1.5">
                                         <span>{t("mrp_label", "M.R.P.:")}</span>
-                                        <span className="line-through font-medium">₹{mrpPrice.toLocaleString('en-IN')}</span>
+                                        <span className="line-through font-medium text-slate-400 dark:text-stone-400">₹{mrpPrice.toLocaleString('en-IN')}</span>
                                     </div>
                                 )}
 
@@ -738,38 +738,38 @@ const ProductDetails = () => {
                                                     onClick={() => setSelectedVariant(variant)}
                                                     className={`text-left p-2.5 sm:p-3 rounded-xl transition-all relative flex flex-col justify-between border cursor-pointer ${
                                                         isSelected
-                                                            ? "border-2 border-emerald-700 bg-emerald-50/30 shadow-xs ring-1 ring-emerald-600/30"
-                                                            : "border-slate-300 bg-white hover:border-slate-500 hover:bg-slate-50/50 shadow-2xs"
+                                                            ? "border-2 border-emerald-700 bg-emerald-50/30 shadow-xs ring-1 ring-emerald-600/30 dark:bg-emerald-950/40 dark:border-emerald-400 dark:ring-emerald-500/40"
+                                                            : "border-slate-300 bg-white hover:border-slate-500 hover:bg-slate-50/50 shadow-2xs dark:bg-stone-900/90 dark:border-amber-400/25 dark:hover:bg-stone-800"
                                                     }`}
                                                 >
                                                     {/* TOP: Variant Name / Size (Amazon Style Header) */}
-                                                    <div className="font-bold text-xs sm:text-sm text-slate-900 leading-tight uppercase line-clamp-2 min-h-[28px] sm:min-h-[32px] flex items-center">
+                                                    <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-amber-100 leading-tight uppercase line-clamp-2 min-h-[28px] sm:min-h-[32px] flex items-center">
                                                         {variant.variantName}
                                                     </div>
 
                                                     {/* Horizontal Line Divider (Like Amazon Image 3) */}
-                                                    <div className="border-t border-slate-200/90 my-1.5 sm:my-2 w-full"></div>
+                                                    <div className="border-t border-slate-200/90 dark:border-amber-400/20 my-1.5 sm:my-2 w-full"></div>
 
                                                     {/* BOTTOM: Price + USP + MRP */}
                                                     <div className="space-y-0.5">
                                                         {isAvailable ? (
                                                             <>
-                                                                <div className="font-bold text-sm sm:text-base text-slate-900 leading-tight">
+                                                                <div className="font-bold text-sm sm:text-base text-slate-900 dark:text-amber-400 leading-tight">
                                                                     ₹{priceVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                 </div>
                                                                 {uspText && (
-                                                                    <div className="text-[11px] sm:text-xs text-slate-600 font-normal leading-tight">
+                                                                    <div className="text-[11px] sm:text-xs text-slate-600 dark:text-emerald-300 font-semibold leading-tight">
                                                                         {uspText}
                                                                     </div>
                                                                 )}
                                                                 {hasVarDiscount && (
-                                                                    <div className="text-[11px] text-slate-400 line-through leading-tight">
+                                                                    <div className="text-[11px] text-slate-400 dark:text-stone-400 line-through leading-tight">
                                                                         ₹{mrpVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                     </div>
                                                                 )}
                                                             </>
                                                         ) : (
-                                                            <div className="text-xs text-rose-600 font-medium leading-tight">
+                                                            <div className="text-xs text-rose-600 dark:text-rose-400 font-medium leading-tight">
                                                                 {t("currently_unavailable", "Currently unavailable.")}
                                                             </div>
                                                         )}
@@ -777,7 +777,7 @@ const ProductDetails = () => {
 
                                                     {/* Subtle Active Indicator Dot */}
                                                     {isSelected && (
-                                                        <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-600"></div>
+                                                        <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400"></div>
                                                     )}
                                                 </button>
                                             );

@@ -299,10 +299,10 @@ const ProductWishList = () => {
 
                           {/* Price */}
                           <td className="py-4 px-4">
-                            <div className="font-black text-slate-900 text-sm">
+                            <div className="font-black text-slate-900 dark:text-amber-400 text-sm">
                               ₹{Number(price).toFixed(2)}
                               {isOriginalPrice && (
-                                <span className="text-xs font-normal text-slate-400 line-through ml-1.5">
+                                <span className="text-xs font-normal text-slate-400 dark:text-stone-400 line-through ml-1.5">
                                   ₹{Number(variant.price).toFixed(2)}
                                 </span>
                               )}

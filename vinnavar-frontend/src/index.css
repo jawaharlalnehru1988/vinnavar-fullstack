@@ -1178,5 +1178,53 @@ html.dark hr {
   opacity: 1 !important;
 }
 
+/* =========================================================
+   DARK MODE HIGH-CONTRAST PRICING & USP (UNIT SELLING PRICE)
+   ========================================================= */
+
+/* Luminous Warm Gold for all Active Selling Prices */
+html.dark .text-slate-900.font-black,
+html.dark .text-slate-900.font-bold,
+html.dark .font-black.text-slate-900,
+html.dark .font-bold.text-slate-900,
+html.dark .text-xl.font-black,
+html.dark .text-2xl.font-black,
+html.dark .text-3xl.font-black {
+  color: #fbbf24 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* Radiant Mint-Emerald for Unit Selling Price (USP: per-kg, per-litre, per-unit) */
+html.dark [class*="text-slate-600"][class*="leading-tight"],
+html.dark .text-slate-600.font-semibold,
+html.dark .text-slate-600.font-normal {
+  color: #6ee7b7 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+/* Crisp Readable Strikethrough M.R.P. Prices */
+html.dark .line-through {
+  color: #a8a29e !important;
+  text-decoration-color: #ef4444 !important;
+}
+
+/* Variant & Weight labels */
+html.dark label.text-slate-400 {
+  color: #fde68a !important;
+}
+
+/* Product Card Borders & Shadows in Dark Mode */
+html.dark .group.relative.bg-white {
+  background-color: rgba(36, 26, 20, 0.92) !important;
+  border-color: rgba(251, 191, 36, 0.22) !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.dark .group.relative.bg-white:hover {
+  border-color: rgba(251, 191, 36, 0.45) !important;
+  box-shadow: 0 14px 34px -10px rgba(251, 191, 36, 0.15), 0 20px 40px -15px rgba(0, 0, 0, 0.8) !important;
+}
+
+
 
 
