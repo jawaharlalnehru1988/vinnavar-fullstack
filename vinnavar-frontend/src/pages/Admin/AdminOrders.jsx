@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
 import { API_BASE_URL } from "../../services/api";
+import IndianStateSelect from "../../Component/IndianStateSelect";
 
 const getOrderStatusBadge = (status) => {
     switch (status) {
@@ -1233,14 +1234,16 @@ const AdminOrders = ({ orders, loadData }) => {
                                                 </div>
                                                 <div>
                                                     <label className="block font-bold text-slate-600 mb-1">State *</label>
-                                                    <input
-                                                        type="text" className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg" required
+                                                    <IndianStateSelect
+                                                        name="shippingState"
                                                         value={editShippingAddress.state}
+                                                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 font-medium outline-none focus:ring-2 focus:ring-emerald-500 pr-9 text-xs sm:text-sm"
                                                         onChange={(e) => {
                                                             const val = e.target.value;
                                                             setEditShippingAddress(prev => ({ ...prev, state: val }));
                                                             if (sameAsShippingEdit) setEditBillingAddress(prev => ({ ...prev, state: val }));
                                                         }}
+                                                        required
                                                     />
                                                 </div>
                                                 <div>
@@ -1314,10 +1317,12 @@ const AdminOrders = ({ orders, loadData }) => {
                                                     </div>
                                                     <div>
                                                         <label className="block font-bold text-slate-600 mb-1">State *</label>
-                                                        <input
-                                                            type="text" className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg" required
+                                                        <IndianStateSelect
+                                                            name="billingState"
                                                             value={editBillingAddress.state}
+                                                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 font-medium outline-none focus:ring-2 focus:ring-emerald-500 pr-9 text-xs sm:text-sm"
                                                             onChange={(e) => setEditBillingAddress(prev => ({ ...prev, state: e.target.value }))}
+                                                            required
                                                         />
                                                     </div>
                                                     <div>
@@ -1570,10 +1575,10 @@ const AdminOrders = ({ orders, loadData }) => {
                                 </div>
                                 <div>
                                     <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">State</label>
-                                    <input
-                                        type="text"
-                                        className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                                    <IndianStateSelect
+                                        name="orderState"
                                         value={editOrderForm.state}
+                                        className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium outline-none focus:ring-2 focus:ring-emerald-500 pr-9 text-xs sm:text-sm"
                                         onChange={(e) => setEditOrderForm({ ...editOrderForm, state: e.target.value })}
                                     />
                                 </div>

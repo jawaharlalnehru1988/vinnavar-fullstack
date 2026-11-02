@@ -4,6 +4,7 @@ import { MagnifyingGlass } from "react-loader-spinner";
 import Swal from "sweetalert2";
 import ScrollToTop from "../ScrollToTop";
 import { API_BASE_URL } from "../../services/api";
+import IndianStateSelect from "../../Component/IndianStateSelect";
 
 const MyAccountAddress = () => {
   const [loading, setLoading] = useState(true);
@@ -456,12 +457,13 @@ const MyAccountAddress = () => {
 
                     <div className="col-md-4">
                       <label className="form-label small fw-bold text-muted mb-1">State *</label>
-                      <input
-                        type="text"
-                        className="form-control form-control-sm"
-                        required
+                      <IndianStateSelect
+                        name="state"
+                        id="account-state"
                         value={addressForm.state}
                         onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })}
+                        required
+                        isBootstrap={true}
                       />
                     </div>
 
@@ -474,6 +476,20 @@ const MyAccountAddress = () => {
                         value={addressForm.pincode}
                         onChange={(e) => setAddressForm({ ...addressForm, pincode: e.target.value })}
                       />
+                    </div>
+
+                    <div className="col-12">
+                      <label className="form-label small fw-bold text-muted mb-1">Country</label>
+                      <div className="input-group input-group-sm">
+                        <input
+                          type="text"
+                          className="form-control form-control-sm bg-light text-muted fw-bold"
+                          value="India"
+                          readOnly
+                          disabled
+                        />
+                        <span className="input-group-text bg-light select-none">🇮🇳</span>
+                      </div>
                     </div>
 
                     <div className="col-12">

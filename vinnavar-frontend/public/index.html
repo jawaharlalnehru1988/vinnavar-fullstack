@@ -7,6 +7,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#059669" />
 
+    <!-- Theme Initialization (Anti-FOUC) -->
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('vinnavar_theme');
+          var isDark = stored ? stored === 'dark' : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+          }
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Primary Search Engine SEO Metadata -->
     <title>Vinnavar Organics | 100% Pure Traditional Organic Rice & Natural Farm Products</title>
     <meta name="description" content="Vinnavar Organics offers 100% pure traditional organic rice (Mapillai Samba, Karuppu Kavuni, Seeraga Samba), cold-pressed oils, unpolished pulses, natural honey, and farm-fresh healthy grains. Shop authentic chemical-free organic food online with fast delivery." />
@@ -40,6 +57,18 @@
 
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo_vinnavar.webp" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZOFJKZ4SK9"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18545974855"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-ZOFJKZ4SK9');
+      gtag('config', 'AW-18545974855');
+    </script>
 
     <!-- Umami Analytics -->
     <script defer src="https://analytics.askharekrishna.com/script.js" data-website-id="d3d7c28b-9f06-4453-8585-c7f3b6cb5cfc"></script>
@@ -129,14 +158,6 @@
     src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.9.3/min/tiny-slider.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-  
-<!-- Bootstrap Bundle with Popper -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.0.0/js/bootstrap.bundle.min.js"></script>
-
-    
   <!-- Swiper JS -->
   <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
   </body>

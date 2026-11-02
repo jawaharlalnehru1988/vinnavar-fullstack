@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import { API_BASE_URL, fetchProducts, getImageUrl, toggleWishlist, getCartId } from "../services/api";
 import { useTranslation } from "react-i18next";
+import { Fade } from "react-awesome-reveal";
 
 import { calculateUSP } from "../utils/usp";
 
@@ -110,11 +111,11 @@ const OrganicProductList = ({ categoryId, limit = 10 }) => {
                         <div className="w-48 h-8 bg-slate-200/80 rounded-full animate-pulse mb-2"></div>
                         <div className="w-72 h-4 bg-slate-200/80 rounded-full animate-pulse"></div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-                        {Array.from({ length: limit || 10 }).map((_, idx) => (
-                            <div key={idx} className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-100 shadow-sm animate-pulse h-[530px] flex flex-col justify-between">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-7">
+                        {Array.from({ length: limit || 9 }).map((_, idx) => (
+                            <div key={idx} className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-100 shadow-sm animate-pulse h-[500px] flex flex-col justify-between">
                                 <div className="space-y-4">
-                                    <div className="w-full h-64 sm:h-72 bg-slate-100 rounded-2xl"></div>
+                                    <div className="w-full h-56 sm:h-64 bg-slate-100 rounded-2xl"></div>
                                     <div className="w-28 h-3 bg-slate-200 rounded-full"></div>
                                     <div className="w-3/4 h-5 bg-slate-200 rounded-full"></div>
                                     <div className="w-full h-3.5 bg-slate-200/60 rounded-full"></div>
@@ -132,50 +133,57 @@ const OrganicProductList = ({ categoryId, limit = 10 }) => {
     }
 
     return (
-        <section className="py-12 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-16 home-organic-products-section relative overflow-hidden">
+            {/* Subtle floating background ambient lights */}
+            <div className="home-ambient-glow-1"></div>
+            <div className="home-ambient-glow-2"></div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 {/* Header Title Bar */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 pb-4 border-b border-slate-100">
-                    <div>
-                        <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/50">
-                            {t("cert_organic")}
-                        </span>
-                        <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-tight">
-                            {t("pure_organic_staples")}
-                        </h2>
+                <Fade direction="up" triggerOnce>
+                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4 pb-5 border-b border-emerald-100/80">
+                        <div>
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase text-emerald-800 bg-emerald-100/70 border border-emerald-300/60 shadow-xs mb-2">
+                                <span>🌿</span>
+                                <span>{t("cert_organic", "100% CERTIFIED ORGANIC")}</span>
+                            </div>
+                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+                                {t("pure_organic_staples", "Pure Organic Staples & Products")}
+                            </h2>
+                            <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-xl">
+                                {t("organic_staples_subtitle", "Directly sourced from trusted regional farmers. Unpolished, preservative-free & nutrient-rich.")}
+                            </p>
+                        </div>
+                        <div>
+                            <Link
+                                to="/Product"
+                                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-black text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 transition-all shadow-xs hover:shadow-md active:scale-95"
+                            >
+                                <span>{t("view_all_products", "View All Products")}</span>
+                                <span className="text-sm font-bold">➔</span>
+                            </Link>
+                        </div>
                     </div>
-                    <div>
-                        <Link
-                            to="/Product"
-                            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-all shadow-xs active:scale-95"
-                        >
-                            <span>{t("view_all_products")}</span>
-                            <span>➔</span>
-                        </Link>
-                    </div>
-                </div>
+                </Fade>
 
-                {/* Product Cards Grid: 2 Columns & 5 Rows (Big Size Showcase) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+                {/* Product Cards Grid: 3 Columns per row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-7">
                     {(limit ? products.slice(0, limit) : products).map((product) => {
                         const currentVariant = selectedVariants[product.id] || product.variants?.[0];
                         const imgUrl = getImageUrl(product.imageUrl);
 
                         return (
-                            <div
-                                key={product.id}
-                                className="group relative bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
-                            >
-                                <div className="space-y-4">
-                                    {/* Image Container & Badges (Enlarged Big-Size View) */}
-                                    <div className="relative bg-slate-50/80 rounded-2xl p-6 h-64 sm:h-72 flex items-center justify-center overflow-hidden">
+                            <Fade key={product.id} direction="up" triggerOnce fraction={0.08} className="h-full">
+                                <div className="group relative bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between h-full">
+                                <div className="space-y-3.5">
+                                    {/* Image Container & Badges (Refined 3-Column Size View) */}
+                                    <div className="aesthetic-image-stage relative rounded-2xl p-5 h-56 sm:h-64 flex items-center justify-center overflow-hidden">
                                         {product.featured && (
-                                            <span className="absolute top-3.5 left-3.5 z-10 px-3 py-1 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white uppercase tracking-wider shadow-sm">
+                                            <span className="absolute top-3.5 left-3.5 z-10 px-3 py-1 rounded-full text-[10px] font-black bg-gradient-to-r from-emerald-600 to-emerald-500 text-white uppercase tracking-wider shadow-sm">
                                                 Featured
                                             </span>
                                         )}
                                         <button
-                                            className="absolute top-3.5 right-3.5 z-10 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md shadow-sm border border-slate-200/70 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-white transition-all cursor-pointer"
+                                            className="absolute top-3.5 right-3.5 z-10 w-9 h-9 rounded-full bg-white/95 backdrop-blur-md shadow-sm border border-slate-200/70 flex items-center justify-center text-slate-400 hover:text-red-500 hover:scale-110 transition-all cursor-pointer"
                                             title="Add to Wishlist"
                                             onClick={() => handleToggleWishlist(product)}
                                         >
@@ -186,7 +194,7 @@ const OrganicProductList = ({ categoryId, limit = 10 }) => {
                                             <img
                                                 src={imgUrl}
                                                 alt={product.name}
-                                                className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                                                className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-500"
                                                 onError={(e) => {
                                                     e.target.onerror = null;
                                                     e.target.src = "/media/placeholder.png";
@@ -197,10 +205,10 @@ const OrganicProductList = ({ categoryId, limit = 10 }) => {
 
                                     {/* Details */}
                                     <div>
-                                        <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold text-emerald-800 bg-emerald-50/90 border border-emerald-200/70 uppercase tracking-wider">
                                             {product.category?.nameTranslations?.[currentLang] || product.category?.name || "Organic Staples"}
                                         </span>
-                                        <h3 className="font-extrabold text-slate-900 text-base sm:text-lg mt-1 truncate hover:text-emerald-700 transition-colors leading-snug">
+                                        <h3 className="font-extrabold text-slate-900 text-base sm:text-lg mt-1.5 truncate group-hover:text-emerald-700 transition-colors leading-snug">
                                             <Link to={`/product/${product.slug}`}>
                                                 {product.nameTranslations?.[currentLang] || product.name}
                                             </Link>
@@ -229,7 +237,7 @@ const OrganicProductList = ({ categoryId, limit = 10 }) => {
                                                             title={vUsp ? `${v.variantName} ${vUsp}` : v.variantName}
                                                             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border d-inline-flex align-items-center gap-1 cursor-pointer ${
                                                                 isSelected
-                                                                    ? "bg-emerald-700 text-white border-emerald-700 shadow-sm scale-105"
+                                                                    ? "bg-gradient-to-r from-emerald-800 to-emerald-700 text-white border-emerald-800 shadow-sm scale-105"
                                                                     : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-emerald-50 hover:border-emerald-300"
                                                             }`}
                                                         >
@@ -278,7 +286,7 @@ const OrganicProductList = ({ categoryId, limit = 10 }) => {
                                             </div>
                                             <button
                                                 type="button"
-                                                className="px-5 sm:px-6 py-2.5 sm:py-3 bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-extrabold rounded-full shadow-md shadow-emerald-700/20 hover:shadow-lg transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                                                className="aesthetic-add-btn px-5 sm:px-6 py-2.5 sm:py-3 text-white text-xs sm:text-sm font-extrabold rounded-full flex items-center gap-1.5 cursor-pointer active:scale-95"
                                                 onClick={() => handleAddToCart(product)}
                                             >
                                                 <span>🛒</span>
@@ -288,6 +296,7 @@ const OrganicProductList = ({ categoryId, limit = 10 }) => {
                                     );
                                 })()}
                             </div>
+                            </Fade>
                         );
                     })}
                 </div>

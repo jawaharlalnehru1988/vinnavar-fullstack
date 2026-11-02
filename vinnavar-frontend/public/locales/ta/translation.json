@@ -129,6 +129,8 @@
   "city_town": "நகரம் / ஊர்",
   "state_label": "மாநிலம்",
   "pincode": "பின்கோட் *",
+  "country_label": "நாடு",
+  "billing_state": "பில்லிங் மாநிலம்",
   "billing_addr": "பில்லிங் முகவரி",
   "billing_same_as_shipping": "பில்லிங் முகவரி ஷிப்பிங் முகவரியைப் போன்றது",
   "billing_full_name": "பில்லிங் முழு பெயர் *",

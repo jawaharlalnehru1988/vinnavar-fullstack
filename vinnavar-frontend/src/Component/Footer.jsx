@@ -82,11 +82,28 @@ const Footer = () => {
                     {/* Address */}
                     <div className="mb-3 text-secondary small">
                       <div className="d-flex align-items-center mb-1.5">
-                        <i className="fa fa-map-marker-alt text-success me-2 fs-6 flex-shrink-0" />
-                        <span className="fw-bold text-dark">Office Address</span>
+                        <a
+                          href="https://maps.app.goo.gl/42JywxrkAbVS9y6h8"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-decoration-none d-inline-flex align-items-center text-success"
+                          title="Open location in Google Maps"
+                        >
+                          <i className="fa fa-map-marker-alt text-success me-2 fs-6 flex-shrink-0" />
+                          <span className="fw-bold text-dark hover-text-success">Office Address</span>
+                          <span className="text-muted ms-1.5 small" style={{ fontSize: "0.75rem" }}>↗</span>
+                        </a>
                       </div>
-                      <div className="ps-4 text-muted" style={{ lineHeight: "1.6" }}>
-                        #16, MS Nagar Phase 2, Kurumanthangal Road, Kunnathur, Arani, Tamil Nadu - 632314
+                      <div className="ps-4" style={{ lineHeight: "1.6" }}>
+                        <a
+                          href="https://maps.app.goo.gl/42JywxrkAbVS9y6h8"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-muted text-decoration-none hover-text-success d-inline-block"
+                          title="Open location in Google Maps"
+                        >
+                          #16, MS Nagar Phase 2, Kurumanthangal Road, Kunnathur, Arani, Tamil Nadu - 632314
+                        </a>
                       </div>
                     </div>
 

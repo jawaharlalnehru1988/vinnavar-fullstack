@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Swal from 'sweetalert2';
 import ScrollToTop from "../ScrollToTop";
 import { useTranslation } from "react-i18next";
+import IndianStateSelect from "../../Component/IndianStateSelect";
 
 const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -475,17 +476,6 @@ const ProductCheckOut = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block font-bold text-slate-700 mb-1">{t("state_label")}</label>
-                                            <input
-                                                type="text"
-                                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
-                                                name="state"
-                                                value={shippingForm.state}
-                                                onChange={handleShippingChange}
-                                            />
-                                        </div>
-
-                                        <div>
                                             <label className="block font-bold text-slate-700 mb-1">{t("pincode")}</label>
                                             <input
                                                 type="text"
@@ -496,6 +486,37 @@ const ProductCheckOut = () => {
                                                 onChange={handleShippingChange}
                                                 required
                                             />
+                                        </div>
+
+                                        <div>
+                                            <label className="block font-bold text-slate-700 mb-1">
+                                                {t("state_label", "State")} <span className="text-red-500">*</span>
+                                            </label>
+                                            <IndianStateSelect
+                                                name="state"
+                                                id="shipping-state"
+                                                value={shippingForm.state}
+                                                onChange={handleShippingChange}
+                                                required
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block font-bold text-slate-700 mb-1">
+                                                {t("country_label", "Country")}
+                                            </label>
+                                            <div className="relative">
+                                                <input
+                                                    type="text"
+                                                    readOnly
+                                                    disabled
+                                                    value="India"
+                                                    className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-700 font-bold cursor-not-allowed select-none pr-10 text-xs sm:text-sm"
+                                                />
+                                                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-base select-none pointer-events-none">
+                                                    🇮🇳
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -585,6 +606,37 @@ const ProductCheckOut = () => {
                                                     onChange={handleBillingChange}
                                                     required
                                                 />
+                                            </div>
+
+                                            <div>
+                                                <label className="block font-bold text-slate-700 mb-1">
+                                                    {t("billing_state", "Billing State")} <span className="text-red-500">*</span>
+                                                </label>
+                                                <IndianStateSelect
+                                                    name="state"
+                                                    id="billing-state"
+                                                    value={billingForm.state}
+                                                    onChange={handleBillingChange}
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block font-bold text-slate-700 mb-1">
+                                                    {t("country_label", "Country")}
+                                                </label>
+                                                <div className="relative">
+                                                    <input
+                                                        type="text"
+                                                        readOnly
+                                                        disabled
+                                                        value="India"
+                                                        className="w-full px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-700 font-bold cursor-not-allowed select-none pr-10 text-xs sm:text-sm"
+                                                    />
+                                                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-base select-none pointer-events-none">
+                                                        🇮🇳
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     )}
@@ -707,6 +759,11 @@ const ProductCheckOut = () => {
                                                                     ₹{totalPayable.toFixed(2)}
                                                                 </span>
                                                             </div>
+                                                            {paymentMethod === 'COD' && (
+                                                                <p className="text-[11px] font-semibold text-amber-700 pt-1 leading-snug">
+                                                                    {t("cod_charges_notice", "*COD Charges Payable to Delivery Partner- If Order is placed on COD Mode.")}
+                                                                </p>
+                                                            )}
                                                         </div>
                                                     </>
                                                 );

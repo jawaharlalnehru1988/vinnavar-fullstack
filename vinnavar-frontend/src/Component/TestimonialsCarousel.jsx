@@ -120,8 +120,7 @@ const TestimonialsCarousel = () => {
 
     return (
         <section
-            className="py-5 bg-light position-relative overflow-hidden"
-            style={{ backgroundColor: "#f8f9fa" }}
+            className="py-5 home-testimonials-section position-relative overflow-hidden"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
         >

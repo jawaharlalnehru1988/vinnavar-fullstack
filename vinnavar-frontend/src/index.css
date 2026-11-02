@@ -4,12 +4,21 @@
 
 /* =============================================
    GLOBAL THEME TOKENS
-   Background : Mild Sandal-Ivory  #f8f3ec
-   Font Color : Dark Indigo-Blue   #1e2a5a
+   Light: Mild Sandal-Ivory (#f8f3ec), Dark Indigo-Blue (#1e2a5a)
+   Dark (Ambient UI): Deep Obsidian (#090e17), Crisp Slate (#e2e8f0)
 ============================================= */
 :root {
   --site-bg:   #f8f3ec;   /* mild sandal-ivory */
   --site-text: #1e2a5a;   /* dark indigo-blue  */
+  --card-bg:   #ffffff;
+  --card-border: rgba(0, 0, 0, 0.08);
+}
+
+html.dark {
+  --site-bg:   #090e17;   /* deep obsidian night canvas */
+  --site-text: #e2e8f0;   /* crisp luminous soft slate */
+  --card-bg:   #0f172a;   /* sleek nocturnal card surface */
+  --card-border: rgba(255, 255, 255, 0.08);
 }
 
 html,
@@ -22,6 +31,32 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Ambient Nocturnal Glow Mesh on dark mode body */
+html.dark body {
+  position: relative;
+}
+
+html.dark body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(ellipse 65% 50% at 12% -8%, rgba(16, 185, 129, 0.12), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 88% 18%, rgba(59, 130, 246, 0.08), transparent 65%),
+    radial-gradient(ellipse 70% 55% at 50% 100%, rgba(16, 185, 129, 0.07), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
 }
 
 /* Propagate text colour to every common content element */
@@ -131,4 +166,780 @@ code {
   background-color: rgba(43, 147, 72, 0.08) !important;
   color: #2b9348 !important;
 }
+
+/* =========================================================
+   VIBRANT HOMEPAGE THEME & DYNAMIC ANIMATIONS
+   ========================================================= */
+
+/* Hero Carousel Polish & 100% Full Viewport Visibility */
+.hero-section {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+.hero-section #carouselExampleFade,
+.hero-section .carousel-inner,
+.hero-section .carousel-item {
+  width: 100%;
+  max-height: calc(100vh - 125px);
+  background-color: #f8f3ec;
+}
+
+.hero-section .carousel-item {
+  text-align: center;
+}
+
+.hero-section .carousel-item a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-section .carousel-item img,
+.hero-section .carousel-item video,
+.hero-background-video {
+  width: 100%;
+  max-height: calc(100vh - 125px);
+  object-fit: contain;
+  object-position: center top;
+  margin: 0 auto;
+  display: block;
+}
+
+.hero-section .carousel-item img {
+  transition: transform 6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.hero-section .carousel-item.active img {
+  transform: scale(1.015);
+}
+
+.hero-section .carousel-control-prev,
+.hero-section .carousel-control-next {
+  width: 48px;
+  height: 48px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 50%;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+  opacity: 0.85;
+  margin: 0 15px;
+}
+
+.hero-section .carousel-control-prev:hover,
+.hero-section .carousel-control-next:hover {
+  background: #ffffff;
+  opacity: 1;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 8px 25px rgba(43, 147, 72, 0.3);
+}
+
+.hero-section .carousel-control-prev-icon,
+.hero-section .carousel-control-next-icon {
+  filter: invert(30%) sepia(85%) saturate(500%) hue-rotate(90deg) brightness(85%);
+  width: 20px;
+  height: 20px;
+}
+
+/* Hero Floating Controls */
+.hero-floating-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 24px;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-sound-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  color: #1e7e34;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-sound-btn.is-muted {
+  background: rgba(220, 38, 38, 0.9);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.7);
+  animation: pulseSubtle 2.5s infinite ease-in-out;
+}
+
+.hero-sound-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(43, 147, 72, 0.35);
+}
+
+.hero-sound-btn.is-muted:hover {
+  background: #dc2626;
+  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.45);
+}
+
+.hero-play-pause-btn {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #1e7e34;
+  font-size: 1.05rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+}
+
+.hero-play-pause-btn:hover {
+  background: #ffffff;
+  color: #155d27;
+  transform: scale(1.08);
+  box-shadow: 0 8px 24px rgba(43, 147, 72, 0.35);
+}
+
+.hero-play-pause-btn:active {
+  transform: scale(0.95);
+}
+
+/* Feature / Trust Highlights Bar */
+.home-features-bar {
+  position: relative;
+  z-index: 5;
+}
+
+.feature-highlight-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+}
+
+.feature-highlight-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 14px 30px -6px rgba(0, 0, 0, 0.12);
+}
+
+.feature-highlight-card .feature-icon-wrapper {
+  font-size: 1.9rem;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  flex-shrink: 0;
+  transition: transform 0.35s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.feature-highlight-card:hover .feature-icon-wrapper {
+  transform: scale(1.18) rotate(6deg);
+}
+
+.feature-highlight-card .feature-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+  line-height: 1.25;
+}
+
+.feature-highlight-card .feature-desc {
+  font-size: 0.78rem;
+  margin-bottom: 0;
+  opacity: 0.85;
+  line-height: 1.35;
+}
+
+/* Feature Card Color Themes */
+.feature-highlight-card.card-emerald {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+.feature-highlight-card.card-emerald .feature-icon-wrapper {
+  background: #ffffff;
+}
+
+.feature-highlight-card.card-amber {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border-color: #fde68a;
+  color: #92400e;
+}
+.feature-highlight-card.card-amber .feature-icon-wrapper {
+  background: #ffffff;
+}
+
+.feature-highlight-card.card-sky {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-color: #bae6fd;
+  color: #0369a1;
+}
+.feature-highlight-card.card-sky .feature-icon-wrapper {
+  background: #ffffff;
+}
+
+.feature-highlight-card.card-coral {
+  background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+  border-color: #fecdd3;
+  color: #9f1239;
+}
+.feature-highlight-card.card-coral .feature-icon-wrapper {
+  background: #ffffff;
+}
+
+/* Category Section Vibrancy */
+.home-category-section {
+  background: linear-gradient(180deg, rgba(248, 243, 236, 0.4) 0%, rgba(236, 253, 245, 0.75) 35%, rgba(240, 253, 244, 0.6) 75%, rgba(248, 243, 236, 0.4) 100%);
+  border-radius: 32px;
+  position: relative;
+}
+
+.home-category-section .category-card {
+  border: 1px solid rgba(43, 147, 72, 0.12) !important;
+  background: #ffffff;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.home-category-section .category-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(43, 147, 72, 0.35) !important;
+  box-shadow: 0 16px 32px -8px rgba(43, 147, 72, 0.22) !important;
+}
+
+.home-category-section .category-card .btn-success {
+  background: linear-gradient(135deg, #2b9348 0%, #1e7e34 100%) !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.home-category-section .category-card .btn-success:hover {
+  background: linear-gradient(135deg, #208b3a 0%, #155d27 100%) !important;
+  transform: scale(1.02);
+  box-shadow: 0 6px 16px rgba(43, 147, 72, 0.35) !important;
+}
+
+/* Organic Products Showcase Section - Aesthetic Styling */
+.home-organic-products-section {
+  background: 
+    radial-gradient(circle at 10% 15%, rgba(16, 185, 129, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 90% 85%, rgba(245, 158, 11, 0.07) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(52, 211, 153, 0.05) 0%, transparent 50%),
+    linear-gradient(180deg, #f7fbf8 0%, #fdfdfd 30%, #f8fbf9 70%, #f1f8f3 100%);
+  position: relative;
+  background-image: radial-gradient(rgba(16, 185, 129, 0.06) 1.2px, transparent 1.2px);
+  background-size: 28px 28px;
+  border-top: 1px solid rgba(16, 185, 129, 0.12);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.12);
+}
+
+.home-ambient-glow-1 {
+  position: absolute;
+  top: 5%;
+  left: -120px;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(16, 185, 129, 0) 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  animation: floatSlow 9s ease-in-out infinite alternate;
+}
+
+.home-ambient-glow-2 {
+  position: absolute;
+  bottom: 5%;
+  right: -120px;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0) 70%);
+  filter: blur(65px);
+  pointer-events: none;
+  animation: floatSlow 12s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes floatSlow {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(25px) scale(1.08); }
+}
+
+/* Aesthetic Product Cards */
+.home-organic-products-section .group {
+  position: relative !important;
+  background: #ffffff !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(22, 101, 52, 0.1) !important;
+  border-top: none !important;
+  box-shadow: 0 10px 30px -8px rgba(22, 101, 52, 0.07), 0 2px 6px rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  overflow: hidden !important;
+}
+
+.home-organic-products-section .group::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #10b981 0%, #059669 40%, #16a34a 70%, #eab308 100%);
+  z-index: 10;
+  transition: height 0.3s ease;
+}
+
+.home-organic-products-section .group:hover {
+  transform: translateY(-8px) scale(1.008) !important;
+  box-shadow: 0 24px 48px -12px rgba(22, 101, 52, 0.18), 0 0 0 1.5px rgba(16, 185, 129, 0.35) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.home-organic-products-section .group:hover::before {
+  height: 5px;
+}
+
+/* Image Container Stage */
+.aesthetic-image-stage {
+  background: radial-gradient(circle at center, #ffffff 35%, #f1f8f4 100%) !important;
+  border: 1px solid rgba(16, 185, 129, 0.1) !important;
+  box-shadow: inset 0 2px 8px rgba(16, 185, 129, 0.03);
+}
+
+/* Aesthetic Add to Cart Button */
+.aesthetic-add-btn {
+  background: linear-gradient(135deg, #166534 0%, #15803d 50%, #16a34a 100%) !important;
+  box-shadow: 0 6px 18px -3px rgba(22, 101, 52, 0.35) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.aesthetic-add-btn:hover {
+  background: linear-gradient(135deg, #14532d 0%, #166534 50%, #15803d 100%) !important;
+  box-shadow: 0 10px 24px -3px rgba(22, 101, 52, 0.45) !important;
+  transform: translateY(-2px);
+}
+
+/* Testimonials Section Styling */
+.home-testimonials-section {
+  background: linear-gradient(135deg, #eef9f2 0%, #f4fbf6 50%, #fefcf0 100%) !important;
+  border-top: 1px solid rgba(43, 147, 72, 0.1);
+  border-bottom: 1px solid rgba(43, 147, 72, 0.1);
+}
+
+.home-testimonials-section .card {
+  border-left: 6px solid #2b9348 !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.home-testimonials-section .card:hover {
+  box-shadow: 0 20px 45px rgba(43, 147, 72, 0.16) !important;
+}
+
+/* Pulse & Shimmer Keyframes */
+@keyframes pulseSubtle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.pulse-badge {
+  animation: pulseSubtle 2.5s infinite ease-in-out;
+}
+
+/* Cart Pop & Micro-Interactions */
+@keyframes cartBounceAnim {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.18) rotate(-4deg); }
+  50% { transform: scale(0.95) rotate(3deg); }
+  75% { transform: scale(1.08) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.cart-button-bounce {
+  animation: cartBounceAnim 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes badgePopAnim {
+  0% { transform: scale(0.6); opacity: 0.5; }
+  50% { transform: scale(1.4); background-color: #059669; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.cart-badge-pop {
+  animation: badgePopAnim 0.5s ease-out;
+}
+
+/* Wishlist heart pop */
+@keyframes heartPulseAnim {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.heart-pop-active {
+  animation: heartPulseAnim 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Page fade in transition */
+.page-fade-in {
+  animation: pageFadeIn 0.4s ease-out;
+}
+
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================
+   AMBIENT UI & DARK MODE SYSTEM
+   Deep nocturnal obsidian canvas, subtle ambient radial meshes,
+   luminous elevated cards, glowing hover highlights, and glassmorphism.
+   ========================================================= */
+
+/* Theme Toggle Button (Icon-Only) */
+.theme-toggle-btn {
+  background: #f1f5f9;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #334155;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.theme-toggle-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  transform: scale(1.08) rotate(15deg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+html.dark .theme-toggle-btn {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border: 1px solid rgba(251, 191, 36, 0.4) !important;
+  color: #fbbf24 !important;
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.25) !important;
+}
+
+html.dark .theme-toggle-btn:hover {
+  background: rgba(51, 65, 85, 0.95) !important;
+  color: #fde68a !important;
+  transform: scale(1.12) rotate(25deg);
+  box-shadow: 0 0 22px rgba(251, 191, 36, 0.5) !important;
+}
+
+/* Header & Navigation in Dark Mode */
+html.dark header {
+  background-color: rgba(9, 14, 23, 0.92) !important;
+  backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark header .bg-white\/95,
+html.dark .lg\:hidden.bg-white\/95 {
+  background-color: rgba(9, 14, 23, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark header nav a {
+  color: #cbd5e1 !important;
+}
+
+html.dark header nav a:hover {
+  color: #34d399 !important;
+}
+
+html.dark header .text-slate-700,
+html.dark header .text-slate-800,
+html.dark header .text-slate-900 {
+  color: #f1f5f9 !important;
+}
+
+html.dark header .text-slate-400,
+html.dark header .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+html.dark header .bg-slate-50,
+html.dark header .bg-slate-100,
+html.dark header .bg-slate-100\/90,
+html.dark header .bg-slate-100\/80 {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark header .border-slate-200,
+html.dark header .border-slate-100,
+html.dark header .border-slate-200\/80 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark header .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  border-color: rgba(245, 158, 11, 0.25) !important;
+  color: #fde68a !important;
+}
+
+html.dark header .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.25) !important;
+  color: #a7f3d0 !important;
+}
+
+/* Dropdown Menus in Dark Mode */
+html.dark .dropdown-menu {
+  background-color: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7) !important;
+}
+
+html.dark .dropdown-item {
+  color: #cbd5e1 !important;
+}
+
+html.dark .dropdown-item:hover {
+  background-color: rgba(16, 185, 129, 0.16) !important;
+  color: #34d399 !important;
+}
+
+html.dark .dropdown-divider {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Ambient Hero Adjustments */
+html.dark .hero-section #carouselExampleFade,
+html.dark .hero-section .carousel-inner,
+html.dark .hero-section .carousel-item {
+  background-color: #090e17 !important;
+}
+
+html.dark .hero-section .carousel-control-prev,
+html.dark .hero-section .carousel-control-next {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #34d399 !important;
+}
+
+html.dark .hero-sound-btn,
+html.dark .hero-play-pause-btn {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #34d399 !important;
+}
+
+/* Ambient Feature Highlights Bar in Dark Mode */
+html.dark .feature-highlight-card {
+  background: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.dark .feature-highlight-card.card-emerald {
+  border-color: rgba(16, 185, 129, 0.25) !important;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.1) !important;
+}
+
+html.dark .feature-highlight-card.card-emerald .feature-icon-wrapper {
+  background: rgba(16, 185, 129, 0.18) !important;
+  color: #34d399 !important;
+}
+
+html.dark .feature-highlight-card.card-amber {
+  border-color: rgba(245, 158, 11, 0.25) !important;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.1) !important;
+}
+
+html.dark .feature-highlight-card.card-amber .feature-icon-wrapper {
+  background: rgba(245, 158, 11, 0.18) !important;
+  color: #fbbf24 !important;
+}
+
+html.dark .feature-highlight-card.card-sky {
+  border-color: rgba(14, 165, 233, 0.25) !important;
+  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.1) !important;
+}
+
+html.dark .feature-highlight-card.card-sky .feature-icon-wrapper {
+  background: rgba(14, 165, 233, 0.18) !important;
+  color: #38bdf8 !important;
+}
+
+html.dark .feature-highlight-card.card-coral {
+  border-color: rgba(244, 63, 94, 0.25) !important;
+  box-shadow: 0 8px 24px rgba(244, 63, 94, 0.1) !important;
+}
+
+html.dark .feature-highlight-card.card-coral .feature-icon-wrapper {
+  background: rgba(244, 63, 94, 0.18) !important;
+  color: #fb7185 !important;
+}
+
+html.dark .feature-highlight-card .feature-title {
+  color: #f8fafc !important;
+}
+
+html.dark .feature-highlight-card .feature-desc {
+  color: #94a3b8 !important;
+}
+
+/* Category Section & Cards in Dark Mode */
+html.dark .home-category-section {
+  background: linear-gradient(180deg, rgba(9, 14, 23, 0.6) 0%, rgba(15, 23, 42, 0.85) 50%, rgba(9, 14, 23, 0.6) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+html.dark .home-category-section .category-card,
+html.dark .category-card {
+  background: #0f172a !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark .home-category-section .category-card:hover,
+html.dark .category-card:hover {
+  border-color: rgba(16, 185, 129, 0.45) !important;
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.8), 0 0 25px rgba(16, 185, 129, 0.25) !important;
+}
+
+/* Ambient Organic Products Section & Cards in Dark Mode */
+html.dark .home-organic-products-section {
+  background: #090e17 !important;
+  background-image: radial-gradient(rgba(16, 185, 129, 0.10) 1.2px, transparent 1.2px) !important;
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+html.dark .home-organic-products-section .group {
+  background: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.dark .home-organic-products-section .group:hover {
+  transform: translateY(-8px) scale(1.008) !important;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.75), 0 0 28px rgba(16, 185, 129, 0.3) !important;
+  border-color: rgba(16, 185, 129, 0.45) !important;
+}
+
+html.dark .aesthetic-image-stage {
+  background: radial-gradient(circle at center, #1e293b 30%, #0f172a 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Ambient Testimonials Section */
+html.dark .home-testimonials-section {
+  background: #0a0f1d !important;
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+html.dark .home-testimonials-section .card {
+  background: #0f172a !important;
+  border-left: 6px solid #10b981 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55) !important;
+}
+
+/* Footer & Company Details Card in Dark Mode */
+html.dark .company-details-card,
+html.dark .card,
+html.dark .bg-white {
+  background-color: #0f172a !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-dark {
+  color: #f8fafc !important;
+}
+
+html.dark .text-muted,
+html.dark .text-secondary {
+  color: #94a3b8 !important;
+}
+
+/* Forms & Inputs in Dark Mode */
+html.dark input[type="text"],
+html.dark input[type="password"],
+html.dark input[type="email"],
+html.dark input[type="tel"],
+html.dark input[type="number"],
+html.dark select,
+html.dark textarea {
+  background-color: #1e293b !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #f8fafc !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25) !important;
+}
+
+/* Modals & Offcanvas in Dark Mode */
+html.dark .modal-content,
+html.dark .offcanvas {
+  background-color: #0f172a !important;
+  color: #f1f5f9 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
+}
+
+html.dark .modal-header,
+html.dark .modal-footer,
+html.dark .offcanvas-header {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%) !important;
+}
+
+/* Tables & Dividers */
+html.dark .table {
+  color: #e2e8f0 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .table th,
+html.dark .table td {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: transparent !important;
+}
+
+html.dark hr {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  opacity: 1 !important;
+}
+
+
 

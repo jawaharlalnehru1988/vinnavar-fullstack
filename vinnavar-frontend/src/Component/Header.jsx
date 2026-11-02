@@ -5,11 +5,13 @@ import { GoogleLogin } from "@react-oauth/google";
 import Swal from "sweetalert2";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES } from "../i18n";
+import { useTheme } from "../context/ThemeContext";
 
 
 
 const Header = () => {
   const { t, i18n } = useTranslation();
+  const { isDark, toggleTheme } = useTheme();
   const currentLang = i18n.language || 'en';
   const languages = LANGUAGES;
   const setLanguage = (lng) => i18n.changeLanguage(lng);
@@ -404,6 +406,8 @@ const Header = () => {
     }
   };
 
+  const [cartBouncing, setCartBouncing] = useState(false);
+
   useEffect(() => {
     fetchCart();
     fetchWishlistCount();
@@ -412,10 +416,15 @@ const Header = () => {
     const handleCartUpdated = () => {
       fetchCart();
       fetchWishlistCount();
+      setCartBouncing(true);
+      setTimeout(() => setCartBouncing(false), 800);
     };
 
     window.addEventListener("cartUpdated", handleCartUpdated);
-    const interval = setInterval(handleCartUpdated, 3000);
+    const interval = setInterval(() => {
+      fetchCart();
+      fetchWishlistCount();
+    }, 5000);
 
     return () => {
       window.removeEventListener("cartUpdated", handleCartUpdated);
@@ -698,6 +707,25 @@ const Header = () => {
 
             {/* Right: Action Buttons */}
             <div className="flex items-center gap-2 sm:gap-2.5">
+              {/* Dark / Light Mode Switcher (Icon-Only Button) */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="theme-toggle-btn inline-flex items-center justify-center w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full transition-all duration-300 active:scale-95 cursor-pointer flex-shrink-0"
+                title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                aria-label={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              >
+                {isDark ? (
+                  <svg className="w-4 h-4 text-amber-300 transition-transform duration-500 hover:rotate-90" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4 text-slate-700 transition-transform duration-500 hover:-rotate-45" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                  </svg>
+                )}
+              </button>
+
               {/* Language Selector Dropdown */}
               <div className="relative" ref={langMenuRef}>
                 <button
@@ -713,7 +741,7 @@ const Header = () => {
                 {isLangMenuOpen && (
                   <ul
                     className="dropdown-menu shadow-2xl border border-slate-100 rounded-2xl p-2 mt-2 font-sans text-xs w-48 d-block show"
-                    style={{ position: "absolute", right: 0, top: "100%", zIndex: 1000, backgroundColor: "#ffffff" }}
+                    style={{ position: "absolute", right: 0, top: "100%", zIndex: 1000 }}
                   >
                     {languages.map((lang) => (
                       <li key={lang.code}>
@@ -886,14 +914,14 @@ const Header = () => {
               {/* Shopping Cart */}
               <button
                 type="button"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 transition-all active:scale-95"
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 transition-all active:scale-95 ${cartBouncing ? "cart-button-bounce" : ""}`}
                 data-bs-toggle="offcanvas"
                 data-bs-target="#offcanvasRight"
                 title="Shopping Cart"
               >
-                <span className="text-sm">🛒</span>
+                <span className={`text-sm ${cartBouncing ? "animate-bounce" : ""}`}>🛒</span>
                 <span className="hidden sm:inline">{t("sliding_cart_btn_label")}</span>
-                <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white">
+                <span className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white ${cartBouncing ? "cart-badge-pop" : ""}`}>
                   {cart?.totalItemCount || cart?.items?.length || 0}
                 </span>
               </button>
@@ -1089,22 +1117,6 @@ const Header = () => {
           </div>
         </div>
       </header>
-
-      {/* Sub-Header Brand Bar */}
-      <div className="hidden md:block w-full sticky top-0 z-40 bg-transparent">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center gap-3 py-2 drop-shadow-md">
-            <div className="flex flex-col items-center justify-center">
-              <span className="text-3xl font-black leading-tight tracking-widest golden-text">
-                Vinnavar
-              </span>
-              <span className="text-3xl font-extrabold tracking-widest golden-text">
-                Organic E - Commerce
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Customer User Authentication Modal */}
       <div

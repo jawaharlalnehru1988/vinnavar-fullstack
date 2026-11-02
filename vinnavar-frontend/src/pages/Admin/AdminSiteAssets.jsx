@@ -18,9 +18,17 @@ const formatGroupLabel = (group) => {
         .join(" ");
 };
 
+const isAssetVideo = (val) => {
+    if (!val || typeof val !== "string") return false;
+    const clean = val.trim().toLowerCase().split("?")[0].split("#")[0];
+    const vidExts = [".mp4", ".webm", ".ogg", ".mov", ".m4v"];
+    return vidExts.some((ext) => clean.endsWith(ext));
+};
+
 const isAssetImage = (val) => {
     if (!val || typeof val !== "string") return false;
     const clean = val.trim().toLowerCase().split("?")[0].split("#")[0];
+    if (isAssetVideo(val)) return false;
     if (clean.startsWith("/media/") || clean.startsWith("data:image/")) return true;
     const imgExts = [
         ".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".bmp", ".ico", ".avif", ".tiff", ".jfif", ".pjpeg", ".pjp"
@@ -57,6 +65,10 @@ const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
         group: "",
         value: ""
     });
+
+    // Uploading states for modals
+    const [uploadingNewAsset, setUploadingNewAsset] = useState(false);
+    const [uploadingEditAsset, setUploadingEditAsset] = useState(false);
 
     const loadSettings = async () => {
         setLoading(true);
@@ -252,6 +264,117 @@ const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
         }
     };
 
+    const handleOpenNewAssetModal = () => {
+        const isHero = selectedAssetGroup === "HERO_SLIDER";
+        let suggestedKey = "";
+        let suggestedDesc = "";
+        if (isHero) {
+            const existingHeroIndices = settings
+                .filter((s) => (s.settingKey && s.settingKey.startsWith("home_hero_")) || s.settingGroup === "HERO_SLIDER")
+                .map((s) => {
+                    const match = s.settingKey ? s.settingKey.match(/home_hero_(\d+)/) : null;
+                    return match ? parseInt(match[1], 10) : 0;
+                });
+            const nextNum = existingHeroIndices.length > 0 ? Math.max(...existingHeroIndices) + 1 : 1;
+            suggestedKey = `home_hero_${nextNum}`;
+            suggestedDesc = `Home Slide ${nextNum} Image`;
+        }
+
+        setNewAssetForm({
+            key: suggestedKey,
+            value: "",
+            group: selectedAssetGroup !== "ALL" ? selectedAssetGroup : "GENERAL",
+            description: suggestedDesc
+        });
+        setShowNewAssetModal(true);
+    };
+
+    const handleUploadNewAssetFile = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        setUploadingNewAsset(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/settings/upload-asset`, {
+                method: "POST",
+                body: formData
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setNewAssetForm((prev) => {
+                    const updated = { ...prev, value: data.imageUrl };
+                    if (prev.group === "HERO_SLIDER" && (!prev.key || prev.key.trim() === "")) {
+                        const existingHeroIndices = settings
+                            .filter((s) => (s.settingKey && s.settingKey.startsWith("home_hero_")) || s.settingGroup === "HERO_SLIDER")
+                            .map((s) => {
+                                const match = s.settingKey ? s.settingKey.match(/home_hero_(\d+)/) : null;
+                                return match ? parseInt(match[1], 10) : 0;
+                            });
+                        const nextNum = existingHeroIndices.length > 0 ? Math.max(...existingHeroIndices) + 1 : 1;
+                        updated.key = `home_hero_${nextNum}`;
+                        if (!updated.description) {
+                            updated.description = `Home Slide ${nextNum} Image`;
+                        }
+                    }
+                    return updated;
+                });
+                Swal.fire({
+                    icon: "success",
+                    title: "Image Uploaded",
+                    text: "Image uploaded and URL populated!",
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({ icon: "error", title: "Upload Failed" });
+            }
+        } catch (err) {
+            Swal.fire({ icon: "error", title: "Upload Error" });
+        } finally {
+            setUploadingNewAsset(false);
+            e.target.value = "";
+        }
+    };
+
+    const handleUploadEditAssetFile = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        setUploadingEditAsset(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/admin/settings/upload-asset`, {
+                method: "POST",
+                body: formData
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setEditAssetForm((prev) => ({ ...prev, value: data.imageUrl }));
+                Swal.fire({
+                    icon: "success",
+                    title: "Replacement Image Uploaded",
+                    text: "New image path populated. Click 'Save Changes' to confirm.",
+                    timer: 1800,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({ icon: "error", title: "Upload Failed" });
+            }
+        } catch (err) {
+            Swal.fire({ icon: "error", title: "Upload Error" });
+        } finally {
+            setUploadingEditAsset(false);
+            e.target.value = "";
+        }
+    };
+
     if (loading) return (
         <div className="text-center py-12">
             <div className="inline-block w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
@@ -278,28 +401,26 @@ const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
                         Manage banners, logos, and site settings with Grid or List view, inline editing, and deletion
                     </p>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                     {/* View Switcher */}
                     <div className="bg-slate-200/80 p-1 rounded-xl flex items-center gap-1 shadow-inner">
                         <button
                             type="button"
-                            className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all ${
-                                viewMode === "GRID"
+                            className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all ${viewMode === "GRID"
                                     ? "bg-white text-slate-900 shadow-xs"
                                     : "text-slate-600 hover:text-slate-900"
-                            }`}
+                                }`}
                             onClick={() => setViewMode("GRID")}
                         >
                             🎴 Grid View
                         </button>
                         <button
                             type="button"
-                            className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all ${
-                                viewMode === "LIST"
+                            className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all ${viewMode === "LIST"
                                     ? "bg-white text-slate-900 shadow-xs"
                                     : "text-slate-600 hover:text-slate-900"
-                            }`}
+                                }`}
                             onClick={() => setViewMode("LIST")}
                         >
                             📋 List View
@@ -308,7 +429,7 @@ const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
 
                     <button
                         className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-all flex items-center gap-1"
-                        onClick={() => setShowNewAssetModal(true)}
+                        onClick={handleOpenNewAssetModal}
                     >
                         + Add Asset
                     </button>
@@ -334,8 +455,10 @@ const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     {filteredSettings.map((s) => {
                         const current = editedData[s.settingKey] || { value: s.settingValue, description: s.description, group: s.settingGroup };
+                        const isVideo = isAssetVideo(current.value);
                         const isImage = isAssetImage(current.value);
-                        const imgUrl = isImage ? getImageUrl(current.value) : null;
+                        const isMedia = isImage || isVideo;
+                        const mediaUrl = isMedia ? getImageUrl(current.value) : null;
 
                         return (
                             <div key={s.id || s.settingKey} className="bg-white rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between space-y-4">
@@ -349,7 +472,7 @@ const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
                                                 {s.settingKey}
                                             </span>
                                         </div>
-                                        
+
                                         <div className="flex items-center gap-1">
                                             <button
                                                 className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-2.5 py-1 rounded-lg border border-slate-300 transition-all shadow-xs"
@@ -376,10 +499,21 @@ const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
                                         />
                                     </div>
 
-                                    {isImage && imgUrl && (
+                                    {isVideo && mediaUrl && (
+                                        <div className="p-2 bg-slate-900 rounded-xl border border-slate-200 h-36 flex items-center justify-center overflow-hidden">
+                                            <video
+                                                src={mediaUrl}
+                                                controls
+                                                muted
+                                                className="max-h-32 max-w-full rounded-lg"
+                                            />
+                                        </div>
+                                    )}
+
+                                    {isImage && mediaUrl && (
                                         <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 h-36 flex items-center justify-center overflow-hidden">
                                             <img
-                                                src={imgUrl}
+                                                src={mediaUrl}
                                                 alt={current.description || "Asset Preview"}
                                                 className="max-h-32 max-w-full object-contain rounded-lg"
                                                 onError={(e) => {
@@ -392,13 +526,13 @@ const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
                                 </div>
 
                                 <div className="space-y-3 pt-2">
-                                    {isImage && (
+                                    {isMedia && (
                                         <div>
-                                            <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Upload Replacement Image File:</label>
+                                            <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Upload Replacement File (Image/Video):</label>
                                             <input
                                                 type="file"
                                                 className="w-full text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-xl p-2"
-                                                accept="image/*"
+                                                accept="image/*,video/mp4,video/webm"
                                                 onChange={(e) => handleAssetFileUpload(s.settingKey, e.target.files[0])}
                                             />
                                             {uploadingKey === s.settingKey && <p className="text-xs text-emerald-600 font-bold mt-1">Uploading file...</p>}
@@ -443,15 +577,21 @@ const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
                             <tbody className="divide-y divide-slate-100 text-sm">
                                 {filteredSettings.map((s) => {
                                     const current = editedData[s.settingKey] || { value: s.settingValue, description: s.description, group: s.settingGroup };
+                                    const isVideo = isAssetVideo(current.value);
                                     const isImage = isAssetImage(current.value);
-                                    const imgUrl = isImage ? getImageUrl(current.value) : null;
+                                    const isMedia = isImage || isVideo;
+                                    const mediaUrl = isMedia ? getImageUrl(current.value) : null;
 
                                     return (
                                         <tr key={s.id || s.settingKey} className="hover:bg-slate-50/80 transition-colors">
                                             <td className="py-3 px-4">
-                                                {isImage && imgUrl ? (
+                                                {isVideo && mediaUrl ? (
+                                                    <div className="w-12 h-12 rounded-xl border border-slate-200 bg-slate-900 flex items-center justify-center text-white text-base">
+                                                        🎬
+                                                    </div>
+                                                ) : isImage && mediaUrl ? (
                                                     <img
-                                                        src={imgUrl}
+                                                        src={mediaUrl}
                                                         alt={current.description || "Asset Preview"}
                                                         className="w-12 h-12 object-contain rounded-xl border border-slate-200 bg-slate-50 p-1"
                                                         onError={(e) => {
@@ -489,14 +629,14 @@ const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
                                                     onChange={(e) => handleInputChange(s.settingKey, "value", e.target.value)}
                                                     placeholder="Asset value or URL"
                                                 />
-                                                {isImage && (
+                                                {isMedia && (
                                                     <div className="mt-1">
                                                         <label className="text-[10px] font-bold text-slate-600 hover:text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 cursor-pointer">
-                                                            📷 Replace Image
+                                                            📁 Replace File (Image/Video)
                                                             <input
                                                                 type="file"
                                                                 className="hidden"
-                                                                accept="image/*"
+                                                                accept="image/*,video/mp4,video/webm"
                                                                 onChange={(e) => handleAssetFileUpload(s.settingKey, e.target.files[0])}
                                                             />
                                                         </label>
@@ -539,7 +679,7 @@ const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
             {/* MODAL: EDIT ASSET DETAILS */}
             {showEditModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
-                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full border border-slate-100 overflow-hidden">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full border border-slate-100 overflow-hidden my-8">
                         <div className="bg-emerald-700 text-white px-6 py-4 flex items-center justify-between">
                             <h3 className="text-base font-extrabold flex items-center gap-2">
                                 <span>✏️</span> Edit Asset Details
@@ -575,17 +715,93 @@ const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
                                     value={editAssetForm.group}
                                     onChange={(e) => setEditAssetForm({ ...editAssetForm, group: e.target.value.toUpperCase() })}
                                 />
+                                <div className="flex flex-wrap gap-1 mt-1.5">
+                                    {["HERO_SLIDER", "PROMO_BANNER", "LABELS", "LOGO", "GENERAL", "FOOTER"].map((g) => (
+                                        <button
+                                            type="button"
+                                            key={g}
+                                            onClick={() => setEditAssetForm({ ...editAssetForm, group: g })}
+                                            className={`text-[10px] px-2 py-0.5 rounded-md font-mono transition-all ${editAssetForm.group === g
+                                                    ? "bg-emerald-600 text-white font-bold"
+                                                    : "bg-slate-100 hover:bg-slate-200 text-slate-600"
+                                                }`}
+                                        >
+                                            {g}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
+
+                            {/* Direct file upload option right in the Asset Value field */}
                             <div>
-                                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">Asset Value / Image URL / Text</label>
-                                <textarea
-                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs focus:ring-2 focus:ring-emerald-500"
-                                    rows="3"
-                                    value={editAssetForm.value}
-                                    onChange={(e) => setEditAssetForm({ ...editAssetForm, value: e.target.value })}
-                                    required
-                                ></textarea>
+                                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
+                                    Asset Image / File (Uploadable)
+                                </label>
+                                <input
+                                    type="file"
+                                    id="edit-asset-file-input"
+                                    className="hidden"
+                                    accept="image/*,video/mp4,video/webm"
+                                    disabled={uploadingEditAsset}
+                                    onChange={handleUploadEditAssetFile}
+                                />
+                                {editAssetForm.value && (isAssetImage(editAssetForm.value) || isAssetVideo(editAssetForm.value)) ? (
+                                    <div className="p-3 bg-emerald-50/70 border-2 border-emerald-300 rounded-2xl flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-3 overflow-hidden">
+                                            <div className="w-16 h-12 rounded-xl overflow-hidden bg-white border border-slate-200 shrink-0 flex items-center justify-center shadow-xs">
+                                                {isAssetVideo(editAssetForm.value) ? (
+                                                    <span className="text-xl">🎬</span>
+                                                ) : (
+                                                    <img
+                                                        src={getImageUrl(editAssetForm.value)}
+                                                        alt="Current Preview"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                )}
+                                            </div>
+                                            <div className="overflow-hidden">
+                                                <div className="font-mono text-[11px] font-bold text-slate-800 truncate">
+                                                    {editAssetForm.value}
+                                                </div>
+                                                <div className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 mt-0.5">
+                                                    ✓ Current file ready
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <label
+                                            htmlFor="edit-asset-file-input"
+                                            className="cursor-pointer px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 font-bold text-[11px] rounded-xl border border-slate-200 hover:border-slate-300 shadow-xs shrink-0 flex items-center gap-1"
+                                        >
+                                            <span>🔄</span> Change File
+                                        </label>
+                                    </div>
+                                ) : (
+                                    <label
+                                        htmlFor="edit-asset-file-input"
+                                        className={`w-full py-7 px-4 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all gap-2 text-center ${uploadingEditAsset
+                                                ? "bg-slate-50 border-slate-300 cursor-not-allowed"
+                                                : "bg-emerald-50/50 hover:bg-emerald-50 border-emerald-300 hover:border-emerald-500 shadow-xs"
+                                            }`}
+                                    >
+                                        {uploadingEditAsset ? (
+                                            <>
+                                                <span className="w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></span>
+                                                <span className="text-xs font-bold text-emerald-800">Uploading Replacement...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-xs transition-all flex items-center gap-1.5">
+                                                    <span>📁</span> Choose File (Image or Video) to Upload
+                                                </span>
+                                                <span className="text-[11px] text-slate-500 font-medium">
+                                                    Click to browse and upload image
+                                                </span>
+                                            </>
+                                        )}
+                                    </label>
+                                )}
                             </div>
+
                             <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                                 <button type="button" className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl" onClick={() => setShowEditModal(false)}>Cancel</button>
                                 <button type="submit" className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs">Save Changes</button>
@@ -598,7 +814,7 @@ const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
             {/* MODAL: REGISTER NEW ASSET */}
             {showNewAssetModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
-                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full border border-slate-100 overflow-hidden">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full border border-slate-100 overflow-hidden my-8">
                         <div className="bg-emerald-700 text-white px-6 py-4 flex items-center justify-between">
                             <h3 className="text-base font-extrabold flex items-center gap-2">
                                 <span>➕</span> Register New Site Asset / Metadata
@@ -607,11 +823,55 @@ const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
                         </div>
                         <form onSubmit={handleCreateNewAsset} className="p-6 space-y-4 text-xs">
                             <div>
+                                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">Asset Group / Category</label>
+                                <input
+                                    type="text"
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-sm font-medium focus:ring-2 focus:ring-emerald-500"
+                                    placeholder="e.g. HERO_SLIDER, PROMO_BANNER, LOGO, LABELS"
+                                    value={newAssetForm.group}
+                                    onChange={(e) => setNewAssetForm({ ...newAssetForm, group: e.target.value.toUpperCase() })}
+                                />
+                                <div className="flex flex-wrap gap-1 mt-1.5">
+                                    {["HERO_SLIDER", "PROMO_BANNER", "LABELS", "LOGO", "GENERAL", "FOOTER"].map((g) => (
+                                        <button
+                                            type="button"
+                                            key={g}
+                                            onClick={() => {
+                                                const nextGroup = g;
+                                                setNewAssetForm((prev) => {
+                                                    const updated = { ...prev, group: nextGroup };
+                                                    if (nextGroup === "HERO_SLIDER" && (!prev.key || prev.key.trim() === "")) {
+                                                        const existingHeroIndices = settings
+                                                            .filter((s) => (s.settingKey && s.settingKey.startsWith("home_hero_")) || s.settingGroup === "HERO_SLIDER")
+                                                            .map((s) => {
+                                                                const match = s.settingKey ? s.settingKey.match(/home_hero_(\d+)/) : null;
+                                                                return match ? parseInt(match[1], 10) : 0;
+                                                            });
+                                                        const nextNum = existingHeroIndices.length > 0 ? Math.max(...existingHeroIndices) + 1 : 1;
+                                                        updated.key = `home_hero_${nextNum}`;
+                                                        if (!updated.description) {
+                                                            updated.description = `Home Slide ${nextNum} Image`;
+                                                        }
+                                                    }
+                                                    return updated;
+                                                });
+                                            }}
+                                            className={`text-[10px] px-2 py-0.5 rounded-md font-mono transition-all ${newAssetForm.group === g
+                                                    ? "bg-emerald-600 text-white font-bold"
+                                                    : "bg-slate-100 hover:bg-slate-200 text-slate-600"
+                                                }`}
+                                        >
+                                            {g}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
                                 <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">Setting Key (Unique Code)</label>
                                 <input
                                     type="text"
                                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-sm font-medium focus:ring-2 focus:ring-emerald-500"
-                                    placeholder="e.g. promo_banner_top"
+                                    placeholder="e.g. home_hero_3"
                                     value={newAssetForm.key}
                                     onChange={(e) => setNewAssetForm({ ...newAssetForm, key: e.target.value.toLowerCase().replaceAll(" ", "_") })}
                                     required
@@ -622,32 +882,89 @@ const AdminSiteAssets = ({ selectedAssetGroup = "ALL", onSettingsLoaded }) => {
                                 <input
                                     type="text"
                                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500"
-                                    placeholder="e.g. Top Promotional Header Banner"
+                                    placeholder="e.g. Home Slide 3 Image"
                                     value={newAssetForm.description}
                                     onChange={(e) => setNewAssetForm({ ...newAssetForm, description: e.target.value })}
                                 />
                             </div>
+
+                            {/* Direct file upload option right in the Asset Value field */}
                             <div>
-                                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">Asset Group / Category</label>
+                                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
+                                    Asset Image / File (Uploadable)
+                                </label>
+                                <input
+                                    type="file"
+                                    id="register-asset-file-input"
+                                    className="hidden"
+                                    accept="image/*,video/mp4,video/webm"
+                                    disabled={uploadingNewAsset}
+                                    onChange={handleUploadNewAssetFile}
+                                />
+                                {!newAssetForm.value ? (
+                                    <label
+                                        htmlFor="register-asset-file-input"
+                                        className={`w-full py-8 px-4 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all gap-2 text-center ${uploadingNewAsset
+                                                ? "bg-slate-50 border-slate-300 cursor-not-allowed"
+                                                : "bg-emerald-50/50 hover:bg-emerald-50 border-emerald-300 hover:border-emerald-500 shadow-xs"
+                                            }`}
+                                    >
+                                        {uploadingNewAsset ? (
+                                            <>
+                                                <span className="w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></span>
+                                                <span className="text-xs font-bold text-emerald-800">Uploading File...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-xs transition-all flex items-center gap-1.5">
+                                                    <span>📁</span> Choose File (Image or Video) to Upload
+                                                </span>
+                                                <span className="text-[11px] text-slate-500 font-medium">
+                                                    Supports JPG, PNG, WEBP, MP4, WEBM. Direct file upload only.
+                                                </span>
+                                            </>
+                                        )}
+                                    </label>
+                                ) : (
+                                    <div className="p-3 bg-emerald-50/70 border-2 border-emerald-300 rounded-2xl flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-3 overflow-hidden">
+                                            <div className="w-16 h-12 rounded-xl overflow-hidden bg-white border border-slate-200 shrink-0 flex items-center justify-center shadow-xs">
+                                                {isAssetVideo(newAssetForm.value) ? (
+                                                    <span className="text-xl">🎬</span>
+                                                ) : (
+                                                    <img
+                                                        src={getImageUrl(newAssetForm.value)}
+                                                        alt="Uploaded Preview"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                )}
+                                            </div>
+                                            <div className="overflow-hidden">
+                                                <div className="font-mono text-[11px] font-bold text-slate-800 truncate">
+                                                    {newAssetForm.value}
+                                                </div>
+                                                <div className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 mt-0.5">
+                                                    ✓ File uploaded & ready
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <label
+                                            htmlFor="register-asset-file-input"
+                                            className="cursor-pointer px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 font-bold text-[11px] rounded-xl border border-slate-200 hover:border-slate-300 shadow-xs shrink-0 flex items-center gap-1"
+                                        >
+                                            <span>🔄</span> Change
+                                        </label>
+                                    </div>
+                                )}
                                 <input
                                     type="text"
-                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-sm font-medium focus:ring-2 focus:ring-emerald-500"
-                                    placeholder="e.g. LOGO, HERO_SLIDER, PROMO_BANNER, LABELS"
-                                    value={newAssetForm.group}
-                                    onChange={(e) => setNewAssetForm({ ...newAssetForm, group: e.target.value.toUpperCase() })}
+                                    className="sr-only"
+                                    value={newAssetForm.value}
+                                    onChange={() => { }}
+                                    required
                                 />
                             </div>
-                            <div>
-                                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">Asset Value / Image URL / Text</label>
-                                <textarea
-                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs focus:ring-2 focus:ring-emerald-500"
-                                    rows="2"
-                                    placeholder="/media/images/my_image.png or banner text"
-                                    value={newAssetForm.value}
-                                    onChange={(e) => setNewAssetForm({ ...newAssetForm, value: e.target.value })}
-                                    required
-                                ></textarea>
-                            </div>
+
                             <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                                 <button type="button" className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl" onClick={() => setShowNewAssetModal(false)}>Cancel</button>
                                 <button type="submit" className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs">Register Asset</button>
