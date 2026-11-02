@@ -110,12 +110,17 @@ const BlogCategory = () => {
                 >
                   <div className="space-y-4 p-5">
                     <div className="relative h-48 rounded-2xl overflow-hidden bg-slate-100">
-                      <Link to={`/blog/${blog.slug}`}>
+                      <Link to={`/blog/${blog.slug}`} className="block w-full h-full relative">
                         <img
                           src={getImageUrl(blog.imageUrl)}
                           alt={blog.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
+                        {blog.videoUrl && (
+                          <span className="absolute top-2.5 right-2.5 px-2.5 py-1 bg-red-600/95 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-md flex items-center gap-1 backdrop-blur-xs">
+                            <span>▶</span> 9:16 Short
+                          </span>
+                        )}
                       </Link>
                     </div>
 

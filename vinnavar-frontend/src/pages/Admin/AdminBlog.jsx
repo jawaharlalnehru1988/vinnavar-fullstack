@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchAdminBlogs, createBlog, updateBlog, deleteBlog, uploadImageFile, getImageUrl } from "../../services/api";
+import { fetchAdminBlogs, createBlog, updateBlog, deleteBlog, uploadImageFile, uploadBlogVideoFile, getYouTubeVideoId, getImageUrl } from "../../services/api";
 
 const BLOG_LANGUAGES = [
   { code: "en", name: "English", nativeName: "English", flag: "🇬🇧" },
@@ -35,6 +35,9 @@ const AdminBlog = () => {
   const [imageOption, setImageOption] = useState("upload"); // "url" or "upload"
   const [uploading, setUploading] = useState(false);
 
+  const [videoOption, setVideoOption] = useState("youtube"); // "youtube", "upload", "url"
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
@@ -42,6 +45,7 @@ const AdminBlog = () => {
     shortDescription: "",
     content: "",
     imageUrl: "/media/site/blog-img-1.jpg",
+    videoUrl: "",
     author: "Vinnavar Team",
     readTimeMinutes: 5,
     featured: false,
@@ -91,6 +95,7 @@ const AdminBlog = () => {
         shortDescription: blog.shortDescription || "",
         content: blog.content || "",
         imageUrl: blog.imageUrl || "/media/site/blog-img-1.jpg",
+        videoUrl: blog.videoUrl || "",
         author: blog.author || "Vinnavar Team",
         readTimeMinutes: blog.readTimeMinutes || 5,
         featured: blog.featured || false,
@@ -114,6 +119,18 @@ const AdminBlog = () => {
       } else {
         setImageOption("upload");
       }
+
+      if (blog.videoUrl) {
+        if (getYouTubeVideoId(blog.videoUrl)) {
+          setVideoOption("youtube");
+        } else if (blog.videoUrl.startsWith("/media/videos/")) {
+          setVideoOption("upload");
+        } else {
+          setVideoOption("url");
+        }
+      } else {
+        setVideoOption("youtube");
+      }
     } else {
       setEditingBlog(null);
       setFormData({
@@ -123,6 +140,7 @@ const AdminBlog = () => {
         shortDescription: "",
         content: "",
         imageUrl: "/media/site/blog-img-1.jpg",
+        videoUrl: "",
         author: "Vinnavar Team",
         readTimeMinutes: 5,
         featured: false,
@@ -133,6 +151,7 @@ const AdminBlog = () => {
       });
       setActiveLangTab("en");
       setImageOption("upload");
+      setVideoOption("youtube");
     }
     setShowModal(true);
   };
@@ -150,6 +169,22 @@ const AdminBlog = () => {
       alert("Failed to upload image file. Please try again.");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setUploadingVideo(true);
+      const uploadedPath = await uploadBlogVideoFile(file);
+      setFormData((prev) => ({ ...prev, videoUrl: uploadedPath }));
+    } catch (err) {
+      console.error("Video upload error:", err);
+      alert(err.message || "Failed to upload video file. Please try again.");
+    } finally {
+      setUploadingVideo(false);
     }
   };
 
@@ -195,6 +230,7 @@ const AdminBlog = () => {
       title: resolvedTitle,
       shortDescription: resolvedDesc,
       content: resolvedContent,
+      videoUrl: formData.videoUrl ? formData.videoUrl.trim() : null,
       titleTranslations: titles,
       shortDescriptionTranslations: descs,
       contentTranslations: contents
@@ -309,8 +345,15 @@ const AdminBlog = () => {
                               <div className="font-bold text-slate-900 leading-snug">
                                 {blog.titleTranslations?.ta || blog.titleTranslations?.en || blog.title}
                               </div>
-                              <div className="text-[11px] font-mono text-slate-400">
-                                /{blog.slug || blog.id}
+                              <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-mono text-slate-400">
+                                  /{blog.slug || blog.id}
+                                </span>
+                                {blog.videoUrl && (
+                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-300 flex items-center gap-1">
+                                    <span>🎬</span> {getYouTubeVideoId(blog.videoUrl) ? "9:16 Short" : "Video"}
+                                  </span>
+                                )}
                               </div>
                               
                               {/* 9 Language Status Pills */}
@@ -565,6 +608,140 @@ const AdminBlog = () => {
                         <span className="font-bold text-slate-800 block">Cover Preview</span>
                         <span className="text-slate-400 font-mono truncate block max-w-xs">{formData.imageUrl}</span>
                       </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 9:16 Video / YouTube Shorts Section */}
+                <div className="md:col-span-12 pt-3 border-t border-slate-200/80 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <label className="font-bold text-slate-800 uppercase tracking-wider text-xs flex items-center gap-1.5">
+                        <span>🎬</span> Article Video / 9:16 YouTube Shorts <span className="text-[10px] lowercase text-slate-500 font-normal">(optional)</span>
+                      </label>
+                      <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                        Embed vertical 9:16 YouTube Shorts, videos, or upload MP4 video files.
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-200/80 p-0.5 rounded-xl flex items-center gap-1 shadow-inner">
+                      <button
+                        type="button"
+                        className={`text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all ${
+                          videoOption === "youtube"
+                            ? "bg-white text-emerald-800 shadow-xs"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                        onClick={() => setVideoOption("youtube")}
+                      >
+                        📱 YouTube Shorts
+                      </button>
+                      <button
+                        type="button"
+                        className={`text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all ${
+                          videoOption === "upload"
+                            ? "bg-white text-emerald-800 shadow-xs"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                        onClick={() => setVideoOption("upload")}
+                      >
+                        📁 Upload MP4
+                      </button>
+                      <button
+                        type="button"
+                        className={`text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all ${
+                          videoOption === "url"
+                            ? "bg-white text-emerald-800 shadow-xs"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                        onClick={() => setVideoOption("url")}
+                      >
+                        🌐 Direct URL
+                      </button>
+                    </div>
+                  </div>
+
+                  {videoOption === "youtube" && (
+                    <div className="space-y-1.5">
+                      <input
+                        type="text"
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500"
+                        value={formData.videoUrl}
+                        onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                        placeholder="e.g. https://www.youtube.com/shorts/sFz9LgK5JkE or https://youtu.be/..."
+                      />
+                      <p className="text-[10px] text-slate-500">
+                        💡 Paste any 9:16 YouTube Shorts or standard YouTube video link. It will automatically be embedded in 9:16 vertical orientation.
+                      </p>
+                    </div>
+                  )}
+
+                  {videoOption === "upload" && (
+                    <div className="p-3 bg-white rounded-xl border border-slate-200 text-center space-y-1.5">
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm,video/quicktime"
+                        className="w-full text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg p-1.5"
+                        onChange={handleVideoUpload}
+                        disabled={uploadingVideo}
+                      />
+                      {uploadingVideo && <p className="text-xs text-emerald-600 font-bold animate-pulse">Uploading video to server (up to 100MB)...</p>}
+                    </div>
+                  )}
+
+                  {videoOption === "url" && (
+                    <div>
+                      <input
+                        type="text"
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500"
+                        value={formData.videoUrl}
+                        onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                        placeholder="e.g. /media/videos/recipe_short.mp4 or https://..."
+                      />
+                    </div>
+                  )}
+
+                  {/* Live 9:16 Video Preview in Admin */}
+                  {formData.videoUrl && (
+                    <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-3">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                          <span>🎥</span> Video Preview (9:16 Vertical Ratio)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, videoUrl: "" })}
+                          className="text-[11px] font-bold text-red-600 hover:text-red-700 hover:underline flex items-center gap-1"
+                        >
+                          ✕ Remove Video
+                        </button>
+                      </div>
+
+                      <div className="flex justify-center py-2">
+                        {getYouTubeVideoId(formData.videoUrl) ? (
+                          <div className="w-[200px] aspect-[9/16] rounded-2xl overflow-hidden border-2 border-emerald-600/40 shadow-lg bg-black">
+                            <iframe
+                              src={`https://www.youtube.com/embed/${getYouTubeVideoId(formData.videoUrl)}?rel=0`}
+                              title="YouTube Shorts Preview"
+                              className="w-full h-full border-0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-[200px] aspect-[9/16] rounded-2xl overflow-hidden border-2 border-emerald-600/40 shadow-lg bg-black">
+                            <video
+                              src={getImageUrl(formData.videoUrl)}
+                              controls
+                              playsInline
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-center text-slate-400 font-mono truncate max-w-sm mx-auto">
+                        {formData.videoUrl}
+                      </p>
                     </div>
                   )}
                 </div>

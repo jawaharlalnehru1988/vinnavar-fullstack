@@ -136,6 +136,39 @@ export const uploadImageFile = async (file) => {
     return data.imageUrl;
 };
 
+export const uploadBlogVideoFile = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(`${API_BASE_URL}/admin/blogs/upload-video`, {
+        method: "POST",
+        body: formData
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to upload video");
+    }
+    const data = await res.json();
+    return data.videoUrl;
+};
+
+export const getYouTubeVideoId = (url) => {
+    if (!url || typeof url !== "string") return null;
+    const clean = url.trim();
+    // YouTube Shorts: /shorts/{id}
+    const shortsMatch = clean.match(/(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/);
+    if (shortsMatch && shortsMatch[1]) return shortsMatch[1];
+    // YouTube watch: ?v={id}
+    const watchMatch = clean.match(/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]+)/);
+    if (watchMatch && watchMatch[1]) return watchMatch[1];
+    // youtu.be/{id}
+    const youtuMatch = clean.match(/(?:youtu\.be\/)([a-zA-Z0-9_-]+)/);
+    if (youtuMatch && youtuMatch[1]) return youtuMatch[1];
+    // youtube.com/embed/{id}
+    const embedMatch = clean.match(/(?:youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+    if (embedMatch && embedMatch[1]) return embedMatch[1];
+    return null;
+};
+
 // Wishlist & Cart Identifier Helpers
 export const getWishlistId = () => {
     try {

@@ -37,6 +37,9 @@ public class BlogPost {
 
     private String imageUrl;
 
+    @Column(length = 500)
+    private String videoUrl;
+
     @Builder.Default
     private String author = "Vinnavar Team";
 

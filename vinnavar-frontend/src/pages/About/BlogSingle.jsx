@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import ScrollToTop from "../ScrollToTop";
-import { fetchBlogBySlug, fetchBlogById, fetchBlogsByCategory, fetchBlogs, getImageUrl } from "../../services/api";
+import { fetchBlogBySlug, fetchBlogById, fetchBlogsByCategory, fetchBlogs, getYouTubeVideoId, getImageUrl } from "../../services/api";
 import { useTranslation } from "react-i18next";
 
 const BlogSingle = () => {
@@ -131,6 +131,25 @@ const BlogSingle = () => {
 
       flushList(idx);
 
+      // Embedded 9:16 YouTube Shorts / Video Link
+      const inlineYtId = getYouTubeVideoId(trimmed);
+      if (inlineYtId && (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.includes("youtube.com") || trimmed.includes("youtu.be"))) {
+        elements.push(
+          <div key={`inline-yt-${idx}`} className="my-8 flex justify-center">
+            <div className="w-full max-w-[340px] sm:max-w-[380px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border-4 border-stone-800 dark:border-amber-400/25 bg-black relative ring-4 ring-emerald-500/20">
+              <iframe
+                src={`https://www.youtube.com/embed/${inlineYtId}?rel=0`}
+                title="Embedded YouTube Short"
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        );
+        return;
+      }
+
       if (trimmed.startsWith("### ")) {
         elements.push(
           <h3 key={idx} className="font-extrabold text-slate-900 dark:text-amber-100 text-lg mt-6 mb-3">
@@ -247,6 +266,47 @@ const BlogSingle = () => {
                   className="w-full h-full object-cover"
                 />
               </div>
+
+              {/* 9:16 Video / YouTube Shorts Player */}
+              {blog.videoUrl && (
+                <div className="my-8 p-6 sm:p-8 bg-gradient-to-br from-stone-900 via-stone-950 to-stone-900 rounded-3xl border border-emerald-500/30 dark:border-amber-400/30 shadow-2xl relative overflow-hidden">
+                  <div className="text-center max-w-lg mx-auto mb-6">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-sm mb-2">
+                      <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                      {getYouTubeVideoId(blog.videoUrl) ? "9:16 YouTube Shorts" : "Video Guide (9:16)"}
+                    </span>
+                    <h3 className="text-lg sm:text-xl font-black text-amber-300">
+                      Recipe &amp; Method in Action
+                    </h3>
+                    <p className="text-xs text-stone-300 mt-1">
+                      Vertical 9:16 video tutorial &amp; walkthrough
+                    </p>
+                  </div>
+
+                  {/* 9:16 Aspect Ratio Frame */}
+                  <div className="flex justify-center">
+                    <div className="w-full max-w-[340px] sm:max-w-[380px] aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl border-4 border-stone-800 dark:border-amber-400/25 bg-black relative ring-4 ring-emerald-500/20">
+                      {getYouTubeVideoId(blog.videoUrl) ? (
+                        <iframe
+                          src={`https://www.youtube.com/embed/${getYouTubeVideoId(blog.videoUrl)}?rel=0`}
+                          title={currentTitle}
+                          className="w-full h-full border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <video
+                          src={getImageUrl(blog.videoUrl)}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Formatted Content in active language */}
               <div className="pt-4 border-t border-slate-100 dark:border-amber-400/20">

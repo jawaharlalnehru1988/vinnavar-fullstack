@@ -114,12 +114,17 @@ const Blog = () => {
           {heroBlog && (
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0 group">
               <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto overflow-hidden">
-                <Link to={`/blog/${getBlogSlugOrId(heroBlog)}`} className="block w-full h-full">
+                <Link to={`/blog/${getBlogSlugOrId(heroBlog)}`} className="block w-full h-full relative">
                   <img
                     src={getImageUrl(heroBlog.imageUrl)}
                     alt={getBlogTitle(heroBlog)}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
+                  {heroBlog.videoUrl && (
+                    <span className="absolute top-4 left-4 px-3 py-1.5 bg-red-600/95 text-white text-[11px] font-black uppercase tracking-wider rounded-full shadow-lg flex items-center gap-1.5 backdrop-blur-xs">
+                      <span>▶</span> 9:16 Video
+                    </span>
+                  )}
                 </Link>
               </div>
 
@@ -169,12 +174,17 @@ const Blog = () => {
                 >
                   <div className="space-y-4 p-5">
                     <div className="relative h-48 rounded-2xl overflow-hidden bg-slate-100">
-                      <Link to={`/blog/${getBlogSlugOrId(blog)}`}>
+                      <Link to={`/blog/${getBlogSlugOrId(blog)}`} className="block w-full h-full relative">
                         <img
                           src={getImageUrl(blog.imageUrl)}
                           alt={getBlogTitle(blog)}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
+                        {blog.videoUrl && (
+                          <span className="absolute top-2.5 right-2.5 px-2.5 py-1 bg-red-600/95 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-md flex items-center gap-1 backdrop-blur-xs">
+                            <span>▶</span> 9:16 Short
+                          </span>
+                        )}
                       </Link>
                     </div>
 

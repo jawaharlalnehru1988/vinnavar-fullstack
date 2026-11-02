@@ -121,6 +121,7 @@ public class BlogServiceImpl implements BlogService {
                 .content(request.getContent())
                 .shortDescription(request.getShortDescription())
                 .imageUrl(request.getImageUrl() != null ? request.getImageUrl() : "/media/site/blog-img-1.jpg")
+                .videoUrl(request.getVideoUrl())
                 .author(request.getAuthor() != null ? request.getAuthor() : "Vinnavar Team")
                 .readTimeMinutes(request.getReadTimeMinutes() != null ? request.getReadTimeMinutes() : 5)
                 .featured(request.getFeatured() != null ? request.getFeatured() : false)
@@ -144,6 +145,7 @@ public class BlogServiceImpl implements BlogService {
         if (request.getContent() != null) post.setContent(request.getContent());
         if (request.getShortDescription() != null) post.setShortDescription(request.getShortDescription());
         if (request.getImageUrl() != null) post.setImageUrl(request.getImageUrl());
+        if (request.getVideoUrl() != null) post.setVideoUrl(request.getVideoUrl().trim());
         if (request.getAuthor() != null) post.setAuthor(request.getAuthor());
         if (request.getReadTimeMinutes() != null) post.setReadTimeMinutes(request.getReadTimeMinutes());
         if (request.getFeatured() != null) post.setFeatured(request.getFeatured());
@@ -187,6 +189,7 @@ public class BlogServiceImpl implements BlogService {
                 .content(post.getContent())
                 .shortDescription(post.getShortDescription())
                 .imageUrl(post.getImageUrl())
+                .videoUrl(post.getVideoUrl())
                 .author(post.getAuthor())
                 .readTimeMinutes(post.getReadTimeMinutes())
                 .featured(post.getFeatured())

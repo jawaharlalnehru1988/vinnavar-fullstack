@@ -20,6 +20,7 @@ public class BlogPostRequest {
 
     private String shortDescription;
     private String imageUrl;
+    private String videoUrl;
     private String author;
     private Integer readTimeMinutes;
     private Boolean featured;
