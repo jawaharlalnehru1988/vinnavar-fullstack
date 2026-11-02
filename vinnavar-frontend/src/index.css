@@ -778,25 +778,33 @@ html.dark .dropdown-divider {
   border-color: rgba(251, 191, 36, 0.15) !important;
 }
 
-/* Ambient Hero Adjustments */
+/* Ambient Hero Adjustments - 100% Transparent sides to reveal running line animation */
+html.dark .hero-section,
 html.dark .hero-section #carouselExampleFade,
 html.dark .hero-section .carousel-inner,
 html.dark .hero-section .carousel-item {
-  background-color: #090e17 !important;
+  background-color: transparent !important;
+  background: transparent !important;
 }
 
 html.dark .hero-section .carousel-control-prev,
 html.dark .hero-section .carousel-control-next {
-  background: rgba(15, 23, 42, 0.85) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: #34d399 !important;
+  background: rgba(38, 27, 21, 0.75) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(251, 191, 36, 0.25) !important;
+  color: #fbbf24 !important;
+}
+
+html.dark .hero-section .carousel-control-prev-icon,
+html.dark .hero-section .carousel-control-next-icon {
+  filter: invert(80%) sepia(50%) saturate(1000%) hue-rotate(5deg) brightness(110%) !important;
 }
 
 html.dark .hero-sound-btn,
 html.dark .hero-play-pause-btn {
-  background: rgba(15, 23, 42, 0.85) !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
-  color: #34d399 !important;
+  background: rgba(38, 27, 21, 0.75) !important;
+  border-color: rgba(251, 191, 36, 0.25) !important;
+  color: #fbbf24 !important;
 }
 
 /* Ambient Feature Highlights Bar in Dark Mode */
